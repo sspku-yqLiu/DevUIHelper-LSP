@@ -1,0 +1,21 @@
+{
+	"scopeName": "expression.ng",
+	"injectionSelector": "L:text.html -comment",
+	"patterns": [
+	  {
+		"include": "#devuiExpression"
+	  }
+	],
+	"repository": {
+		"devuiExpression": {
+			"name": "meta.expression.ng",
+			"patterns": [
+				{
+				  "name": "constant.language.boolean.true.ts",
+				  "match": "(?<!\\.|\\$)\\btrue\\b(?!\\$)"
+				},
+				{
+				  "name": "constant.language.boolean.false.ts",
+				  "match": "(?<!\\.|\\$)\\bfalse\\b(?!\\$)"
+				}
+			  ]
