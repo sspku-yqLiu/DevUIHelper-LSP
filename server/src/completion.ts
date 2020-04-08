@@ -1,4 +1,4 @@
-import { htmlSource,Attribute } from './source/html_info';
+import { htmlInfo,Attribute } from './source/html_info';
 /*
  * @Author: your name
  * @Date: 2020-03-27 19:34:32
@@ -34,7 +34,7 @@ export function  provideCompletionItems(document: TextDocument, position: Positi
     if (componentRegex.test(text)) { 
         // console.log(text);
         const elementName = getName(text,componentRegex);
-        const element = htmlSource.findElement(elementName);
+        const element = htmlInfo.findElement(elementName);
 
         if (element) {
             const properties = element.getAttributes();
@@ -68,7 +68,7 @@ export function  provideCompletionItems(document: TextDocument, position: Positi
  * @param prop 
  */
 function createElementCompletionItems():CompletionItem[]{
-    return Object.keys(htmlSource.schema).map(element=>{
+    return Object.keys(htmlInfo.schema).map(element=>{
         // console.log("d-"+element);
         _completionItem =  CompletionItem.create("d-"+element);
         _completionItem.kind = CompletionItemKind.Class;

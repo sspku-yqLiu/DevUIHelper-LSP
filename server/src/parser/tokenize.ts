@@ -45,6 +45,7 @@ export class Tokenizer{
 		private textdocument:TextDocument,
 		private tokenizeOption:TokenizeOption){
 			this.text = textdocument.getText();
+			/* -1 为了*/ 
 			this._cursor = new Cursor(this.text,this.text.indexOf(tokenizeOption.startLabel,0));
 		}
 		/**
@@ -59,49 +60,31 @@ export class Tokenizer{
 			 * build token 从<d-开始
 			 */
 			while(this._cursor.getoffset()!=-1){
-				const start = this._cursor.copy();
-				this.startToken(TokenType.ELEMENT_START)
+				
+				this.buildElementStartAndNameToken();
 
-				this.tryStopAt([chars.$GT,...chars.WhiteChars]);
-
-				/*结束ELEMENT_START */
-
-				this.buildToken();
 				/*开始属性ATTR */
 				while(this._cursor.peek()!==chars.$GT){
-					if(this._cursor.peek() in chars.WhiteChars){
-						this.tryAdvanceThrogh(chars.WhiteChars);
-						/**
-						 * #开头类型(内属性)
-						 */
-						if(this._cursor.peek() === chars.$HASH){
-							this.startToken(TokenType.INNER_ATTR);
-							this.tryStopAt([chars.$GT,...chars.WhiteChars]);
-							this.buildToken();
-							// this._tokenInBuild.build(this._cursor.getoffset()-1);
-						/**
-						 * 普通属性
-						 */
-						}else if(this._cursor.peek() !== chars.$GT){
-
-							this.startToken(TokenType.ATTR_NAME);
-							this.tryStopAt([chars.$EQ]);
-							this.buildToken();
-							/* 找到两个引号之间的东西 */
-							this.tryStopAt([chars.$EQ]);
-							this.startToken(TokenType.ATTR_VALUE);
-							this._cursor.advance();
-							this.tryStopAt([chars.$EQ]);
-							this._cursor.advance();
-							this.buildToken();
-						}
+					this.tryAdvanceThrogh(chars.WhiteChars);
+					/**
+					 * #开头类型(内属性)
+					 */
+					if(this._cursor.peek() === chars.$HASH){
+						this.buildInnerAttrToken();
+					/**
+					 * 普通属性
+					 */
+					}else if(this._cursor.peek() !== chars.$GT){
+						this.buildATTRToken();		
 					}
+
 				}
 
-				/*加入ELEMENT_END */
+				/**
+				 * element nd
+				 */
 				if(this._cursor.peek() === chars.$GT){
-					this.startToken(TokenType.ELEMENT_END);
-					this.buildToken();
+					this.buildElementEndToken();
 				}
 				logger.debug(`we are at ${this._cursor.getoffset()}`)
 				this._cursor = new Cursor(this.text,this.text.indexOf(this.tokenizeOption.startLabel,this._cursor.getoffset()));
@@ -110,22 +93,23 @@ export class Tokenizer{
 			this.buildToken();
 		}
 		this.result.forEach(token=>{
-			logger.debug(this.text.substring(token.getSpan()!.start,token.getSpan()!.end));
-			const textString = this.text.substring(token.getSpan()!.start,token.getSpan()!.end);
+			logger.debug(this.text.substring(token.getSpan()!.start,token.getSpan()!.end+1));
 			logger.debug(token.getType().toString());
 		})
 		return this.result;
 	}
 
 	tryAdvanceThrogh(chars:number[]){
-		if( this._cursor.peek() in chars){
+		while(chars.includes(this._cursor.peek())){
 			this._cursor.advance();
 		}
 		return;
 	}
 
 	tryStopAt(chars:number[]){
-		while(! (this._cursor.peek() in chars)){
+
+		while(!chars.includes(this._cursor.peek())){
+			const num = this._cursor.peek();
 			this._cursor.advance();
 		}
 		return;
@@ -139,6 +123,55 @@ export class Tokenizer{
 			this.result.push(this._tokenInBuild);
 			this._tokenInBuild=undefined;
 		}
+	}
+	changeWordPositionToOffset(position:number ){
+		return position-1;
+	}
+	moveToElement_VALUE(){
+		let len = this.tokenizeOption.startLabel.length;
+		while(len>0){
+			this._cursor.advance();
+			len--;
+		}
+	}
+	buildElementStartAndNameToken(){
+		this.startToken(TokenType.ELEMENT_START);
+		this.moveToElement_VALUE();
+		this.buildToken();
+		this.startToken(TokenType.ELEMENT_VALUE);			
+		this.tryStopAt([chars.$GT,...chars.WhiteChars]);
+		this.buildToken();
+	}
+ 
+	buildInnerAttrToken(){
+		this.startToken(TokenType.INNER_ATTR);
+		this.tryStopAt([chars.$GT,...chars.WhiteChars]);
+		this.buildToken();
+	}
+	buildATTRToken(){	
+
+		this.startToken(TokenType.ATTR_NAME);
+		this.tryStopAt([chars.$EQ]);
+		this.buildToken();
+
+		this.startToken(TokenType.ATTR_VALUE_START);
+		this._cursor.advance();
+		this.tryStopAt([chars.$DQ]);
+		this._cursor.advance();
+		this.buildToken();
+
+		this.startToken(TokenType.ATTR_VALUE);
+		this.tryStopAt([chars.$DQ]);
+		this.buildToken();
+
+		this.startToken(TokenType.ATTR_VALE_END);
+		this._cursor.advance();
+		this.buildToken();
+	}
+	buildElementEndToken(){
+		this.startToken(TokenType.ELEMENT_END);
+		this._cursor.advance();
+		this.buildToken();
 	}
 } 
 export class Cursor{

@@ -145,4 +145,4 @@ export class CParams{
         }
     }
 }
-export const htmlSource = new CParams();
+export const htmlInfo = new CParams();

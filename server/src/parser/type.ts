@@ -10,7 +10,7 @@
  * Token 相关
  */
 import { CompletionItem, } from 'vscode-languageserver';
-import {Element,Attribute,htmlSource} from '../source/html_info';
+import {Element,Attribute,htmlInfo} from '../source/html_info';
 
 import * as lsp from 'vscode-languageserver';
 
@@ -22,16 +22,25 @@ export class Span{
 		public start:number,
 		public end:number
 	){}
+	build(end:number){
+		this.end = end;
+	}
 	inSpan(offset:number):boolean {
+		if(!this.end){
+			return false;
+		}
 		if(offset>=this.start&&offset<=this.end){return true;}
 		return false;
 	}
 }
 export enum TokenType{
 	ELEMENT_START,
+	ELEMENT_VALUE,
 	INNER_ATTR,
 	ATTR_NAME,
+	ATTR_VALUE_START,
 	ATTR_VALUE,
+	ATTR_VALE_END,
 	ELEMENT_END
 }
 export class Token{
@@ -58,60 +67,6 @@ export class Cursor{
  * AST相关
  */
 
-export interface Node{
-	// /**
-	//  * 内容所在的Span
-	//  */
-	// readonly span:Span;
-
-	// /**
-	//  * 依据这个节点内容提供补全的span
-	//  */
-	// readonly completionSpan:Span;
-
-	// /**
-	//  * 节点的唯一标识符
-	//  */
-	// readonly key:string;
-
-	/**
-	 * 获取补全列表
-	 * @param position 给定补全的位置
-	 */
-
-	getCompletion(textPosition: lsp.TextDocumentPositionParams):CompletionItem[];
-}
 
 
-export class AST implements Node{
-	element:Element|undefined;
-	subNodes:Node[];
-	parent:Node|undefined;
 
-	constructor(
-		parent:Node,
-		private type:AST_Type,
-		 private span:Span,
-		 private completionSpan:Span,
-		 private key:string
-		){
-			this.parent = parent;
-			this.element = htmlSource.findElement(key.substring(3));
-			this.subNodes= [];
-		}
-
-	getCompletion(cursor: lsp.TextDocumentPositionParams):CompletionItem[]{
-		// if(this.completionSpan.inSpan(cursor.position)){
-		// 	// if(this.type===AST_Type.ELEMENT){
-		// 	// // const completionInfo:CompletionItem[]|undefined= this.element?.getCompletion();
-		// 	// return completionInfo? completionInfo:[];	
-		// 	// }
-		// 	// if(this.type===AST_Type.ATTR){
-		// 	// 	// const completionInfo:CompletionItem[]|undefined= this.element?.getCompletion();
-		// 	// 	return completionInfo? completionInfo:[];
-		// 	// }		
-		// }
-		return [];
-
-	}
-}
