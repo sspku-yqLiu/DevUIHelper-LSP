@@ -25,7 +25,7 @@ import{parseCommandLine} from './cmdline_utils';
 import{resolveTsServer,resolveNgLangSvc}from'./version_provider';
 import{ServerHost} from'./server_host'; 
 import {DevUIhtmlSyntaxes} from './DevUIhtmlSyntaxes';
-import { provideCompletionItems} from './completion';
+import { provideCompletionItems} from './completionV2.0';
 import {Tokenizer,TokenizeOption} from './parser/tokenize'; 
 configure({
     appenders: {
@@ -42,7 +42,7 @@ let connection = createConnection(ProposedFeatures.all);
 
 // Create a simple text document manager. The text document manager
 // supports full document sync only
-let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+export let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -194,6 +194,7 @@ connection.onCompletion(
 		// return [];
 		logger.debug(`Completion work`);
 		const textDocument = documents.get(_textDocumentPosition.textDocument.uri);
+		const offest = textDocument!.offsetAt(_textDocumentPosition.position);
 		if(textDocument){
 			return provideCompletionItems(textDocument,_textDocumentPosition.position);
 		}

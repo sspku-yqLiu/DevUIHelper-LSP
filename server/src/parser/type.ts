@@ -43,6 +43,10 @@ export enum TokenType{
 	ATTR_VALE_END,
 	ELEMENT_END
 }
+export enum Spankind{
+	KEY,
+	VALUE
+}
 export class Token{
 
 	constructor(
@@ -61,7 +65,36 @@ export enum AST_Type{
 export class Cursor{
 	
 }
+export interface ParseResult{
+	
+	/**
+	 * 是否提供补全标签
+	 */
+	noCompletionFlag:boolean;
+	
+	/**
+	 * 指针所在的范围是key还是value
+	 */
+	Spankind:Spankind|undefined;
+	
+	/**
+	 *是否有根节点
+	 */
+	root:string|undefined;
+	
+	/**
+	 * element节点
+	 */
+	element:string|undefined;
+	
+	/**
+	 * 属性节点
+	 */
+	attr:string|undefined;
 
+
+
+}
 
 /**
  * AST相关

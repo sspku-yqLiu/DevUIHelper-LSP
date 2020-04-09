@@ -144,5 +144,10 @@ export class CParams{
                 return  CompletionItemKind.Variable;
         }
     }
+    getElementsName(){
+        return Object.keys(this.schema).map(element=>{
+            return "d-"+element;
+        });
+    }
 }
 export const htmlInfo = new CParams();

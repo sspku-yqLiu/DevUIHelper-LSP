@@ -4,11 +4,13 @@ import * as chars from './chars';
 import {logger} from '../server';
 export class Token{
 	private end:number=-1;
-	private span:Span|undefined;
+	private span:Span;
 	constructor(
 		private type:TokenType,
 		private start:number,
-	){}
+	){
+		this.span= new Span(start,-1);
+	}
 	build(end:number){
 		this.end = end;
 		this.span = new Span(this.start,end);
@@ -16,12 +18,13 @@ export class Token{
 	setSpan(start:number,end:number){
 		this.span = new Span(start,end);
 	}
-	getSpan(){
+	getSpan():Span{
 		return this.span;
 	}
 	getType(){
 		return this.type;
 	}
+
 
 
 }
@@ -36,17 +39,41 @@ export class TokenizeOption{
 		this._startLabel = v;
 	}
 }
+export class TokenizeOptions{
+	private SCHEMA = <{[optionName:string]:TokenizeOption}>{};
+	constructor(){
+		const tokenizeOptionForDevUI = new TokenizeOption("<d-");
+		this.SCHEMA['DevUI'] = tokenizeOptionForDevUI;
+	}
+	getTokenizeOption(name:string):TokenizeOption{
+		if(this.SCHEMA[name]){
+			return this.SCHEMA[name];
+		}
+		throw Error(`Cannot find TokenizeOption : ${name}`);
+	}
+
+	
+	
+}
+
 
 export class Tokenizer{
-	private text:string;
+	private _text:string;
 	protected _cursor:Cursor;
-	private result:Token[] = [];
+	private _result:Token[] = [];
+	private _tokenizeOption:TokenizeOption;
 	constructor(
 		private textdocument:TextDocument,
-		private tokenizeOption:TokenizeOption){
-			this.text = textdocument.getText();
+		_tokenizeOption:TokenizeOption|string){
+			if((_tokenizeOption instanceof TokenizeOption)){
+				this._tokenizeOption = _tokenizeOption;
+				
+			}else{
+				this._tokenizeOption = new TokenizeOptions().getTokenizeOption(_tokenizeOption);
+			}
+			this._text = textdocument.getText();
 			/* -1 为了*/ 
-			this._cursor = new Cursor(this.text,this.text.indexOf(tokenizeOption.startLabel,0));
+			this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,0));
 		}
 		/**
 		 * Token解析器
@@ -54,15 +81,13 @@ export class Tokenizer{
 	private _tokenInBuild:Token|undefined;
 	Tokenize():Token[]{
 		/* 初始化 */
-		this.result= [];
+		this._result= [];
 		try{
 			/**
 			 * build token 从<d-开始
 			 */
-			while(this._cursor.getoffset()!=-1){
-				
+			while(this._cursor.getoffset()!=-1){			
 				this.buildElementStartAndNameToken();
-
 				/*开始属性ATTR */
 				while(this._cursor.peek()!==chars.$GT){
 					this.tryAdvanceThrogh(chars.WhiteChars);
@@ -77,26 +102,24 @@ export class Tokenizer{
 					}else if(this._cursor.peek() !== chars.$GT){
 						this.buildATTRToken();		
 					}
-
 				}
-
 				/**
-				 * element nd
+				 * element end
 				 */
 				if(this._cursor.peek() === chars.$GT){
 					this.buildElementEndToken();
 				}
 				logger.debug(`we are at ${this._cursor.getoffset()}`)
-				this._cursor = new Cursor(this.text,this.text.indexOf(this.tokenizeOption.startLabel,this._cursor.getoffset()));
+				this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,this._cursor.getoffset()));
 			}
 		}catch{
 			this.buildToken();
 		}
-		this.result.forEach(token=>{
-			logger.debug(this.text.substring(token.getSpan()!.start,token.getSpan()!.end+1));
+		this._result.forEach(token=>{
+			logger.debug(this._text.substring(token.getSpan()!.start,token.getSpan()!.end+1));
 			logger.debug(token.getType().toString());
 		})
-		return this.result;
+		return this._result;
 	}
 
 	tryAdvanceThrogh(chars:number[]){
@@ -120,7 +143,7 @@ export class Tokenizer{
 	buildToken(){
 		if(this._tokenInBuild){
 			this._tokenInBuild.build(this._cursor.getoffset()-1);
-			this.result.push(this._tokenInBuild);
+			this._result.push(this._tokenInBuild);
 			this._tokenInBuild=undefined;
 		}
 	}
@@ -128,7 +151,7 @@ export class Tokenizer{
 		return position-1;
 	}
 	moveToElement_VALUE(){
-		let len = this.tokenizeOption.startLabel.length;
+		let len = this._tokenizeOption.startLabel.length;
 		while(len>0){
 			this._cursor.advance();
 			len--;
@@ -183,8 +206,8 @@ export class Cursor{
 	advance(){
 		if(this.peek()===chars.$BACKSLASH)
 			this.offset++;
-		if(this.offset === this.text.length||this.peek()===chars.$EOF)
-			throw Error(`Char At EOF!!!!!`);
+		if(this.offset === this.text.length||this.peek()===chars.$EOF||this.peek()===chars.$LT)
+			throw Error(`Char At EOF Or a '<' in element!!!!!`);
 		this.offset++;
 
 	}
