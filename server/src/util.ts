@@ -6,7 +6,7 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
  */
-import {CompletionItemKind}from 'vscode-languageserver';
+import{MarkupKind,CompletionItemKind, MarkupContent} from 'vscode-languageserver';
 export function getName(text: string,componentRegex: RegExp){
     text.match(componentRegex);
     const n = RegExp.$1.substring(2);
@@ -62,4 +62,30 @@ export function autoIcon(type:CompletionItemKind):string{
         default:
             return "$(array)";
     }
+}
+export class MarkUpBuilder{
+    private markUpContent:MarkupContent;
+    constructor(){
+        this.markUpContent=  {kind:MarkupKind.Markdown,value:""}
+    }
+    
+    getMarkUpContent():MarkupContent{
+        return this.markUpContent;
+    }
+    addContent(content:string){
+        this.markUpContent.value+=content;
+        return this;
+    }
+    addSpecialContent(type:string,content:string[]){
+        this.markUpContent.value+= 
+             [
+                'Some text',
+                '```'+type,
+                 ...content.map(c=>{return `'${c}'`}),
+                '```'
+            ].join('\n');
+        return this;
+    }
+
+
 }

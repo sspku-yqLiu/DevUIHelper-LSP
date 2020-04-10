@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-09 18:58:10
- * @LastEditTime: 2020-04-09 19:43:30
+ * @LastEditTime: 2020-04-10 14:50:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\parser.ts
@@ -20,10 +20,11 @@ export class Parser{
 	private snapshotSet = <{[uri:string]:SnapShot}>{};
 	constructor(){
 	}
-	parseTextDocument(uri:string,textDocument:TextDocument){
+	parseTextDocument(textDocument:TextDocument){
+		const uri = textDocument.uri;
 		const tokenizer = new Tokenizer(textDocument,"DevUI"); 
 		const tokens = tokenizer.Tokenize();
-		const treebuilder = new TreeBuilder(tokens);
+		const treebuilder =new TreeBuilder(tokens);
 		const root = treebuilder.build();
 		this.snapshotSet[uri]= new SnapShot(root,textDocument);
 	}
@@ -32,13 +33,15 @@ export class Parser{
 		this.astNodeChain = []
 		this.noCompletionFlag = false;
 		let astNames:string[] = [];
-		//parse
+
+
+
 		const{ rootAST,textDocument } = this.snapshotSet[uri];
 		if(!rootAST){
 			throw Error(`Snap shot does not have this file : ${uri}, please parse it befor use it!`);
 		}
 		//进行搜索
-		this.DFS(rootAST,offset);
+		this.DFSForCompletion(rootAST,offset);
 		let text:string = textDocument.getText();
 		astNames = this.astNodeChain.map(astnode=>{
 			let{start ,end } = astnode.getSpan();
@@ -47,7 +50,7 @@ export class Parser{
 		return {
 			noCompletionFlag:this.noCompletionFlag,
 
-			Spankind:this.completionSpanKind ,
+			Spankind:this.completionSpanKind,
 
 			root:astNames[0],
 
@@ -58,21 +61,23 @@ export class Parser{
 		}
 
 	}
-	DFS(ast:HTMLAST,offset:number){
-		if(ast.inSpan(offset)){
-			if(ast.inKeySpan(offset)){
-				this.astNodeChain.push(ast);
+	DFSForCompletion(ast:HTMLAST,offset:number){
+		if(ast.inCompletionSpan(offset)){
+			this.astNodeChain.push(ast);
+			
+			if(ast.inCompletionKeySpan(offset)){
 				this.completionSpanKind=Spankind.KEY;
 				return;
 			}
-			if(ast.inValueSpan(offset)){
-				this.astNodeChain.push(ast);
+			else if(ast.inCompletionValueSpan(offset)){
 				this.completionSpanKind=Spankind.VALUE;
 				for( let subast of ast.getSubNodes()){
-					this.DFS(subast,offset);
+					this.DFSForCompletion(subast,offset);
 				}
+			}else{
+				this.noCompletionFlag=true;
 			}
-			this.noCompletionFlag=true;
+
 		}
 		return;
 	}

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-04-07 18:45:49
+ * @LastEditTime: 2020-04-10 14:27:48
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -30,6 +30,13 @@ export class Span{
 			return false;
 		}
 		if(offset>=this.start&&offset<=this.end){return true;}
+		return false;
+	}
+	inCompletionSpan(offset:number):boolean{
+		if(!this.end){
+			return false;
+		}
+		if(offset>=this.start&&offset<=this.end+1){return true;}
 		return false;
 	}
 }

@@ -73,7 +73,7 @@ export class Tokenizer{
 			}
 			this._text = textdocument.getText();
 			/* -1 为了*/ 
-			this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,0));
+			this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,0)+1);
 		}
 		/**
 		 * Token解析器
@@ -110,7 +110,7 @@ export class Tokenizer{
 					this.buildElementEndToken();
 				}
 				logger.debug(`we are at ${this._cursor.getoffset()}`)
-				this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,this._cursor.getoffset()));
+				this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,this._cursor.getoffset())+1);
 			}
 		}catch{
 			this.buildToken();
@@ -138,6 +138,11 @@ export class Tokenizer{
 		return;
 	}
 	startToken(tokenType:TokenType){
+		if(tokenType === TokenType.ELEMENT_START){
+			this._tokenInBuild= new Token(tokenType,this._cursor.getoffset()-1);
+			return ;
+
+		}
 		this._tokenInBuild= new Token(tokenType,this._cursor.getoffset());
 	}
 	buildToken(){
@@ -151,7 +156,7 @@ export class Tokenizer{
 		return position-1;
 	}
 	moveToElement_VALUE(){
-		let len = this._tokenizeOption.startLabel.length;
+		let len = this._tokenizeOption.startLabel.length-1;
 		while(len>0){
 			this._cursor.advance();
 			len--;
@@ -198,21 +203,26 @@ export class Tokenizer{
 	}
 } 
 export class Cursor{
+	private peekvalue = -1;
 	constructor(
 		private text:string,
 		private offset:number,
 	){}
 	getoffset(){return this.offset}
 	advance(){
-		if(this.peek()===chars.$BACKSLASH)
+		let peek = this.peek();
+		if(peek===chars.$BACKSLASH){
 			this.offset++;
-		if(this.offset === this.text.length||this.peek()===chars.$EOF||this.peek()===chars.$LT)
-			throw Error(`Char At EOF Or a '<' in element!!!!!`);
+		}
 		this.offset++;
+		if(this.offset === this.text.length||peek===chars.$EOF||peek===chars.$LT)
+			throw Error(`Char At EOF Or a '<' in element!!!!!`);
+
 
 	}
 
 	peek():number{
+		this.peekvalue = this.text.charCodeAt(this.offset);
 		return this.text.charCodeAt(this.offset);
 	}
 	createSpanRight(cursor:Cursor){

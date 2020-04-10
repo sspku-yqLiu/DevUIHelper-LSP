@@ -21,12 +21,11 @@ import {
 import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
-import{parseCommandLine} from './cmdline_utils';
-import{resolveTsServer,resolveNgLangSvc}from'./version_provider';
-import{ServerHost} from'./server_host'; 
 import {DevUIhtmlSyntaxes} from './DevUIhtmlSyntaxes';
-import { provideCompletionItems} from './completionV2.0';
+import { provideCompletionItems} from './completion';
 import {Tokenizer,TokenizeOption} from './parser/tokenize'; 
+import {Parser} from './parser/parser';
+import { CParams } from './source/html_info';
 configure({
     appenders: {
         lsp_demo: {
@@ -47,6 +46,9 @@ export let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocume
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
+
+//初始化htmlInfo
+export const htmlInfo = new CParams();
 
 connection.onInitialize((params: InitializeParams) => {
 	let capabilities = params.capabilities;
@@ -184,19 +186,22 @@ connection.onDidChangeWatchedFiles(_change => {
 	connection.console.log('We received an file change event');
 });
 
+
+export const parser = new Parser();
 // This handler provides the initial list of the completion items.
-const DevUIwords = DevUIhtmlSyntaxes;
 connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		// The pass parameter contains the position of the text document in
-		// which code complete got requested. For the example we ignore this
-		// info and always provide the same completion items.
-		// return [];
+
 		logger.debug(`Completion work`);
+		logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`)
 		const textDocument = documents.get(_textDocumentPosition.textDocument.uri);
-		const offest = textDocument!.offsetAt(_textDocumentPosition.position);
 		if(textDocument){
-			return provideCompletionItems(textDocument,_textDocumentPosition.position);
+			//TODO : 将分析放到外层。
+			parser.parseTextDocument(textDocument);
+			const offset = textDocument!.offsetAt(_textDocumentPosition.position);
+			if(textDocument){
+				return provideCompletionItems(offset,_textDocumentPosition.textDocument.uri);
+			}
 		}
 		return [];
 	}
@@ -217,18 +222,20 @@ documents.onDidOpen(
         logger.debug(`file version:${event.document.version}`);
         logger.debug(`file content:${event.document.getText()}`);
         logger.debug(`language id:${event.document.languageId}`);
-        logger.debug(`line count:${event.document.lineCount}`);
+		logger.debug(`line count:${event.document.lineCount}`);
+		parser.parseTextDocument(event.document);
     }
 );
 documents.onDidChangeContent(
     (e: TextDocumentChangeEvent<TextDocument>) => {
-        logger.debug('document change received.');
-        logger.debug(`document version:${e.document.version}`);
+        // logger.debug('document change received.');
+		// logger.debug(`document version:${e.document.version}`);
+		logger.debug(`language id:${e.document.languageId}`);
 		logger.debug(`text:${e.document.getText()}`);
-        logger.debug(`language id:${e.document.languageId}`);
-		logger.debug(`line count:${e.document.lineCount}`);
-		let tokenizer = new Tokenizer(e.document,new TokenizeOption("<d-"));
-		tokenizer.Tokenize();
+		// parser.parseTextDocument(e.document);
+		// logger.debug(`line count:${e.document.lineCount}`);
+		// let tokenizer = new Tokenizer(e.document,new TokenizeOption("<d-"));
+		// tokenizer.Tokenize();
     }
 );
 connection.onDidOpenTextDocument((params) => {
@@ -252,9 +259,11 @@ connection.onDidCloseTextDocument((params) => {
 connection.onHover((params)=>{
 	logger.debug(params.position);
 	let document = documents.get(params.textDocument.uri);
-	let offest = document?.offsetAt(params.position);
-	if(document&&offest)
-		logger.debug(`We Are At:+${document.getText().toString().charCodeAt(offest)}`);
+	let offset:number=0;
+	if(document)
+		offset = document!.offsetAt(params.position);
+		logger.debug(`We Are At:+${offset}`);
+		logger.debug(`We Are At:+${document!.getText().toString().charCodeAt(offset)}`);
 	return null;
 });
 

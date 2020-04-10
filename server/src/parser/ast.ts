@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-04-09 20:20:38
+ * @LastEditTime: 2020-04-10 14:37:16
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
@@ -45,7 +45,7 @@ export class TreeBuilder {
 	root:HTMLAST;
 	// currentSpan: Span | undefined;
 	constructor(private tokens: Token[], errors?: Error) { 
-		this.root = new HTMLAST(AST_Type.ROOT,undefined,0);
+		this.root = new HTMLAST(AST_Type.ROOT,undefined,1);
 	}
 	build(): HTMLAST {
 		if(this.tokens.length<1){
@@ -64,8 +64,9 @@ export class TreeBuilder {
 						
 						if (_tokentype === TokenType.ELEMENT_VALUE) {
 							this.elementInBuild.setKeySpan(_currentSpan);
+							this.elementInBuild.setValueStart(_currentSpan.end+1)
 						}
-						if(_tokentype === TokenType.ELEMENT_END){
+						else if(_tokentype === TokenType.ELEMENT_END){
 							this.closeElementAt(_currentSpan.end);
 						}
 						//build inner ATTR 
@@ -81,13 +82,13 @@ export class TreeBuilder {
 						}
 						else{
 							if (this.attrInBuild){
-							if(_tokentype=== TokenType.ATTR_VALUE_START){}
-							if(_tokentype=== TokenType.ATTR_VALUE){
-								this.attrInBuild.setValueSpan(_currentSpan);
-							}
-							if(_tokentype === TokenType.ATTR_VALE_END){
-								this.closeAttrAst(token.getSpan()!.end);
-							}
+								if(_tokentype=== TokenType.ATTR_VALUE_START){}
+								else if(_tokentype=== TokenType.ATTR_VALUE){
+									this.attrInBuild.setValueSpan(_currentSpan);
+								}
+								else if(_tokentype === TokenType.ATTR_VALE_END){
+									this.closeAttrAst(token.getSpan()!.end);
+								}
 							}else{
 								throw Error(`we need to add something into attr ,but we cannot find at ${_currentSpan.start}`);
 							}
@@ -128,11 +129,14 @@ export class TreeBuilder {
 	buildRoot(){
 		const endOfTokens:number = this.tokens.pop()!.getSpan().end;
 
-		if(this.elementInBuild){
-			this.elementInBuild.build(endOfTokens);
-		}
+
 		if(this.attrInBuild){
 			this.attrInBuild.build(endOfTokens);
+		}
+		if(this.elementInBuild){
+			this.elementInBuild.build(endOfTokens);
+			this.roots.push(this.elementInBuild);
+			this.elementInBuild = undefined;
 		}
 		this.root.build(endOfTokens);
 		this.root.singleKing();
@@ -164,10 +168,16 @@ export class HTMLAST implements HTMLAST {
 	setValueSpan(span: Span) {
 		this.valueSpan = span;
 	}
+	setValueStart(start:number){
+		this.valueSpan.start=start;
+	}
 
 	build(end: number) {
 		if(this.start){
-		this.span = new Span(this.start, end);
+		this.span = new Span(this!.start, end);
+		}
+		if(this.valueSpan.end===-1){
+			this.valueSpan.end = end;
 		}
 		else{
 			throw Error(`this element or attr does not have start!!!`);
@@ -191,7 +201,9 @@ export class HTMLAST implements HTMLAST {
 		this.valueSpan = this.span;
 	}
 
-
+	inSpan(offset:number):boolean{
+		return this.span.inSpan(offset);
+	}
 	inKeySpan(offset:number):boolean{
 		if(!this.keySpan){
 			return false;
@@ -204,11 +216,25 @@ export class HTMLAST implements HTMLAST {
 		}
 		return this.valueSpan.inSpan(offset);
 	}
+
+	inCompletionSpan(offset:number):boolean{
+		return this.span.inCompletionSpan(offset);
+	}
+	inCompletionKeySpan(offset:number):boolean{
+		if(!this.keySpan){
+			return false;
+		}
+		return this.keySpan.inCompletionSpan(offset);
+	}
+	inCompletionValueSpan(offset:number):boolean{
+		if(!this.valueSpan){
+			return false;
+		}
+		return this.valueSpan.inCompletionSpan(offset);
+	}
 	getSubNodes():HTMLAST[]{
 		return this.subNodes;
 	}
-	inSpan(offset:number):boolean{
-		return this.span.inSpan(offset);
-	}
+
 	
 }
