@@ -21,11 +21,9 @@ import {
 import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
-import {DevUIhtmlSyntaxes} from './DevUIhtmlSyntaxes';
-import { provideCompletionItems} from './completion';
-import {Tokenizer,TokenizeOption} from './parser/tokenize'; 
+import { CompletionProvider} from './completion';
 import {Parser} from './parser/parser';
-import { CParams } from './source/html_info';
+import { DevUIParamsConstructor } from './source/html_info';
 configure({
     appenders: {
         lsp_demo: {
@@ -48,7 +46,8 @@ let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 //初始化htmlInfo
-export const htmlInfo = new CParams();
+export const htmlSourceTreeRoot = new DevUIParamsConstructor().build();
+export const completionProvider= new CompletionProvider();
 
 connection.onInitialize((params: InitializeParams) => {
 	let capabilities = params.capabilities;
@@ -186,7 +185,7 @@ connection.onDidChangeWatchedFiles(_change => {
 	connection.console.log('We received an file change event');
 });
 
-
+//分析器
 export const parser = new Parser();
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
@@ -194,13 +193,13 @@ connection.onCompletion(
 
 		logger.debug(`Completion work`);
 		logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`)
-		const textDocument = documents.get(_textDocumentPosition.textDocument.uri);
-		if(textDocument){
+		const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
+		if(_textDocument){
 			//TODO : 将分析放到外层。
-			parser.parseTextDocument(textDocument);
-			const offset = textDocument!.offsetAt(_textDocumentPosition.position);
-			if(textDocument){
-				return provideCompletionItems(offset,_textDocumentPosition.textDocument.uri);
+			parser.parseTextDocument(_textDocument);
+			const _offset = _textDocument!.offsetAt(_textDocumentPosition.position);
+			if(_textDocument){
+				return completionProvider.provideCompletionItemsForHTML(_offset,_textDocument);
 			}
 		}
 		return [];
@@ -209,12 +208,12 @@ connection.onCompletion(
 
 // This handler resolves additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve(
-	(item: CompletionItem): CompletionItem => {
-		item.documentation= item.insertText;
-		return item;
-	}
-);
+// connection.onCompletionResolve(
+// 	// (item: CompletionItem): CompletionItem => {
+// 	// 	item.documentation= item.insertText;
+// 	// 	return item;
+// 	// }
+// );
 
 documents.onDidOpen(
     (event: TextDocumentChangeEvent<TextDocument>) => {
@@ -232,7 +231,7 @@ documents.onDidChangeContent(
 		// logger.debug(`document version:${e.document.version}`);
 		logger.debug(`language id:${e.document.languageId}`);
 		logger.debug(`text:${e.document.getText()}`);
-		// parser.parseTextDocument(e.document);
+		parser.parseTextDocument(e.document);
 		// logger.debug(`line count:${e.document.lineCount}`);
 		// let tokenizer = new Tokenizer(e.document,new TokenizeOption("<d-"));
 		// tokenizer.Tokenize();

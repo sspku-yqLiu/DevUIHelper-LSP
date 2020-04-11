@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-04-10 14:37:16
+ * @LastEditTime: 2020-04-11 22:26:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
@@ -10,12 +10,13 @@ import * as lsp from 'vscode-languageserver';
 import { htmlInfo } from '../source/html_info';
 import { Span, TokenType } from './type';
 import { Token } from './tokenize';
-export enum AST_Type {
+import { threadId } from 'worker_threads';
+export enum ASTType {
 	ROOT,
 	ELEMENT,
 	ATTR
 }
-export interface HTMLAST {
+export interface AST {
 
 	/**
 	 * 检测是否存在于key范围内
@@ -29,12 +30,7 @@ export interface HTMLAST {
 	 */
 	inValueSpan(offset:number):boolean;
 
-	// /**
-	//  * 获取补全列表
-	//  * @param position 给定补全的位置
-	//  */
-
-	// getCompletion(textPosition: lsp.TextDocumentPositionParams): lsp.CompletionItem[];
+	getKeySpan():Span
 }
 export class TreeBuilder {
 	//NOTE:也许不适用stack也可以进行Ast建立，stack的好处在于可以依次退栈，但是我们也许并不需要。
@@ -45,11 +41,11 @@ export class TreeBuilder {
 	root:HTMLAST;
 	// currentSpan: Span | undefined;
 	constructor(private tokens: Token[], errors?: Error) { 
-		this.root = new HTMLAST(AST_Type.ROOT,undefined,1);
+		this.root = new HTMLAST(ASTType.ROOT,new Span(1,-1));
 	}
 	build(): HTMLAST {
 		if(this.tokens.length<1){
-			return new HTMLAST(AST_Type.ROOT,new Span(0,0));
+			return new HTMLAST(ASTType.ROOT,new Span(0,0));
 		}
 		for (let token of this.tokens) {
 			let _currentSpan:Span|undefined = token!.getSpan();
@@ -57,11 +53,10 @@ export class TreeBuilder {
 				/* build element */
 				let _tokentype:TokenType = token.getType();
 				if (token.getType() === TokenType.ELEMENT_START) {
-					this.elementInBuild = new HTMLAST(AST_Type.ELEMENT,undefined,token.getSpan()!.start,this.root);
+					this.elementInBuild = new HTMLAST(ASTType.ELEMENT,new Span(token.getSpan()!.start,-1),this.root);
 				}
 				else {
-					if (this.elementInBuild) {
-						
+					if (this.elementInBuild) {		
 						if (_tokentype === TokenType.ELEMENT_VALUE) {
 							this.elementInBuild.setKeySpan(_currentSpan);
 							this.elementInBuild.setValueStart(_currentSpan.end+1)
@@ -71,13 +66,14 @@ export class TreeBuilder {
 						}
 						//build inner ATTR 
 						else if (_tokentype === TokenType.INNER_ATTR) {
-							this.attrInBuild = new HTMLAST(AST_Type.ATTR,_currentSpan,undefined,this.attrInBuild);
+							this.attrInBuild = new HTMLAST(ASTType.ATTR,_currentSpan,this.attrInBuild);
 							this.attrInBuild.singleDog();
 							this.closeAttrAst(token.getSpan()!.end);
 						}
 						//build normal ATTR 
 						else if(_tokentype=== TokenType.ATTR_NAME){
-							this.attrInBuild = new HTMLAST(AST_Type.ATTR,undefined,_currentSpan.start,this.attrInBuild);
+							this.attrInBuild = new HTMLAST(ASTType.ATTR,new Span(_currentSpan.start,-1),this.elementInBuild);
+							
 							this.attrInBuild.setKeySpan(_currentSpan);
 						}
 						else{
@@ -107,7 +103,7 @@ export class TreeBuilder {
 	}
 	closeAttrAst(end:number){
 		if(this.elementInBuild&&this.attrInBuild){
-			if(!this.attrInBuild.getSpan()){
+			if(this.attrInBuild.getSpan().end===-1){
 				this.attrInBuild.build(end);
 			}
 		this.elementInBuild.subNodes.push(this.attrInBuild);
@@ -117,9 +113,11 @@ export class TreeBuilder {
 		}
 	}
 	closeElementAt(end:number){
-		this.elementInBuild!.build(end);
+
 		if(this.elementInBuild){
-		this.roots.push(this.elementInBuild);
+			this.elementInBuild.build(end);
+			this.roots.push(this.elementInBuild);
+			this.elementInBuild.valueSpan.end = end-1;
 		}
 		else{
 			throw Error(`we need to build an element ,but we cannot find at${end}`);
@@ -132,6 +130,7 @@ export class TreeBuilder {
 
 		if(this.attrInBuild){
 			this.attrInBuild.build(endOfTokens);
+			this.elementInBuild?.subNodes.push(this.attrInBuild);
 		}
 		if(this.elementInBuild){
 			this.elementInBuild.build(endOfTokens);
@@ -144,25 +143,24 @@ export class TreeBuilder {
 	}
 	
 }
-export class HTMLAST implements HTMLAST {
+export class HTMLAST implements AST {
 	element: Element | undefined;
 	subNodes: HTMLAST[] = [];
 	keySpan: Span = new Span(-1,-1);
 	valueSpan: Span = new Span(-1,-1);
 	spanStart: number = -1;
 	constructor(
-		private type:AST_Type,
+		private type:ASTType,
 		private span:Span= new Span(-1,-1),
-		private start?:number|undefined,
 		private parent?:HTMLAST|undefined) {
-			if(start){
-				this.span = new Span(start, -1);
-			}
 	}
 	getSpan(){return this.span;}
 
 	setKeySpan(span: Span) {
 		this.keySpan = span;
+	}
+	getKeySpan(){
+		return this.keySpan;
 	}
 	
 	setValueSpan(span: Span) {
@@ -173,11 +171,8 @@ export class HTMLAST implements HTMLAST {
 	}
 
 	build(end: number) {
-		if(this.start){
-		this.span = new Span(this!.start, end);
-		}
-		if(this.valueSpan.end===-1){
-			this.valueSpan.end = end;
+		if(this.span.start!==-1){
+			this.span .end= end;
 		}
 		else{
 			throw Error(`this element or attr does not have start!!!`);
@@ -234,6 +229,12 @@ export class HTMLAST implements HTMLAST {
 	}
 	getSubNodes():HTMLAST[]{
 		return this.subNodes;
+	}
+	getType(){
+		return this.type;
+	}
+	getparent(){
+		return this.parent;
 	}
 
 	

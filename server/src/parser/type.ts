@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-04-10 14:27:48
+ * @LastEditTime: 2020-04-11 11:28:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -9,10 +9,10 @@
 /**
  * Token 相关
  */
-import { CompletionItem, } from 'vscode-languageserver';
-import {Element,Attribute,htmlInfo} from '../source/html_info';
+import {HTMLAST} from './ast';
 
 import * as lsp from 'vscode-languageserver';
+import { HTMLInfoNode } from '../source/html_info';
 
 export class Span{
 	/**
@@ -82,24 +82,17 @@ export interface ParseResult{
 	/**
 	 * 指针所在的范围是key还是value
 	 */
-	Spankind:Spankind|undefined;
+	spanKind:Spankind|undefined;
 	
 	/**
-	 *是否有根节点
+	 * 终端节点
 	 */
-	root:string|undefined;
-	
-	/**
-	 * element节点
-	 */
-	element:string|undefined;
-	
-	/**
-	 * 属性节点
-	 */
-	attr:string|undefined;
+	terminalNode:HTMLAST|undefined;
 
-
+	/**
+	 * 节点互换表
+	 */
+	 HTMLAstToHTMLInfoNode :Map<HTMLAST,HTMLInfoNode>
 
 }
 

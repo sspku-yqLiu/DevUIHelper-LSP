@@ -137,6 +137,18 @@ export class Tokenizer{
 		}
 		return;
 	}
+	
+	tryAdvanecebyFilter(favor:number[],disgust:number[]):boolean{
+		while(!disgust.includes(this._cursor.peek())&&favor.includes(this._cursor.peek())){
+			this._cursor.advance();
+		}
+		//如果是被阻止字符停下，那么return false
+		if(disgust.includes(this._cursor.peek())){
+			return false;
+		}
+		//如果是因为找不到想要的字符 return true
+		return true;
+	}
 	startToken(tokenType:TokenType){
 		if(tokenType === TokenType.ELEMENT_START){
 			this._tokenInBuild= new Token(tokenType,this._cursor.getoffset()-1);

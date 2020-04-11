@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-04 17:55:03
- * @LastEditTime: 2020-03-07 16:26:32
+ * @LastEditTime: 2020-04-11 21:03:10
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \lsp-sample\client\src\extension.ts
@@ -26,6 +26,21 @@ import {
 } from 'vscode-languageclient';
 
 let client: LanguageClient;
+// let provider1 = vscode.languages.registerCompletionItemProvider('html',{
+
+// 	async provideCompletionItems(document:vscode.TextDocument,position:vscode.Position,token:vscode.CancellationToken,context:vscode.CompletionContext){
+// 		let item: vscode.CompletionItem = await instance.post('/complete', { code: getLine(document, position) })
+//                 .then(function (response: any) {
+//                     console.log('complete: ' + response.data);
+//                     return new vscode.CompletionItem(response.data);
+//                 })
+//                 .catch(function (error: Error) {
+//                     console.log(error);
+//                     return new vscode.CompletionItem('No suggestion');
+// 				});
+// 		return [item];
+// 	}
+// })
 
 export function activate(context: vscode.ExtensionContext) {
 	// The server is implemented in node
@@ -45,6 +60,7 @@ export function activate(context: vscode.ExtensionContext) {
 			transport: TransportKind.ipc,
 			options: debugOptions
 		},
+		
 	};
 
 	// Options to control the language client
@@ -53,14 +69,18 @@ export function activate(context: vscode.ExtensionContext) {
 		documentSelector: [
 		{ scheme: 'file', language: 'html' }, 
 		{ scheme: 'file', language: 'typescript' },
+		
 	],
+		
 		synchronize: {
 			// Notify the server about file changes to '.clientrc files contained in the workspace
 			// fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
 			/* 为什么这个地方要用tsconfig? */ 
 			fileEvents: vscode.workspace.createFileSystemWatcher('**/tsconfig.json')
 		},
-		revealOutputChannelOn: lsp.RevealOutputChannelOn.Never
+
+		revealOutputChannelOn: lsp.RevealOutputChannelOn.Never,
+		
 	};
 
 	// Create the language client and start the client.

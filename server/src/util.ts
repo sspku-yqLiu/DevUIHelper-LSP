@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-04-06 19:25:29
+ * @LastEditTime: 2020-04-11 22:39:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
@@ -63,6 +63,13 @@ export function autoIcon(type:CompletionItemKind):string{
             return "$(array)";
     }
 }
+export function converStringToName(name:string):string{
+    let bananaset = ['[',']','(',')']
+    for(let banana of bananaset){
+        name = name.replace(banana,"");
+    }
+    return name;
+}
 export class MarkUpBuilder{
     private markUpContent:MarkupContent;
     constructor(){
@@ -79,9 +86,8 @@ export class MarkUpBuilder{
     addSpecialContent(type:string,content:string[]){
         this.markUpContent.value+= 
              [
-                'Some text',
                 '```'+type,
-                 ...content.map(c=>{return `'${c}'`}),
+                 ...content,
                 '```'
             ].join('\n');
         return this;
