@@ -8,6 +8,9 @@
 		"outDir": "out",
 		"rootDir": "src"
 	},
+	"lib":[	
+		"dom.iterable",//这里是新增项
+	],
 	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test"]
 }

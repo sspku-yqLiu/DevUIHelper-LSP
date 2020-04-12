@@ -1,7 +1,7 @@
 import { CompletionItemKind,CompletionItem } from "vscode-languageserver";
 import{HTML_SCHEMA as SCHEMA} from './html_source';
 import{logger} from '../server';
-import{MarkUpBuilder} from'../util';
+import{MarkUpBuilder,copyCompletionItem} from'../util';
 
 const EVENT = "event";
 const BOOLEAN = "boolean";
@@ -12,88 +12,87 @@ const FUNCTION= "function";
 const TEMPLATE="templateref"
 
 export interface HTMLInfoNode {
-    // /**
-    //  *  节点名称
-    //  */
-    // getName():string;
-    // /**
-    //  * 节点描述
-    //  */
-    // getDescription():string;
-    // /**
-    //  * 节点补全类型
-    //  */
-    // getcompletionKind():CompletionItemKind;
-    getparent():HTMLInfoNode|undefined;
-    getCompltionItems(name?:string):CompletionItem[];
+    
+    /**
+     * 获得当前节点的父节点
+     */
+    getParent():HTMLInfoNode|undefined;
+
+    /**
+     * 获取资源树下方节点
+     * @param name 下方节点的string类型的名称
+     */
     getsubNode(name:string):HTMLInfoNode|undefined;
+
+    /**
+     * 获得它的全部子节点
+     */
+    getSubNodes():HTMLInfoNode[]|undefined;
+
+    /**
+     * 生成本元素的CompletionItem.这样可以响应父节点的调用。
+     */
+    buildCompletionItem():void;
+
+    /**
+     * 预处理对CompletionItem进行生成。
+     */
+    buildCompletionItems():void;
+
+    /**
+     * 获取补全代码
+     * @param name 
+     */
+    getCompltionItems(name?:string):CompletionItem[];
+
+    /**
+     * 获取add类型的补全代码
+     * @param name 
+     */
+    getAddCompltionItems(name?:string):CompletionItem[];
 
 }
 export class RootNode implements HTMLInfoNode{
     schema = <{[elementName:string]:Element}>{};
-    constructor(){}
-    getCompltionItems():CompletionItem[]{
-        return Object.keys(this.schema).map(element=>{
-            let completionItem = CompletionItem.create("d-"+element);
-            completionItem.kind= CompletionItemKind.Class;
-            // completionItem.insertText="d-"+element+"${1:!!!}"
-            return completionItem;
+    private completionItems:CompletionItem[] = [];
+    private addCompletionItems:CompletionItem[] = [];
+    constructor(){} 
+    buildCompletionItem(){}
+    buildCompletionItems(){
+        this.completionItems = Object.values(this.schema).map(element=>{
+           return element.buildCompletionItem();
         });
+        this.addCompletionItems = this.completionItems.map(completionItem=>{
+            let addcompletionItem = CompletionItem.create(completionItem.label);
+            copyCompletionItem(completionItem,addcompletionItem)
+            addcompletionItem.label=`+${completionItem.label}`;
+            return addcompletionItem;
+        });
+    }
+
+    getCompltionItems():CompletionItem[]{
+        this.buildCompletionItems();
+        return this.completionItems;
+    }
+    getAddCompltionItems(){
+        return this.addCompletionItems;
     }
     getsubNode(name:string):HTMLInfoNode|undefined{
         return this.schema[name];
     }
-    getparent():undefined{
+    getSubNodes(){
+        return Object.values(this.schema);
+    }
+    getParent():undefined{
         return;
     }
 }
-export class Attribute implements HTMLInfoNode{
 
-        constructor( 
-        private readonly name:string,
-        private readonly type:string,
-        private readonly defaultValue:string,
-        private readonly sortDescription:string,
-        private readonly description:string,
-        private readonly isNecessary:boolean,
-        private readonly isEvent:boolean,
-        private readonly valueSet: string[] = [],
-        private readonly completionKind:CompletionItemKind,
-        private readonly parent:HTMLInfoNode){}
-    
-    public getName(){
-        return this.name;
-    }
-    
-    public getSortDescription() : string {
-        return this.sortDescription;
-    }
-    
-    getDescription(){return this.description;}
-    getcompletionKind(){return this.completionKind;}
-    getValueType(){return this.type;}
-    getDefaultValue(){return this.defaultValue;}
-    getValueSet(){return this.valueSet;}
-    getCompltionItems(attrname:string){
-        let result:CompletionItem[] = [];
-        return this.valueSet.map(value=>{
-            let completionItem =  CompletionItem.create(value);
-            completionItem.kind = CompletionItemKind.Enum;
-            completionItem.detail= `这是${value}类型`;
-            completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();													
-        completionItem.preselect = true;
-        return completionItem;
-        });
-    }
-    getsubNode(name:string):undefined{
-        return;
-    }
-    getparent():HTMLInfoNode{
-        return this.parent;
-    }
-}
 export class Element implements HTMLInfoNode {
     private attributeMap = <{[attrName:string]:Attribute}>{}
+    private addCompletionItems:CompletionItem[] = [];
+    private completionItems:CompletionItem[] = [];
+    
     constructor(private name:string,
         private description:string = "",
         private attritubes:Attribute[]=[],
@@ -110,45 +109,127 @@ export class Element implements HTMLInfoNode {
     setDescription(description:string){
         this.description = description;
     }
-    getName(){
-        return this.name;
-    }
-    getAttributes(){
-        return this.attritubes;
-    }
-    getDescription(){
-        return this.description;
-    }
-    getAttribute(attrname:string):Attribute{  
-        return this.attributeMap[attrname];
-    }
+    getName(){return this.name;}
+    getAttributes(){return this.attritubes;}
+    getDescription(){return this.description;}
+    getAttribute(attrname:string):Attribute{  return this.attributeMap[attrname];}
     getcompletionKind(){ return CompletionItemKind.Class;}
-    getCompltionItems(){
-        return this.attritubes.map(attr=>{
-            let completionItem =  CompletionItem.create(attr.getName());
-            completionItem.detail= attr.getSortDescription();
-            completionItem.documentation = new MarkUpBuilder().addSpecialContent('typescript',[
-                                                                "Type:"+attr.getValueType(),
-                                                                "DefaultValue:"+attr.getDefaultValue(),
-                                                                "Description:"+ attr.getDescription()]).getMarkUpContent();
-            completionItem.kind = attr.getcompletionKind();                                                    
-                                                                
-            if(attr.getcompletionKind()!==CompletionItemKind.Event){
-                completionItem.insertText ="["+attr.getName()+"]=\"\"";
-            }else{
-                completionItem.insertText ="("+attr.getName()+")=\"\"";
-            }
-            completionItem.preselect = true;
+
+    buildCompletionItems(){
+        this.completionItems=this.attritubes.map(attr=>{
+            return attr.buildCompletionItem();
+        });
+        this.addCompletionItems = this.completionItems.map(completionItem=>{
+            let addCompletionItem = CompletionItem.create(completionItem.label);
+            copyCompletionItem(addCompletionItem,completionItem);
+            completionItem.label=`+${completionItem.label}`;
             return completionItem;
         });
     }
-    getsubNode(attrname:string):HTMLInfoNode|undefined{
-        return this.attributeMap[attrname];
+    buildCompletionItem():CompletionItem{
+        let completionItem = CompletionItem.create("d-"+this.name);
+        completionItem.kind= CompletionItemKind.Class;
+        let _insertText:string = "d-"+this.name;
+        for(let attr of Object.values(this.attributeMap)){
+            if (attr.isNecessary){
+                _insertText+= `\n\t${attr.getCompletionItem()?.insertText}`;
+            }
+        }
+        _insertText+=`\n></d-${this.name}>`
+        completionItem.insertText=_insertText;
+        completionItem.detail=`这是一个${this.name}组件`;
+        return completionItem;
     }
-    getparent(){
-        return new RootNode()
+    getCompltionItems(){
+        return this.completionItems;
+    }
+    getAddCompltionItems(){
+        return this.addCompletionItems;
+    }
+    getsubNode(attrname:string):HTMLInfoNode|undefined{
+        return
+         this.attributeMap[attrname];
+    }
+    getSubNodes(){
+        return Object.values(this.attributeMap);
+    }
+    getParent():HTMLInfoNode{
+        return new RootNode();
     }
     
+}
+export class Attribute implements HTMLInfoNode{
+        private addCompletionItems:CompletionItem[] = [];
+        private completionItems:CompletionItem[] = [];
+        private completionItem:CompletionItem|undefined;
+        constructor( 
+        private readonly name:string,
+        private readonly type:string,
+        private readonly defaultValue:string,
+        private readonly sortDescription:string,
+        private readonly description:string,
+        public readonly isNecessary:boolean,
+        private readonly isEvent:boolean,
+        private readonly valueSet: string[] = [],
+        private readonly completionKind:CompletionItemKind,
+        private readonly parent:HTMLInfoNode){}
+    
+
+
+    buildCompletionItems(){
+        this.completionItems =  this.valueSet.map(value=>{
+            let completionItem = CompletionItem.create(value);
+            completionItem.kind = CompletionItemKind.Enum;
+            completionItem.detail= `这是${value}类型`;
+            completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();													
+        completionItem.preselect = true;
+        return completionItem;
+        });
+        this.addCompletionItems = this.completionItems.map(completionItem=>{
+            completionItem.data=`+${completionItem.data}`;
+            return completionItem;
+        });
+    }
+
+    buildCompletionItem(){
+        let completionItem = CompletionItem.create(this.name);
+        completionItem.detail= this.sortDescription;
+        completionItem.documentation = new MarkUpBuilder().addSpecialContent('typescript',[
+                                                            "Type:"+this.getValueType(),
+                                                            "DefaultValue:"+this.getDefaultValue(),
+                                                            "Description:"+ this.getDescription()]).getMarkUpContent();
+        completionItem.kind = this.getcompletionKind();                                                    
+                                                            
+        if(this.getcompletionKind()!==CompletionItemKind.Event){
+            completionItem.insertText ="["+this.getName()+"]=\"\"";
+        }else{
+            completionItem.insertText ="("+this.getName()+")=\"\"";
+        }
+        completionItem.preselect = true;
+        this.completionItem = completionItem;
+        return completionItem;
+    }
+
+    getCompltionItems(attrname:string){
+        return this.completionItems;
+    }
+
+    getAddCompltionItems(attrname:string){
+        return this.addCompletionItems;
+    }
+
+    getName(){return this.name;}   
+    getSortDescription() : string {return this.sortDescription;} 
+    getDescription(){return this.description;}
+    getcompletionKind(){return this.completionKind;}
+    getValueType(){return this.type;}
+    getDefaultValue(){return this.defaultValue;}
+    getValueSet(){return this.valueSet;}
+    getsubNode(name:string):undefined{return;}
+    getSubNodes():undefined{return;}
+    getParent():HTMLInfoNode{return this.parent;}
+    getCompletionItem(){return this.completionItem;}
+
 }
 
 
@@ -189,11 +270,26 @@ export class DevUIParamsConstructor{
                 }
             }
         });
+        this.buildCompletionItems();
         return this.rootNode;
     }
-    getSubNode(elemenetName:string):Element|undefined{
-        return this.schema[elemenetName.toLowerCase()];
+    buildCompletionItems(){
+        this._buildCompletionItems(this.rootNode);
+ 
     }
+    _buildCompletionItems(node:HTMLInfoNode){
+        node.buildCompletionItems();
+        node.buildCompletionItem();
+        let subnodes = node.getSubNodes();
+        if(subnodes){
+            for (let subnode of subnodes){
+                this._buildCompletionItems(subnode);
+            }
+        }
+        return;
+
+    }   
+
     changeToCompletionKind(type:string,isEvent:string):CompletionItemKind{
         type= type.toLowerCase();
         if(isEvent==="true"){

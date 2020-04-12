@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-04-11 22:26:18
+ * @LastEditTime: 2020-04-12 12:38:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
@@ -73,7 +73,6 @@ export class TreeBuilder {
 						//build normal ATTR 
 						else if(_tokentype=== TokenType.ATTR_NAME){
 							this.attrInBuild = new HTMLAST(ASTType.ATTR,new Span(_currentSpan.start,-1),this.elementInBuild);
-							
 							this.attrInBuild.setKeySpan(_currentSpan);
 						}
 						else{
@@ -130,6 +129,7 @@ export class TreeBuilder {
 
 		if(this.attrInBuild){
 			this.attrInBuild.build(endOfTokens);
+			this.elementInBuild!.valueSpan.end = endOfTokens;
 			this.elementInBuild?.subNodes.push(this.attrInBuild);
 		}
 		if(this.elementInBuild){

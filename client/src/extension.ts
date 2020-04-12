@@ -82,6 +82,8 @@ export function activate(context: vscode.ExtensionContext) {
 		revealOutputChannelOn: lsp.RevealOutputChannelOn.Never,
 		
 	};
+	
+	
 
 	// Create the language client and start the client.
 	const forceDebug = process.env['NG_DEBUG'] === 'true';

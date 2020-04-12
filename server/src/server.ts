@@ -66,6 +66,7 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
+	
 	connection.window.showInformationMessage("Welcome to DevUI Helper")
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
@@ -190,7 +191,7 @@ export const parser = new Parser();
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-
+		let source = htmlSourceTreeRoot;
 		logger.debug(`Completion work`);
 		logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`)
 		const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);

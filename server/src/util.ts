@@ -1,12 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-04-11 22:39:15
+ * @LastEditTime: 2020-04-12 12:24:21
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
  */
-import{MarkupKind,CompletionItemKind, MarkupContent} from 'vscode-languageserver';
+import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem} from 'vscode-languageserver';
 export function getName(text: string,componentRegex: RegExp){
     text.match(componentRegex);
     const n = RegExp.$1.substring(2);
@@ -69,6 +69,14 @@ export function converStringToName(name:string):string{
         name = name.replace(banana,"");
     }
     return name;
+}
+//c1=>c2
+export function copyCompletionItem(c1:CompletionItem,c2:CompletionItem){
+    c2.insertText=c1.insertText;
+    c2.kind=c1.kind;
+    c2.detail=c1.detail;
+    c2.documentation = c1.documentation;
+                
 }
 export class MarkUpBuilder{
     private markUpContent:MarkupContent;
