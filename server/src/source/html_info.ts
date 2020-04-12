@@ -1,4 +1,4 @@
-import { CompletionItemKind,CompletionItem } from "vscode-languageserver";
+import { CompletionItemKind,CompletionItem, InsertTextFormat } from "vscode-languageserver";
 import{HTML_SCHEMA as SCHEMA} from './html_source';
 import{logger} from '../server';
 import{MarkUpBuilder,copyCompletionItem} from'../util';
@@ -66,6 +66,7 @@ export class RootNode implements HTMLInfoNode{
             let addcompletionItem = CompletionItem.create(completionItem.label);
             copyCompletionItem(completionItem,addcompletionItem)
             addcompletionItem.label=`+${completionItem.label}`;
+            completionItem.insertTextFormat = InsertTextFormat.Snippet;
             return addcompletionItem;
         });
     }
@@ -130,12 +131,19 @@ export class Element implements HTMLInfoNode {
         let completionItem = CompletionItem.create("d-"+this.name);
         completionItem.kind= CompletionItemKind.Class;
         let _insertText:string = "d-"+this.name;
+        let _snippetNum = 1;
         for(let attr of Object.values(this.attributeMap)){
             if (attr.isNecessary){
-                _insertText+= `\n\t${attr.getCompletionItem()?.insertText}`;
+                _insertText+= `\n\t${attr.getCompletionItem(_snippetNum)?.insertText}`.replace("${i:}","${"+_snippetNum+":}");
+                _snippetNum++;
             }
         }
-        _insertText+=`\n></d-${this.name}>`
+        if(_snippetNum===1){
+            _insertText+=">${1:}"+`</d-${this.name}>`
+        }
+        else{
+            _insertText+="\n>$"+`{${_snippetNum}:}</d-${this.name}>`
+        }
         completionItem.insertText=_insertText;
         completionItem.detail=`这是一个${this.name}组件`;
         return completionItem;
@@ -179,7 +187,7 @@ export class Attribute implements HTMLInfoNode{
     buildCompletionItems(){
         this.completionItems =  this.valueSet.map(value=>{
             let completionItem = CompletionItem.create(value);
-            completionItem.kind = CompletionItemKind.Enum;
+            completionItem.kind = CompletionItemKind.EnumMember;
             completionItem.detail= `这是${value}类型`;
             completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();													
         completionItem.preselect = true;
@@ -199,12 +207,19 @@ export class Attribute implements HTMLInfoNode{
                                                             "DefaultValue:"+this.getDefaultValue(),
                                                             "Description:"+ this.getDescription()]).getMarkUpContent();
         completionItem.kind = this.getcompletionKind();                                                    
-                                                            
-        if(this.getcompletionKind()!==CompletionItemKind.Event){
-            completionItem.insertText ="["+this.getName()+"]=\"\"";
+        if(this.getcompletionKind()===CompletionItemKind.Event){
+            completionItem.insertText ="("+this.getName()+")=\"${i:}\"";
+
+        }else if(this.type === BOOLEAN){
+            completionItem.insertText ="("+this.getName()+")=\"${i:|true,false}|\""; 
+        }else if(this.valueSet!==[]){
+            completionItem.insertText = "["+this.getName()+"]=\"${i:}\""
         }else{
-            completionItem.insertText ="("+this.getName()+")=\"\"";
-        }
+        completionItem.insertText ="["+this.getName()+"]=\"${i:}\"";  
+        }    
+
+        
+        completionItem.insertTextFormat = InsertTextFormat.Snippet;
         completionItem.preselect = true;
         this.completionItem = completionItem;
         return completionItem;
@@ -228,7 +243,7 @@ export class Attribute implements HTMLInfoNode{
     getsubNode(name:string):undefined{return;}
     getSubNodes():undefined{return;}
     getParent():HTMLInfoNode{return this.parent;}
-    getCompletionItem(){return this.completionItem;}
+    getCompletionItem(_snippetNum:number){return this.completionItem;}
 
 }
 
