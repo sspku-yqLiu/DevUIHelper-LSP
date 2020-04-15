@@ -1,22 +1,24 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-04-11 21:23:46
+ * @LastEditTime: 2020-04-15 15:25:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
-import{converStringToName}from './util';
-import { HTMLInfoNode } from './source/html_info';
+import{converStringToName,getRangeFromDocument,getsubstringForSpan, autoSelectCompletionRangeKind}from './util';
+import { HTMLInfoNode, Element } from './source/html_info';
 import{htmlSourceTreeRoot,parser} from'./server'; 
 import { Spankind } from './parser/type';
-import{CompletionItem} from 'vscode-languageserver';
+import{CompletionItem,Range} from 'vscode-languageserver';
 import { HTMLAST } from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 export class CompletionProvider{
 	private currentDocument:TextDocument|undefined;
 	private astToInfoMap:Map<HTMLAST,HTMLInfoNode>|undefined;
 	private text:string = '';
+	private currentRange =  Range.create(-1,-1,-1,-1);
+	private wordAtCursor = "";
  constructor(){}
  	provideCompletionItemsForHTML(_offset:number,_textDocument:TextDocument): CompletionItem[] {
 	
@@ -24,12 +26,13 @@ export class CompletionProvider{
 
 	const parseResult = parser.searchTerminalAST(_offset,_textDocument.uri);
 	let{noCompletionFlag,spanKind,terminalNode,HTMLAstToHTMLInfoNode} = parseResult;
-	if(noCompletionFlag == true)
+	if(noCompletionFlag)
 		return [];
-
 	this.currentDocument  = _textDocument;
 	this.astToInfoMap = HTMLAstToHTMLInfoNode;
 	this.text= this.currentDocument!.getText();
+	this.currentRange = getRangeFromDocument(terminalNode,this.currentDocument);
+	this.wordAtCursor = getsubstringForSpan(terminalNode!.getSpan(),this.text);
 	
 
 	
@@ -54,6 +57,10 @@ export class CompletionProvider{
 		}
 		 _htmlInfoNode = this.findHTMLInfoNode(terminalNode);
 		if(_htmlInfoNode){
+			if(_htmlInfoNode instanceof Element){
+				let _attrType = autoSelectCompletionRangeKind(this.wordAtCursor);
+				return _htmlInfoNode.getAddCompltionItems(this.currentRange,_attrType);
+			}
 			return _htmlInfoNode.getCompltionItems();
 		}
 		return [];
@@ -89,7 +96,5 @@ export class CompletionProvider{
 			}
 
 		}
-		
-
 	}
 }

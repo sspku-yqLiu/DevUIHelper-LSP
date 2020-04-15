@@ -1,12 +1,18 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-04-12 12:24:21
+ * @LastEditTime: 2020-04-15 17:26:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
  */
-import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem} from 'vscode-languageserver';
+import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem,Range} from 'vscode-languageserver';
+import { Span } from './parser/type';
+import { documents, logger } from './server';
+import { TextDocument } from 'vscode-languageserver-textdocument';
+import { AsteriskToken } from 'typescript/lib/tsserverlibrary';
+import { AST,HTMLAST } from './parser/ast';
+import {CompletionRangeKind} from './type';
 export function getName(text: string,componentRegex: RegExp){
     text.match(componentRegex);
     const n = RegExp.$1.substring(2);
@@ -22,17 +28,6 @@ export function getName(text: string,componentRegex: RegExp){
     return name;
 
 }
-// export function getAttrName(text:string):string|undefined{
-//     if(text.startsWith("[")){
-//         return text.match(/\[(\S*)\]/)!.toString().toLowerCase();
-//     }
-//     if(text.startsWith("(")){
-//         return text.match(/\((\S*)\)/)!.toString().toLowerCase();
-//     }
-//     else{
-//         return text;
-//     }
-// }
 export function word2Name(word: string){
     const n  = word.substring(2);
     const nam = n.replace(n[0],n[0].toUpperCase());//匹配之后对字符串处理然后匹配导出的模块
@@ -76,8 +71,86 @@ export function copyCompletionItem(c1:CompletionItem,c2:CompletionItem){
     c2.kind=c1.kind;
     c2.detail=c1.detail;
     c2.documentation = c1.documentation;
+    c2.insertTextFormat = c1.insertTextFormat;
                 
 }
+export function converValueSetToValueString(valueSet:string[]){
+    let res:string = "|";
+    for(let value of valueSet){
+        res+=`${value},`
+    }
+    res+="|";
+    return res;
+
+}
+export function getRangeFromDocument(terminalNode:HTMLAST|undefined,textDocument:TextDocument):Range{
+    if(!terminalNode){
+        return Range.create(-1,-1,-1,-1);
+    }
+    let _range = terminalNode.getSpan();
+    let _start = textDocument.positionAt (_range.start);
+    let _end = textDocument.positionAt (_range.end);
+    return Range.create(_start,_end);
+
+
+
+}
+export function autoSelectCompletionRangeKind(word:string):CompletionRangeKind{
+    logger.debug("word:"+word);
+    let reg1 = /^\[.*\]$/; // 匹配[....]
+    let reg2 = /^\(.*\)$/; // 匹配(....)
+    let reg3 = /^\[\(.*\)\]$/; // 匹配[(.....)]
+    if(word.startsWith("+")){
+        return CompletionRangeKind.ADD;
+    }
+    else if (word.startsWith("[(")) {
+        return CompletionRangeKind.INOUTPUT;
+    }
+    else if (word.startsWith("[")) {
+        return CompletionRangeKind.INPUT;
+    }
+    else if (word.startsWith("(")) {
+        return CompletionRangeKind.OUTPUT;
+    }else{
+        return CompletionRangeKind.NONE;
+    }
+    // const bindParts = word.match(ATTRREGX);
+	// if(!bindParts)
+	// 	return CompletionRangeKind.NONE;
+	// if(bindParts[CompletionRangeKind.INOUTPUT]!==undefined){
+	// 	return CompletionRangeKind.INOUTPUT;
+	// }
+	// if(bindParts[CompletionRangeKind.INPUT]!==undefined){
+	// 	return CompletionRangeKind.INPUT;
+	// }
+	// if(bindParts[CompletionRangeKind.OUTPUT]!==undefined){
+	// 	return CompletionRangeKind.OUTPUT;
+	// }
+	// if(bindParts[CompletionRangeKind.ADD]!==undefined){
+	// 	return CompletionRangeKind.ADD;
+    // }
+
+}
+export function changeDueToCompletionRangeKind(kind:CompletionRangeKind,label:string):string{
+    switch(kind){
+        case CompletionRangeKind.NONE:
+            return label;
+        case CompletionRangeKind.INOUTPUT:
+            return "[("+label+")]";
+        case CompletionRangeKind.INPUT:
+            return "["+label+"]";
+        case CompletionRangeKind.OUTPUT:
+            return "("+label+")";
+        case CompletionRangeKind.ADD:
+            return "+"+label;
+    }
+    return "";
+}
+export function getsubstringForSpan(span:Span,text:string){
+    let {start,end} =span;
+    return text.substring(start,end);   
+}
+
 export class MarkUpBuilder{
     private markUpContent:MarkupContent;
     constructor(){
