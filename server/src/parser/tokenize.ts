@@ -73,7 +73,7 @@ export class Tokenizer{
 			}
 			this._text = textdocument.getText();
 			/* -1 为了*/ 
-			this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,0)+1);
+			this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,0));
 		}
 		/**
 		 * Token解析器
@@ -86,7 +86,9 @@ export class Tokenizer{
 			/**
 			 * build token 从<d-开始
 			 */
-			while(this._cursor.getoffset()!=-1){			
+			while(this._cursor.getoffset()!=-1){
+				//解决string和lspoffset不同的问题
+				this._cursor.forceAdvance();			
 				this.buildElementStartAndNameToken();
 				/*开始属性ATTR */
 				while(this._cursor.peek()!==chars.$GT){
@@ -107,10 +109,10 @@ export class Tokenizer{
 				 * element end
 				 */
 				if(this._cursor.peek() === chars.$GT){
-					this.buildElementEndToken();
-				}
+				this.buildElementEndToken();
 				logger.debug(`we are at ${this._cursor.getoffset()}`)
-				this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,this._cursor.getoffset())+1);
+				this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,this._cursor.getoffset()));
+				}
 			}
 		}catch{
 			this.buildToken();
@@ -138,14 +140,19 @@ export class Tokenizer{
 		return;
 	}
 	
-	tryAdvanecebyFilter(favor:number[],disgust:number[]):boolean{
-		while(!disgust.includes(this._cursor.peek())&&favor.includes(this._cursor.peek())){
+	tryStopbyFilter(favor:number[],disgust:number[]):boolean{
+		while(!disgust.includes(this._cursor.peek())&&!favor.includes(this._cursor.peek())){
 			this._cursor.advance();
 		}
-		//如果是被阻止字符停下，那么return false
+		//如果是被喜欢的字符截断
+		if(favor.includes(this._cursor.peek())){
+			return true;
+		}
+		//如果是被不应该出现的字符截断
 		if(disgust.includes(this._cursor.peek())){
 			return false;
 		}
+
 		//如果是因为找不到想要的字符 return true
 		return true;
 	}
@@ -191,9 +198,12 @@ export class Tokenizer{
 	buildATTRToken(){	
 
 		this.startToken(TokenType.ATTR_NAME);
-		this.tryStopAt([chars.$EQ]);
-		this.buildToken();
-
+		if(this.tryStopbyFilter([chars.$EQ],chars.WhiteChars)){
+			this.buildToken();
+		}else{
+			this.buildToken();return;
+		}
+		
 		this.startToken(TokenType.ATTR_VALUE_START);
 		this._cursor.advance();
 		this.tryStopAt([chars.$DQ]);
@@ -227,10 +237,10 @@ export class Cursor{
 			this.offset++;
 		}
 		this.offset++;
-		if(this.offset === this.text.length||peek===chars.$EOF||peek===chars.$LT)
+		if(this.offset === this.text.length||peek===chars.$EOF||peek===chars.$LT){
+			this.offset--;
 			throw Error(`Char At EOF Or a '<' in element!!!!!`);
-
-
+		}
 	}
 
 	peek():number{
@@ -242,5 +252,8 @@ export class Cursor{
 	}
 	copy(){
 		return new Cursor(this.text,this.offset)
+	}
+	forceAdvance(){
+		this.offset++;
 	}
 }

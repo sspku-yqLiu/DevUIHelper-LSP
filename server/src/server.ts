@@ -159,11 +159,11 @@ connection.onCompletion(
 
 // This handler resolves additional information for the item selected in
 // the completion list.
-connection.onCompletionResolve(
-	(item: CompletionItem): CompletionItem => {
-		return item;
-	}
-);
+// connection.onCompletionResolve(
+// 	(item: CompletionItem): CompletionItem => {
+// 		return item;
+// 	}
+// );
 
 documents.onDidOpen(
     (event: TextDocumentChangeEvent<TextDocument>) => {

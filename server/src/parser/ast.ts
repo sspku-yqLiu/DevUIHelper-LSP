@@ -49,9 +49,10 @@ export class TreeBuilder {
 		}
 		for (let token of this.tokens) {
 			let _currentSpan:Span|undefined = token!.getSpan();
+			let _tokentype:TokenType = token.getType();
 			if (_currentSpan) {
 				/* build element */
-				let _tokentype:TokenType = token.getType();
+
 				if (token.getType() === TokenType.ELEMENT_START) {
 					this.elementInBuild = new HTMLAST(ASTType.ELEMENT,new Span(token.getSpan()!.start,-1),this.root);
 				}
@@ -68,10 +69,14 @@ export class TreeBuilder {
 						else if (_tokentype === TokenType.INNER_ATTR) {
 							this.attrInBuild = new HTMLAST(ASTType.ATTR,_currentSpan,this.attrInBuild);
 							this.attrInBuild.singleDog();
-							this.closeAttrAst(token.getSpan()!.end);
+							this.closeAttrAt(token.getSpan()!.end);
 						}
 						//build normal ATTR 
 						else if(_tokentype=== TokenType.ATTR_NAME){
+							//如果这时有没有build完成的attr应该让他先build，我们认为这个attr没有build成功
+							if(this.attrInBuild){
+								this.attrInBuild.buildWithoutEnd();
+							}
 							this.attrInBuild = new HTMLAST(ASTType.ATTR,new Span(_currentSpan.start,-1),this.elementInBuild);
 							this.attrInBuild.setKeySpan(_currentSpan);
 						}
@@ -82,7 +87,7 @@ export class TreeBuilder {
 									this.attrInBuild.setValueSpan(_currentSpan);
 								}
 								else if(_tokentype === TokenType.ATTR_VALE_END){
-									this.closeAttrAst(token.getSpan()!.end);
+									this.closeAttrAt(token.getSpan()!.end);
 								}
 							}else{
 								throw Error(`we need to add something into attr ,but we cannot find at ${_currentSpan.start}`);
@@ -100,10 +105,10 @@ export class TreeBuilder {
 		this.buildRoot();
 		return this.root;
 	}
-	closeAttrAst(end:number){
+	closeAttrAt(end:number){
 		if(this.elementInBuild&&this.attrInBuild){
 			if(this.attrInBuild.getSpan().end===-1){
-				this.attrInBuild.build(end);
+				this.attrInBuild.buildWithoutEnd();
 			}
 		this.elementInBuild.subNodes.push(this.attrInBuild);
 		this.attrInBuild = undefined;
@@ -112,6 +117,9 @@ export class TreeBuilder {
 		}
 	}
 	closeElementAt(end:number){
+		if(this.attrInBuild){
+			this.closeAttrAt(end);
+		}
 
 		if(this.elementInBuild){
 			this.elementInBuild.build(end);
@@ -153,6 +161,8 @@ export class HTMLAST implements AST {
 		private type:ASTType,
 		private span:Span= new Span(-1,-1),
 		private parent?:HTMLAST|undefined) {
+			this.valueSpan = new Span(-1,-1);
+			this.keySpan = new Span(-1,-1);
 	}
 	getSpan(){return this.span;}
 
@@ -235,6 +245,9 @@ export class HTMLAST implements AST {
 	}
 	getparent(){
 		return this.parent;
+	}
+	buildWithoutEnd(){
+		this.span.end = Math.max(this.keySpan.end,this.valueSpan.end);
 	}
 
 	

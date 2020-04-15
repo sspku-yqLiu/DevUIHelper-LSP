@@ -34,8 +34,6 @@ export class CompletionProvider{
 	this.currentRange = getRangeFromDocument(terminalNode,this.currentDocument);
 	this.wordAtCursor = getsubstringForSpan(terminalNode!.getSpan(),this.text);
 	
-
-	
 	// 请参照文档中，理解key value的不同提示方式
 	if(spanKind==Spankind.KEY){
 		terminalNode= terminalNode?.getparent();
@@ -44,7 +42,6 @@ export class CompletionProvider{
 		return this.getHTMLCompletion(terminalNode,HTMLAstToHTMLInfoNode);
 	}
 	return [];
-
 	}
 
 	getHTMLCompletion(terminalNode:HTMLAST,map:Map<HTMLAST,HTMLInfoNode>):CompletionItem[]{

@@ -90,6 +90,7 @@ export function getRangeFromDocument(terminalNode:HTMLAST|undefined,textDocument
     let _range = terminalNode.getSpan();
     let _start = textDocument.positionAt (_range.start);
     let _end = textDocument.positionAt (_range.end);
+    _end.character++;
     return Range.create(_start,_end);
 
 
