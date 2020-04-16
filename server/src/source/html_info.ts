@@ -229,7 +229,7 @@ export class Attribute implements HTMLInfoNode{
             completionItem.insertText ="("+this.getName()+")=\"${1:}\"";
 
         }else if(this.type === BOOLEAN){
-            completionItem.insertText ="("+this.getName()+")=\"${1:|true,false}|\""; 
+            completionItem.insertText ="("+this.getName()+")=\"${1:|true,false|}\""; 
         }else if(this.valueSet.length>0){
             let valueString = converValueSetToValueString(this.valueSet);
             completionItem.insertText = "["+this.getName()+"]=\"${1:"+valueString+"}\""

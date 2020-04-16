@@ -3,7 +3,7 @@
   "description": "A language support for DevUI",
   "author": "yqLiu",
   "license": "MIT",
-  "version": "0.3.0",
+  "version": "3.0.1",
   "icon": "DevUI.png",
   "repository": {
     "type": "git",
@@ -69,6 +69,7 @@
     "vscode-tmgrammar-test": "0.0.8"
   },
   "dependencies": {
+    "log4js": "^6.2.0",
     "typescript": "~3.7.4"
   }
 }

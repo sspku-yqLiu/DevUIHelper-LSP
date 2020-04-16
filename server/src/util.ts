@@ -10,7 +10,7 @@ import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem,Range} from 
 import { Span } from './parser/type';
 import { documents, logger } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { AsteriskToken } from 'typescript/lib/tsserverlibrary';
+import { AsteriskToken, idText } from 'typescript/lib/tsserverlibrary';
 import { AST,HTMLAST } from './parser/ast';
 import {CompletionRangeKind} from './type';
 export function getName(text: string,componentRegex: RegExp){
@@ -75,8 +75,11 @@ export function copyCompletionItem(c1:CompletionItem,c2:CompletionItem){
                 
 }
 export function converValueSetToValueString(valueSet:string[]){
+    if(valueSet===[])
+        return "";
     let res:string = "|";
     for(let value of valueSet){
+        if(value !== "")
         res+=`${value},`
     }
     res+="|";
