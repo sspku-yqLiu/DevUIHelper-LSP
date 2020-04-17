@@ -198,7 +198,7 @@ export class Tokenizer{
 	buildATTRToken(){	
 
 		this.startToken(TokenType.ATTR_NAME);
-		if(this.tryStopbyFilter([chars.$EQ],chars.WhiteChars)){
+		if(this.tryStopbyFilter([chars.$EQ],chars.WhiteCharsAndGT)){
 			this.buildToken();
 		}else{
 			this.buildToken();return;

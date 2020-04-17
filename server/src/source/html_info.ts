@@ -1,7 +1,7 @@
 import { CompletionItemKind,CompletionItem, InsertTextFormat, TextEdit,Range } from "vscode-languageserver";
 import{HTML_SCHEMA as SCHEMA} from './html_source';
 import{logger} from '../server';
-import{MarkUpBuilder,copyCompletionItem,converValueSetToValueString, changeDueToCompletionRangeKind} from'../util';
+import{MarkUpBuilder,copyCompletionItem,converValueSetToValueString, changeDueToCompletionRangeKind,changeInsertDueToCompletionRangeKind} from'../util';
 import { CompletionRangeKind } from '../type';
 
 const EVENT = "event";
@@ -121,7 +121,6 @@ export class Element implements HTMLInfoNode {
         this.completionItems=this.attritubes.map(attr=>{
             return attr.buildCompletionItem();
         });
-
     }
     buildAddCompletionItems(){
         this.addCompletionItems = this.completionItems.map(completionItem=>{
@@ -138,7 +137,7 @@ export class Element implements HTMLInfoNode {
         let _snippetNum = 1;
         for(let attr of Object.values(this.attributeMap)){
             if (attr.isNecessary){
-                _insertText+= `\n\t${attr.getCompletionItem(_snippetNum)?.insertText}`.replace("${1:}","${"+_snippetNum+":}");
+                _insertText+= `\n\t${attr.getCompletionItem(_snippetNum)?.insertText}`.replace("$1","$"+_snippetNum+"");
                 _snippetNum++;
             }
         }
@@ -146,7 +145,7 @@ export class Element implements HTMLInfoNode {
             _insertText+=">${1:}"+`</d-${this.name}>`
         }
         else{
-            _insertText+="\n>$"+`{${_snippetNum}:}</d-${this.name}>`
+            _insertText+=`\n>$${_snippetNum}</d-${this.name}>`
         }
         completionItem.insertText=_insertText;
         completionItem.detail=`这是一个${this.name}组件`;
@@ -160,21 +159,33 @@ export class Element implements HTMLInfoNode {
     if(!currentRange){
         return this.completionItems;
         }
-    return this.completionItems.map(_completionItem=>{
+    return this.completionItems.filter(_completionItem=>{
+        switch(kind){
+            case CompletionRangeKind.INPUT:
+                return _completionItem.kind!==CompletionItemKind.Event;
+            case CompletionRangeKind.OUTPUT:
+                return _completionItem.kind === CompletionItemKind.Event;
+            case CompletionRangeKind.INOUTPUT:
+                return _completionItem.kind!==CompletionItemKind.Event;
+            default:
+                return true;
+        }
+    }).map(_completionItem=>{
+
             let _addCompletionItem = CompletionItem.create(_completionItem.label);
             copyCompletionItem(_completionItem,_addCompletionItem);
             _addCompletionItem.label = changeDueToCompletionRangeKind(kind,_completionItem.label);
+            let _newText = _addCompletionItem.insertText?_addCompletionItem.insertText:"" ;
             _addCompletionItem.textEdit = {
                 range : currentRange,
-                newText : _addCompletionItem.insertText?_addCompletionItem.insertText:"",
+                newText :changeInsertDueToCompletionRangeKind(kind,_newText),
             }
             _addCompletionItem.data="add"+_completionItem.label;
             return _addCompletionItem;
         });
     }
     getsubNode(attrname:string):HTMLInfoNode|undefined{
-        return
-         this.attributeMap[attrname];
+        return this.attributeMap[attrname];
     }
     getSubNodes(){
         return Object.values(this.attributeMap);
@@ -204,16 +215,13 @@ export class Attribute implements HTMLInfoNode{
 
     buildCompletionItems(){
         this.completionItems =  this.valueSet.map(value=>{
-            let completionItem = CompletionItem.create(value);
+            let completionItem = CompletionItem.create("+"+value);
             completionItem.kind = CompletionItemKind.EnumMember;
+            completionItem.insertText = value;
             completionItem.detail= `这是${value}类型`;
             completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();													
         completionItem.preselect = true;
         return completionItem;
-        });
-        this.addCompletionItems = this.completionItems.map(completionItem=>{
-            completionItem.data=`+${completionItem.data}`;
-            return completionItem;
         });
     }
 
@@ -226,15 +234,15 @@ export class Attribute implements HTMLInfoNode{
                                                             "Description:"+ this.getDescription()]).getMarkUpContent();
         completionItem.kind = this.getcompletionKind();                                                
         if(this.getcompletionKind()===CompletionItemKind.Event){
-            completionItem.insertText ="("+this.getName()+")=\"${1:}\"";
+            completionItem.insertText ="("+this.getName()+")=\"$1\"";
 
         }else if(this.type === BOOLEAN){
-            completionItem.insertText ="("+this.getName()+")=\"${1:|true,false|}\""; 
+            completionItem.insertText ="["+this.getName()+"]=\"${1|true,false|}\""; 
         }else if(this.valueSet.length>0){
             let valueString = converValueSetToValueString(this.valueSet);
-            completionItem.insertText = "["+this.getName()+"]=\"${1:"+valueString+"}\""
+            completionItem.insertText = `[${this.getName()}]=\"\${1|${valueString}|}\"`;
         }else{
-        completionItem.insertText ="["+this.getName()+"]=\"${1:}\"";  
+        completionItem.insertText ="["+this.getName()+"]=\"$1\"";  
         }         
         completionItem.insertTextFormat = InsertTextFormat.Snippet;
         completionItem.preselect = true;
@@ -243,12 +251,21 @@ export class Attribute implements HTMLInfoNode{
     }
 
     getCompltionItems():CompletionItem[]{
+
             return this.completionItems;
 
     }
 
-    getAddCompltionItems():CompletionItem[]{
-        return this.addCompletionItems;
+    getAddCompltionItems(comrange:Range):CompletionItem[]{
+        return this.completionItems.map(_completionItem=>{
+            let _completionAddItem = _completionItem;
+            copyCompletionItem(_completionItem,_completionAddItem);
+            _completionAddItem.textEdit = {
+                range:comrange,
+                newText : _completionItem.insertText?_completionItem.insertText:""
+            }
+            return _completionAddItem;
+        });
     }
 
     getName(){return this.name;}   
@@ -293,7 +310,8 @@ export class DevUIParamsConstructor{
                         parts[4],
                         parts[5]==="true"?true:false,
                         parts[6]==="true"?true:false,
-                        parts[7].substring(1,parts[7].length-1).replace(" ","").split(","),
+                        parts[7]==="[]"?[]:parts[7].substring(1,parts[7].length-1).replace(" ","").split(","),
+                        // JSON.parse(parts[7]),
                         this.changeToCompletionKind(parts[1],parts[6]),
                         _element
                     ));

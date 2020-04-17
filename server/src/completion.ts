@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-04-15 15:25:17
+ * @LastEditTime: 2020-04-17 18:03:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
 import{converStringToName,getRangeFromDocument,getsubstringForSpan, autoSelectCompletionRangeKind}from './util';
-import { HTMLInfoNode, Element } from './source/html_info';
+import { HTMLInfoNode, Element, Attribute } from './source/html_info';
 import{htmlSourceTreeRoot,parser} from'./server'; 
 import { Spankind } from './parser/type';
 import{CompletionItem,Range} from 'vscode-languageserver';
@@ -32,11 +32,14 @@ export class CompletionProvider{
 	this.astToInfoMap = HTMLAstToHTMLInfoNode;
 	this.text= this.currentDocument!.getText();
 	this.currentRange = getRangeFromDocument(terminalNode,this.currentDocument);
-	this.wordAtCursor = getsubstringForSpan(terminalNode!.getSpan(),this.text);
+
 	
 	// 请参照文档中，理解key value的不同提示方式
 	if(spanKind==Spankind.KEY){
+		this.wordAtCursor = getsubstringForSpan(terminalNode!.getKeySpan(),this.text);
 		terminalNode= terminalNode?.getparent();
+	}else{
+		this.wordAtCursor = getsubstringForSpan(terminalNode!.getValueSpan(),this.text);
 	}
 	if(terminalNode){
 		return this.getHTMLCompletion(terminalNode,HTMLAstToHTMLInfoNode);
@@ -57,6 +60,9 @@ export class CompletionProvider{
 			if(_htmlInfoNode instanceof Element){
 				let _attrType = autoSelectCompletionRangeKind(this.wordAtCursor);
 				return _htmlInfoNode.getAddCompltionItems(this.currentRange,_attrType);
+			}
+			if(_htmlInfoNode instanceof Attribute){
+				return _htmlInfoNode.getAddCompltionItems(this.currentRange);
 			}
 			return _htmlInfoNode.getCompltionItems();
 		}

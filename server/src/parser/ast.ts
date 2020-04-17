@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-04-12 12:38:44
+ * @LastEditTime: 2020-04-16 20:57:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
@@ -175,6 +175,9 @@ export class HTMLAST implements AST {
 	
 	setValueSpan(span: Span) {
 		this.valueSpan = span;
+	}
+	getValueSpan(){
+		return this.valueSpan;
 	}
 	setValueStart(start:number){
 		this.valueSpan.start=start;

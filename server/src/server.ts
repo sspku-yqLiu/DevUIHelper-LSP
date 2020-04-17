@@ -23,7 +23,7 @@ import {
 } from 'vscode-languageserver-textdocument';
 import { CompletionProvider} from './completion';
 import {Parser} from './parser/parser';
-import { DevUIParamsConstructor, htmlInfo } from './source/html_info';
+import { DevUIParamsConstructor, } from './source/html_info';
 import * as fs from 'fs';
 configure({
     appenders: {
@@ -69,7 +69,6 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
-	
 	connection.window.showInformationMessage("Welcome to DevUI Helper")
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.

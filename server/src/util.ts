@@ -1,16 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-04-15 17:26:30
+ * @LastEditTime: 2020-04-17 18:22:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
  */
 import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem,Range} from 'vscode-languageserver';
 import { Span } from './parser/type';
-import { documents, logger } from './server';
+import { logger } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { AsteriskToken, idText } from 'typescript/lib/tsserverlibrary';
 import { AST,HTMLAST } from './parser/ast';
 import {CompletionRangeKind} from './type';
 export function getName(text: string,componentRegex: RegExp){
@@ -65,7 +64,11 @@ export function converStringToName(name:string):string{
     }
     return name;
 }
-//c1=>c2
+/**
+ * c1=>c2
+ * @param c1 
+ * @param c2 
+ */
 export function copyCompletionItem(c1:CompletionItem,c2:CompletionItem){
     c2.insertText=c1.insertText;
     c2.kind=c1.kind;
@@ -77,12 +80,12 @@ export function copyCompletionItem(c1:CompletionItem,c2:CompletionItem){
 export function converValueSetToValueString(valueSet:string[]){
     if(valueSet===[])
         return "";
-    let res:string = "|";
+    let res:string = "";
     for(let value of valueSet){
         if(value !== "")
-        res+=`${value},`
+            res+=`\'${value.replace(" ","")}\',`
     }
-    res+="|";
+    res+="+";
     return res;
 
 }
@@ -101,19 +104,20 @@ export function getRangeFromDocument(terminalNode:HTMLAST|undefined,textDocument
 }
 export function autoSelectCompletionRangeKind(word:string):CompletionRangeKind{
     logger.debug("word:"+word);
-    let reg1 = /^\[.*\]$/; // 匹配[....]
-    let reg2 = /^\(.*\)$/; // 匹配(....)
-    let reg3 = /^\[\(.*\)\]$/; // 匹配[(.....)]
-    if(word.startsWith("+")){
+    let reg0 = /^\+.*$/; //匹配+...
+    let reg1 = /^\[.*$/; // 匹配[....]
+    let reg2 = /^\(.*$/; // 匹配(....)
+    let reg3 = /^\[\(.*$/; // 匹配[(.....)]
+    if(reg0.test(word)){
         return CompletionRangeKind.ADD;
     }
-    else if (word.startsWith("[(")) {
+    else if (reg3.test(word)) {
         return CompletionRangeKind.INOUTPUT;
     }
-    else if (word.startsWith("[")) {
+    else if (reg1.test(word)) {
         return CompletionRangeKind.INPUT;
     }
-    else if (word.startsWith("(")) {
+    else if (reg2.test(word)) {
         return CompletionRangeKind.OUTPUT;
     }else{
         return CompletionRangeKind.NONE;
@@ -148,11 +152,17 @@ export function changeDueToCompletionRangeKind(kind:CompletionRangeKind,label:st
         case CompletionRangeKind.ADD:
             return "+"+label;
     }
-    return "";
 }
+
 export function getsubstringForSpan(span:Span,text:string){
     let {start,end} =span;
-    return text.substring(start,end);   
+    return text.substring(start,end+1);   
+}
+export function changeInsertDueToCompletionRangeKind(kind:CompletionRangeKind,text:string){
+    if(kind === CompletionRangeKind.INOUTPUT){
+        text = text.replace("[","[(").replace("]",")]");
+    }
+    return text;
 }
 
 export class MarkUpBuilder{
