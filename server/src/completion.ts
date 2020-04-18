@@ -1,12 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-04-17 18:03:29
+ * @LastEditTime: 2020-04-17 18:31:59
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
-import{converStringToName,getRangeFromDocument,getsubstringForSpan, autoSelectCompletionRangeKind}from './util';
+import{converStringToName,getRangeFromDocument,getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan}from './util';
 import { HTMLInfoNode, Element, Attribute } from './source/html_info';
 import{htmlSourceTreeRoot,parser} from'./server'; 
 import { Spankind } from './parser/type';
@@ -40,6 +40,7 @@ export class CompletionProvider{
 		terminalNode= terminalNode?.getparent();
 	}else{
 		this.wordAtCursor = getsubstringForSpan(terminalNode!.getValueSpan(),this.text);
+		this.currentRange = getRangefromSpan(terminalNode?.valueSpan,this.currentDocument)
 	}
 	if(terminalNode){
 		return this.getHTMLCompletion(terminalNode,HTMLAstToHTMLInfoNode);

@@ -63,13 +63,6 @@ export class RootNode implements HTMLInfoNode{
         this.completionItems = Object.values(this.schema).map(element=>{
            return element.buildCompletionItem();
         });
-        this.addCompletionItems = this.completionItems.map(completionItem=>{
-            let addcompletionItem = CompletionItem.create(completionItem.label);
-            copyCompletionItem(completionItem,addcompletionItem)
-            addcompletionItem.label=`+${completionItem.label}`;
-            completionItem.insertTextFormat = InsertTextFormat.Snippet;
-            return addcompletionItem;
-        });
     }
 
     getCompltionItems():CompletionItem[]{
@@ -77,7 +70,12 @@ export class RootNode implements HTMLInfoNode{
         return this.completionItems;
     }
     getAddCompltionItems(){
-        return this.addCompletionItems;
+        return this.completionItems.map(_completionItem=>{
+            let _completionAddItem = _completionItem;
+            copyCompletionItem(_completionItem,_completionAddItem);
+            _completionAddItem.label = "+"+_completionItem.label;
+            return _completionAddItem;
+        });
     }
     getsubNode(name:string):HTMLInfoNode|undefined{
         return this.schema[name];

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-04-17 18:22:56
+ * @LastEditTime: 2020-04-17 18:31:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
@@ -98,9 +98,15 @@ export function getRangeFromDocument(terminalNode:HTMLAST|undefined,textDocument
     let _end = textDocument.positionAt (_range.end);
     _end.character++;
     return Range.create(_start,_end);
-
-
-
+}
+export function getRangefromSpan(span:Span|undefined,textDocument:TextDocument){
+    if(!span){
+        return Range.create(-1,-1,-1,-1);
+    }
+    let _start = textDocument.positionAt (span.start);
+    let _end = textDocument.positionAt (span.end);
+    _end.character++;
+    return Range.create(_start,_end);
 }
 export function autoSelectCompletionRangeKind(word:string):CompletionRangeKind{
     logger.debug("word:"+word);
