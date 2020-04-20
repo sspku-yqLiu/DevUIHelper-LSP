@@ -1,4 +1,4 @@
-import { CompletionItemKind,CompletionItem, InsertTextFormat, TextEdit,Range } from "vscode-languageserver";
+import { CompletionItemKind,CompletionItem, InsertTextFormat, TextEdit,Range, Hover } from "vscode-languageserver";
 import{HTML_SCHEMA as SCHEMA} from './html_source';
 import{logger} from '../server';
 import{MarkUpBuilder,copyCompletionItem,converValueSetToValueString, changeDueToCompletionRangeKind,changeInsertDueToCompletionRangeKind} from'../util';
@@ -14,10 +14,10 @@ const TEMPLATE="templateref"
 
 export interface HTMLInfoNode {
     
-    /**
-     * 获得当前节点的父节点
-     */
-    getParent():HTMLInfoNode|undefined;
+    // /**
+    //  * 获得当前节点的父节点
+    //  */
+    // getParent():HTMLInfoNode|undefined;
 
     /**
      * 获取资源树下方节点
@@ -51,6 +51,12 @@ export interface HTMLInfoNode {
      * @param name 
      */
     getAddCompltionItems(range?:Range,kind?:CompletionRangeKind):CompletionItem[];
+
+    /**
+     *  提供悬浮提示内容
+     * 
+     */
+    getHoverInfo():Hover|undefined
 
 }
 export class RootNode implements HTMLInfoNode{
@@ -86,6 +92,7 @@ export class RootNode implements HTMLInfoNode{
     getParent():undefined{
         return;
     }
+    getHoverInfo():undefined{return undefined;}
 }
 
 export class Element implements HTMLInfoNode {
@@ -147,6 +154,7 @@ export class Element implements HTMLInfoNode {
         }
         completionItem.insertText=_insertText;
         completionItem.detail=`这是一个${this.name}组件`;
+        completionItem.insertTextFormat = InsertTextFormat.Snippet;
         return completionItem;
     }
     getCompltionItems(){
@@ -191,6 +199,15 @@ export class Element implements HTMLInfoNode {
     getParent():HTMLInfoNode{
         return new RootNode();
     }
+    getHoverInfo():Hover{
+        let _markUpBuilder = new MarkUpBuilder(this.description+"\n"); 
+        const properties = this.attritubes;
+        _markUpBuilder.addSpecialContent('typescript',this.attritubes.map(attr=>{
+            return attr.getName()+' :'+attr.getSortDescription();
+        }));
+
+        return {contents:_markUpBuilder.getMarkUpContent()};
+    }
     
 }
 export class Attribute implements HTMLInfoNode{
@@ -224,7 +241,7 @@ export class Attribute implements HTMLInfoNode{
     }
 
     buildCompletionItem(){
-        let completionItem = CompletionItem.create(this.name);
+        let completionItem = CompletionItem.create(this.name+"\n");
         completionItem.detail= this.sortDescription;
         completionItem.documentation = new MarkUpBuilder().addSpecialContent('typescript',[
                                                             "Type:"+this.getValueType(),
@@ -265,6 +282,16 @@ export class Attribute implements HTMLInfoNode{
             return _completionAddItem;
         });
     }
+    getHoverInfo():Hover{
+
+        let _markUpBuilder = new MarkUpBuilder(this.getName()+"\n");
+        _markUpBuilder.addSpecialContent('typescript',["Description:"+ this.description,
+                                            "Type:"+this.getValueType(),
+                                            "DefaultValue:"+this.getDefaultValue(),
+                                            "ValueSet:"+this.valueSet]);
+        return {contents:_markUpBuilder.getMarkUpContent()}
+
+    }
 
     getName(){return this.name;}   
     getSortDescription() : string {return this.sortDescription;} 
@@ -277,7 +304,7 @@ export class Attribute implements HTMLInfoNode{
     getSubNodes():undefined{return;}
     getParent():HTMLInfoNode{return this.parent;}
     getCompletionItem(_snippetNum:number){return this.completionItem;}
-
+    
 }
 
 

@@ -10,7 +10,7 @@ import{converStringToName,getRangeFromDocument,getsubstringForSpan, autoSelectCo
 import { HTMLInfoNode, Element, Attribute } from './source/html_info';
 import{htmlSourceTreeRoot,parser} from'./server'; 
 import { Spankind } from './parser/type';
-import{CompletionItem,Range} from 'vscode-languageserver';
+import{CompletionItem,Range, HoverParams} from 'vscode-languageserver';
 import { HTMLAST } from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 export class CompletionProvider{
@@ -69,6 +69,7 @@ export class CompletionProvider{
 		}
 		return [];
 	}
+
 
 	findHTMLInfoNode(_htmlast:HTMLAST):HTMLInfoNode|undefined{
 

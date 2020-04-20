@@ -25,6 +25,7 @@ import { CompletionProvider} from './completion';
 import {Parser} from './parser/parser';
 import { DevUIParamsConstructor, } from './source/html_info';
 import * as fs from 'fs';
+import { HoverProvider } from './HoverProvider';
 configure({
     appenders: {
         lsp_demo: {
@@ -49,6 +50,7 @@ let hasDiagnosticRelatedInformationCapability: boolean = false;
 //初始化htmlInfo
 export const htmlSourceTreeRoot = new DevUIParamsConstructor().build();
 export const completionProvider= new CompletionProvider();
+export const hoverProvider = new HoverProvider();
 // logger.debug(JSON.stringify(htmlSourceTreeRoot));
 // JSON.pa
 connection.onInitialize((params: InitializeParams) => {
@@ -156,6 +158,26 @@ connection.onCompletion(
 	}
 );
 
+
+connection.onHover((_textDocumentPosition)=>{
+	logger.debug(_textDocumentPosition.position);
+	let document = documents.get(_textDocumentPosition.textDocument.uri);
+
+	let source = htmlSourceTreeRoot;
+	logger.debug(`HoverProvider works!`);
+	logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`)
+	const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
+	if(_textDocument){
+		//TODO : 将分析放到外层。
+		parser.parseTextDocument(_textDocument);
+		const _offset = _textDocument!.offsetAt(_textDocumentPosition.position);
+		if(_textDocument){
+			return hoverProvider.provideHoverInfoForHTML(_offset,_textDocument);
+		}
+	}
+	return undefined;
+
+});
 // This handler resolves additional information for the item selected in
 // the completion list.
 // connection.onCompletionResolve(
@@ -203,16 +225,6 @@ connection.onDidCloseTextDocument((params) => {
 	// A text document got closed in VSCode.
 	// params.textDocument.uri uniquely identifies the document.
 	connection.console.log(`${params.textDocument.uri} closed.`);
-});
-connection.onHover((params)=>{
-	logger.debug(params.position);
-	let document = documents.get(params.textDocument.uri);
-	let offset:number=0;
-	if(document)
-		offset = document!.offsetAt(params.position);
-		logger.debug(`We Are At:+${offset}`);
-		logger.debug(`We Are At:+${document!.getText().toString().charCodeAt(offset)}`);
-	return null;
 });
 
 

@@ -99,6 +99,7 @@ export function getRangeFromDocument(terminalNode:HTMLAST|undefined,textDocument
     _end.character++;
     return Range.create(_start,_end);
 }
+
 export function getRangefromSpan(span:Span|undefined,textDocument:TextDocument){
     if(!span){
         return Range.create(-1,-1,-1,-1);
@@ -108,6 +109,7 @@ export function getRangefromSpan(span:Span|undefined,textDocument:TextDocument){
     _end.character++;
     return Range.create(_start,_end);
 }
+
 export function autoSelectCompletionRangeKind(word:string):CompletionRangeKind{
     logger.debug("word:"+word);
     let reg0 = /^\+.*$/; //匹配+...
@@ -173,8 +175,8 @@ export function changeInsertDueToCompletionRangeKind(kind:CompletionRangeKind,te
 
 export class MarkUpBuilder{
     private markUpContent:MarkupContent;
-    constructor(){
-        this.markUpContent=  {kind:MarkupKind.Markdown,value:""}
+    constructor(content?:string){
+        this.markUpContent=  {kind:MarkupKind.Markdown,value:content?content:""}
     }
     
     getMarkUpContent():MarkupContent{
@@ -193,6 +195,4 @@ export class MarkUpBuilder{
             ].join('\n');
         return this;
     }
-
-
 }
