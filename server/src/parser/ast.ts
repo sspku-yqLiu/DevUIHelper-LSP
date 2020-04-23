@@ -76,8 +76,10 @@ export class TreeBuilder {
 							//如果这时有没有build完成的attr应该让他先build，我们认为这个attr没有build成功
 							if(this.attrInBuild){
 								this.attrInBuild.buildWithoutEnd();
+								this.elementInBuild.subNodes.push(this.attrInBuild);
+								this.attrInBuild = undefined;
 							}
-							this.attrInBuild = new HTMLAST(ASTType.ATTR,new Span(_currentSpan.start,-1),this.elementInBuild);
+							this.attrInBuild = new HTMLAST(ASTType.ATTR,new Span(_currentSpan.start,_currentSpan.end),this.elementInBuild);
 							this.attrInBuild.setKeySpan(_currentSpan);
 						}
 						else{
@@ -149,6 +151,10 @@ export class TreeBuilder {
 		this.root.singleKing();
 		this.root.subNodes = this.roots;
 	}
+	// buildATTRWhenBreak(end:number){
+	// 	this.attrInBuild?.build(end);
+	// 	if(this.attrInBuild?.keySpan)
+	// }
 	
 }
 export class HTMLAST implements AST {

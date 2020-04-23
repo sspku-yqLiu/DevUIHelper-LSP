@@ -1,5 +1,5 @@
 {
-	"name": "devuilanguagesupport",
+	"name": "devui-language-support",
 	"description": "Example implementation of a language server in node.",
 	"version": "1.0.0",
 	"author": "yqLiu",

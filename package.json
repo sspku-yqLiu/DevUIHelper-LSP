@@ -1,9 +1,9 @@
 {
   "name": "devui-language-support",
-  "description": "A language support for DevUI",
+  "description": "DevUI-Language-Support",
   "author": "yqLiu",
   "license": "MIT",
-  "version": "3.0.1",
+  "version": "3.1.3",
   "icon": "DevUI.png",
   "repository": {
     "type": "git",
