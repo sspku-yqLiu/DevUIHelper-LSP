@@ -8,7 +8,7 @@
  */
 import {Spankind,ParseResult} from './type';
 import { HTMLAST, ASTType } from './ast';
-import { Tokenizer } from './tokenize';
+import { Tokenizer } from './lexer';
 import { TreeBuilder} from './ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { htmlSourceTreeRoot } from '../server';

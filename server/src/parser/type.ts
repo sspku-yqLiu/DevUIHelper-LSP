@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-04-11 11:28:17
+ * @LastEditTime: 2020-04-28 16:11:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -43,7 +43,8 @@ export class Span{
 export enum TokenType{
 	ELEMENT_START,
 	ELEMENT_VALUE,
-	INNER_ATTR,
+	TEMPLATE,
+	DIRECTIVE,
 	ATTR_NAME,
 	ATTR_VALUE_START,
 	ATTR_VALUE,

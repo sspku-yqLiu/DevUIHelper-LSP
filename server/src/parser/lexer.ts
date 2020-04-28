@@ -191,7 +191,7 @@ export class Tokenizer{
 	}
  
 	buildInnerAttrToken(){
-		this.startToken(TokenType.INNER_ATTR);
+		this.startToken(TokenType.TEMPLATE);
 		this.tryStopAt([chars.$GT,...chars.WhiteChars]);
 		this.buildToken();
 	}

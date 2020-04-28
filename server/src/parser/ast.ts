@@ -9,7 +9,7 @@
 import * as lsp from 'vscode-languageserver';
 import { htmlInfo } from '../source/html_info';
 import { Span, TokenType } from './type';
-import { Token } from './tokenize';
+import { Token } from './lexer';
 import { threadId } from 'worker_threads';
 export enum ASTType {
 	ROOT,
@@ -66,7 +66,7 @@ export class TreeBuilder {
 							this.closeElementAt(_currentSpan.end);
 						}
 						//build inner ATTR 
-						else if (_tokentype === TokenType.INNER_ATTR) {
+						else if (_tokentype === TokenType.TEMPLATE) {
 							this.attrInBuild = new HTMLAST(ASTType.ATTR,_currentSpan,this.attrInBuild);
 							this.attrInBuild.singleDog();
 							this.closeAttrAt(token.getSpan()!.end);

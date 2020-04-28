@@ -75,12 +75,13 @@ export class RootNode implements HTMLInfoNode{
         this.buildCompletionItems();
         return this.completionItems;
     }
-    getAddCompltionItems(){
+    getAddCompltionItems(currentRange:Range){
         return this.completionItems.map(_completionItem=>{
-            let _completionAddItem = _completionItem;
-            copyCompletionItem(_completionItem,_completionAddItem);
-            _completionAddItem.label = "+"+_completionItem.label;
-            return _completionAddItem;
+            _completionItem.textEdit = {
+                range: currentRange,
+                newText:_completionItem.insertText? _completionItem.insertText:""
+            }
+            return _completionItem;
         });
     }
     getsubNode(name:string):HTMLInfoNode|undefined{
