@@ -53,16 +53,16 @@ export class TreeBuilder {
 			if (_currentSpan) {
 				/* build element */
 
-				if (token.getType() === TokenType.ELEMENT_START) {
+				if (token.getType() === TokenType.TAG_START) {
 					this.elementInBuild = new HTMLAST(ASTType.ELEMENT,new Span(token.getSpan()!.start,-1),this.root);
 				}
 				else {
 					if (this.elementInBuild) {		
-						if (_tokentype === TokenType.ELEMENT_VALUE) {
+						if (_tokentype === TokenType.TAG_NAME) {
 							this.elementInBuild.setKeySpan(_currentSpan);
 							this.elementInBuild.setValueStart(_currentSpan.end+1)
 						}
-						else if(_tokentype === TokenType.ELEMENT_END){
+						else if(_tokentype === TokenType.TAG_END){
 							this.closeElementAt(_currentSpan.end);
 						}
 						//build inner ATTR 

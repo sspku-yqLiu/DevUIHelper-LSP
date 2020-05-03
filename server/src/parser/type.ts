@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-04-28 16:11:11
+ * @LastEditTime: 2020-05-02 09:29:54
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -40,16 +40,46 @@ export class Span{
 		return false;
 	}
 }
+export enum SupportFrameName{
+	Angular,
+	Vue,
+	React
+}
+export interface ParseOption{
+	/**
+	 * 所使用的的框架名称
+	 */
+	frameName:SupportFrameName,
+	/**
+	 * 所使用的UI库的特征
+	 * 例如DevUI -> d- / elementUI -> e- 
+	 */
+	tagMarkedPrefixs:string[]
+}
 export enum TokenType{
-	ELEMENT_START,
-	ELEMENT_VALUE,
+	TAG_START,
+	CLOSED_TAG_START,
+	TAG_NAME,
+	TAG_END,
+	TAG_SELF_END,
+	//TODO: 如果未来有更多使用我们插件的人，
+	//那么这里应该对每一个支持的插件都有对应的MARK Type
+	MARKED_DEVUI_ELEMENT_VALUE,
 	TEMPLATE,
 	DIRECTIVE,
 	ATTR_NAME,
 	ATTR_VALUE_START,
 	ATTR_VALUE,
 	ATTR_VALE_END,
-	ELEMENT_END
+	COMMENT,
+	DOCUMENT
+	
+}
+export enum NodeState{
+	DEFAULT,
+	NEW,
+	MODIFIED,
+	DELETE
 }
 export enum Spankind{
 	KEY,
@@ -67,12 +97,15 @@ export class Token{
 }
 export enum AST_Type{
 	ELEMENT,
-	ATTR
+	ATTR,
+	CONTENT,
+	DIRECTIVE,
+	CURRENT,
+	TEMPLATE
 }
 
-export class Cursor{
-	
-}
+
+
 export interface ParseResult{
 	
 	/**

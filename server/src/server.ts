@@ -27,6 +27,7 @@ import {Parser} from './parser/parser';
 import { DevUIParamsConstructor, } from './source/html_info';
 import * as fs from 'fs';
 import { HoverProvider } from './HoverProvider';
+import { SupportFrameName } from './parser/type';
 configure({
     appenders: {
         lsp_demo: {
@@ -143,39 +144,42 @@ export const parser = new Parser();
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		let source = htmlSourceTreeRoot;
 		logger.debug(`Completion work`);
-		logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`)
+		logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`);
 		const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
 		if(_textDocument){
 			//TODO : 将分析放到外层。
-			parser.parseTextDocument(_textDocument);
-			const _offset = _textDocument!.offsetAt(_textDocumentPosition.position);
-			if(_textDocument){
-				return completionProvider.provideCompletionItemsForHTML(_offset,_textDocument);
-			}
+		parser.parseTextDocument(_textDocument,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
 		}
+		// let source = htmlSourceTreeRoot;
+		
+
+		// 	const _offset = _textDocument!.offsetAt(_textDocumentPosition.position);
+		// 	if(_textDocument){
+		// 		return completionProvider.provideCompletionItemsForHTML(_offset,_textDocument);
+		// 	}
+		// }
 		return [];
 	}
 );
 
 
 connection.onHover((_textDocumentPosition)=>{
-	logger.debug(_textDocumentPosition.position);
-	let document = documents.get(_textDocumentPosition.textDocument.uri);
-
-	let source = htmlSourceTreeRoot;
 	logger.debug(`HoverProvider works!`);
 	logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`)
-	const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
-	if(_textDocument){
-		//TODO : 将分析放到外层。
-		parser.parseTextDocument(_textDocument);
-		const _offset = _textDocument!.offsetAt(_textDocumentPosition.position);
-		if(_textDocument){
-			return hoverProvider.provideHoverInfoForHTML(_offset,_textDocument);
-		}
-	}
+	// let document = documents.get(_textDocumentPosition.textDocument.uri);
+
+	// let source = htmlSourceTreeRoot;
+
+	// const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
+	// if(_textDocument){
+	// 	//TODO : 将分析放到外层。
+	// 	parser.parseTextDocument(_textDocument);
+	// 	const _offset = _textDocument!.offsetAt(_textDocumentPosition.position);
+	// 	if(_textDocument){
+	// 		return hoverProvider.provideHoverInfoForHTML(_offset,_textDocument);
+	// 	}
+	// }
 	return undefined;
 
 });
@@ -245,7 +249,7 @@ documents.onDidOpen(
         logger.debug(`file content:${event.document.getText()}`);
         logger.debug(`language id:${event.document.languageId}`);
 		logger.debug(`line count:${event.document.lineCount}`);
-		parser.parseTextDocument(event.document);
+		parser.parseTextDocument(event.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
     }
 );
 documents.onDidChangeContent(
@@ -254,7 +258,7 @@ documents.onDidChangeContent(
 		// logger.debug(`document version:${e.document.version}`);
 		logger.debug(`language id:${e.document.languageId}`);
 		logger.debug(`text:${e.document.getText()}`);
-		parser.parseTextDocument(e.document);
+		parser.parseTextDocument(e.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
 		// logger.debug(`line count:${e.document.lineCount}`);
 		// let tokenizer = new Tokenizer(e.document,new TokenizeOption("<d-"));
 		// tokenizer.Tokenize();

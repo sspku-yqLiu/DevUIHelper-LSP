@@ -1,3 +1,10 @@
+/**
+ * @license
+ * Some of this lexerCode is from Angular/complier. 
+ *
+ * Use of this source code is governed by an MIT-style license that can be
+ * found in the LICENSE file at https://angular.io/license
+ */
 import {Span,TokenType} from './type';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as chars from './chars';
@@ -5,6 +12,7 @@ import {logger} from '../server';
 export class Token{
 	private end:number=-1;
 	private span:Span;
+	public value:string="";
 	constructor(
 		private type:TokenType,
 		private start:number,
@@ -24,9 +32,9 @@ export class Token{
 	getType(){
 		return this.type;
 	}
-
-
-
+	setType(type:TokenType){
+		this.type = type;
+	}
 }
 export class TokenizeOption{
 	constructor(
@@ -50,143 +58,183 @@ export class TokenizeOptions{
 			return this.SCHEMA[name];
 		}
 		throw Error(`Cannot find TokenizeOption : ${name}`);
-	}
-
-	
-	
+	}	
 }
 
 
 export class Tokenizer{
-	private _text:string;
-	protected _cursor:Cursor;
-	private _result:Token[] = [];
-	private _tokenizeOption:TokenizeOption;
+	protected cursor:Cursor;
+	private result:Token[] = [];
 	constructor(
-		private textdocument:TextDocument,
-		_tokenizeOption:TokenizeOption|string){
-			if((_tokenizeOption instanceof TokenizeOption)){
-				this._tokenizeOption = _tokenizeOption;
-				
-			}else{
-				this._tokenizeOption = new TokenizeOptions().getTokenizeOption(_tokenizeOption);
-			}
-			this._text = textdocument.getText();
-			/* -1 为了*/ 
-			this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,0));
-		}
+		private content:string,
+		private start:number=0,
+		private end:number = content.length
+	){
+		this.cursor = new Cursor(content,start,end);		
+	}
 		/**
 		 * Token解析器
 		 */
 	private _tokenInBuild:Token|undefined;
 	Tokenize():Token[]{
 		/* 初始化 */
-		this._result= [];
+		this.result= [];
 		try{
 			/**
-			 * build token 从<d-开始
+			 * 直到指定的位置或者是文件末尾停下
 			 */
-			while(this._cursor.getoffset()!=-1){
-				//解决string和lspoffset不同的问题
-				this._cursor.forceAdvance();			
-				this.buildElementStartAndNameToken();
-				/*开始属性ATTR */
-				while(this._cursor.peek()!==chars.$GT){
-					this.tryAdvanceThrogh(chars.WhiteChars);
-					/**
-					 * #开头类型(内属性)
-					 */
-					if(this._cursor.peek() === chars.$HASH){
-						this.buildInnerAttrToken();
-					/**
-					 * 普通属性
-					 */
-					}else if(this._cursor.peek() !== chars.$GT){
-						this.buildATTRToken();		
+			while(this.cursor.offset<this.end){
+				if(this.tryGet(chars.$LT)){
+					this._tokenInBuild = new Token(TokenType.TAG_START,this.cursor.offset-1);
+					if(this.tryGet(chars.$BANG) ){
+						if(this.tryGet(chars.$MINUS)){
+							this.buildComment();
+						}else{
+							this.buildDocumentTag();
+						}
+					}else if(this.tryGet(chars.$SLASH)){
+						this.buildClosedTag()
+					}
+					else{
+						this.buildOpenTag();
 					}
 				}
-				/**
-				 * element end
-				 */
-				if(this._cursor.peek() === chars.$GT){
-				this.buildElementEndToken();
-				logger.debug(`we are at ${this._cursor.getoffset()}`)
-				this._cursor = new Cursor(this._text,this._text.indexOf(this._tokenizeOption.startLabel,this._cursor.getoffset()));
+				else{
+					this.cursor.advance();
 				}
 			}
 		}catch{
 			this.buildToken();
 		}
-		this._result.forEach(token=>{
-			logger.debug(this._text.substring(token.getSpan()!.start,token.getSpan()!.end+1));
+		//ALERT:这仅用于测试！，发行版请去掉以下内容，否则将严重影响性能！
+		this.result.forEach(token=>{
+			logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
 			logger.debug(token.getType().toString());
 		})
-		return this._result;
+		return this.result;
 	}
-
+	/**
+	 * Try家族
+	 */
+	 //注意这里有指针移动
+	tryGet(char:number){
+		if(this.cursor.peek() === char){
+			this.cursor.advance();
+			return true;
+		}
+		return false
+	}
 	tryAdvanceThrogh(chars:number[]){
-		while(chars.includes(this._cursor.peek())){
-			this._cursor.advance();
+		while(chars.includes(this.cursor.peek())){
+			this.cursor.advance();
 		}
 		return;
 	}
 
 	tryStopAt(chars:number[]){
 
-		while(!chars.includes(this._cursor.peek())){
-			const num = this._cursor.peek();
-			this._cursor.advance();
+		// if(this._tokenInBuild){
+		// 	if([TokenType.ATTR_NAME,TokenType.ATTR_VALUE])
+		// }
+		while(!chars.includes(this.cursor.peek())){
+			const num = this.cursor.peek();
+			this.cursor.advance();
 		}
 		return;
 	}
 	
 	tryStopbyFilter(favor:number[],disgust:number[]):boolean{
-		while(!disgust.includes(this._cursor.peek())&&!favor.includes(this._cursor.peek())){
-			this._cursor.advance();
+		while(!disgust.includes(this.cursor.peek())&&!favor.includes(this.cursor.peek())){
+			this.cursor.advance();
 		}
 		//如果是被喜欢的字符截断
-		if(favor.includes(this._cursor.peek())){
+		if(favor.includes(this.cursor.peek())){
 			return true;
 		}
 		//如果是被不应该出现的字符截断
-		if(disgust.includes(this._cursor.peek())){
+		if(disgust.includes(this.cursor.peek())){
 			return false;
 		}
 
 		//如果是因为找不到想要的字符 return true
 		return true;
 	}
-	startToken(tokenType:TokenType){
-		if(tokenType === TokenType.ELEMENT_START){
-			this._tokenInBuild= new Token(tokenType,this._cursor.getoffset()-1);
-			return ;
 
-		}
-		this._tokenInBuild= new Token(tokenType,this._cursor.getoffset());
+	/**
+	 * Token工厂家族
+	 */
+
+	startToken(tokenType:TokenType){
+		this._tokenInBuild= new Token(tokenType,this.cursor.getoffset());
 	}
+	//注意我们build的时候取的是offset的前一位
 	buildToken(){
 		if(this._tokenInBuild){
-			this._tokenInBuild.build(this._cursor.getoffset()-1);
-			this._result.push(this._tokenInBuild);
+			this._tokenInBuild.build(this.cursor.getoffset()-1);
+			//ALERT:这仅用于测试！，发行版请去掉以下内容，否则将严重影响性能！
+			this._tokenInBuild.value = this.content.substring(this._tokenInBuild.getSpan().start,this._tokenInBuild.getSpan().end+1);
+			this.result.push(this._tokenInBuild);
 			this._tokenInBuild=undefined;
 		}
 	}
-	changeWordPositionToOffset(position:number ){
-		return position-1;
-	}
-	moveToElement_VALUE(){
-		let len = this._tokenizeOption.startLabel.length-1;
-		while(len>0){
-			this._cursor.advance();
-			len--;
+
+	/**
+	 * Token装配车间
+	 */
+
+	buildOpenTag(){
+		// this.cursor.advance();
+		this.buildToken(); 
+		this.startToken(TokenType.TAG_NAME);
+		//如果关闭的情况下 closeTag
+		if(!this.tryStopbyFilter([chars.$GT,chars.$SLASH],chars.WhiteChars)){
+			this.buildToken();
 		}
+		let s:string = this.content.substring(this.cursor.offset,this.cursor.offset+1); 
+		while(!this.buildATTROrEndToken(this.cursor.peek()))
+			this.cursor.advance();
+
 	}
-	buildElementStartAndNameToken(){
-		this.startToken(TokenType.ELEMENT_START);
-		this.moveToElement_VALUE();
+
+	buildClosedTag(){
+		// this.cursor.advance();
+		this._tokenInBuild?.setType(TokenType.CLOSED_TAG_START);
 		this.buildToken();
-		this.startToken(TokenType.ELEMENT_VALUE);			
-		this.tryStopAt([chars.$GT,...chars.WhiteChars]);
+		this.startToken(TokenType.TAG_NAME);
+		// this._tokenInBuild = new Token(TokenType.TAG_NAME,this.cursor.offset);
+		this.tryStopAt([chars.$GT]);
+		this.buildToken();
+		this.startToken(TokenType.TAG_END);
+		// this._tokenInBuild = new Token(TokenType.TAG_END,this.cursor.offset);
+		this.cursor.advance();
+		this.buildToken();
+	}
+
+	buildATTROrEndToken(char:number){
+		if([chars.$GT,chars.$SLASH].indexOf(char)!==-1){
+			this.buildTagSelfClosedToken(char);
+			return true;
+		}else if(chars.WhiteChars.indexOf(char)!==-1){
+		}else{
+			this.buildATTRToken();
+		}
+		return false;
+	}
+
+	buildTagSelfClosedToken(char:number){
+
+		this.buildToken();
+		if(char===chars.$GT){
+			this.startToken(TokenType.TAG_END);
+			this.cursor.advance();
+		}
+		else{
+			this.startToken(TokenType.TAG_SELF_END);
+			this.cursor.advance();
+			if(!this.tryGet(chars.$GT)){
+				throw Error(`this / does not have a > follw!`)
+			}
+		}
 		this.buildToken();
 	}
  
@@ -196,39 +244,63 @@ export class Tokenizer{
 		this.buildToken();
 	}
 	buildATTRToken(){	
-
 		this.startToken(TokenType.ATTR_NAME);
-		if(this.tryStopbyFilter([chars.$EQ],chars.WhiteCharsAndGT)){
+		if(this.tryStopbyFilter([chars.$EQ],[chars.$GT,chars.$SLASH])){
 			this.buildToken();
 		}else{
-			this.buildToken();return;
+			this.buildToken();
+			this.cursor.offset--;
+			return;
 		}
 		
 		this.startToken(TokenType.ATTR_VALUE_START);
-		this._cursor.advance();
-		this.tryStopAt([chars.$DQ]);
-		this._cursor.advance();
-		this.buildToken();
+		this.cursor.advance();
+		if(this.tryStopbyFilter([chars.$DQ],[chars.$GT,chars.$SLASH])){
+			this.cursor.advance();
+			this.buildToken();
 
+		}else{
+			this.buildToken();
+			this.cursor.offset--;
+			return;
+		}
 		this.startToken(TokenType.ATTR_VALUE);
 		this.tryStopAt([chars.$DQ]);
 		this.buildToken();
 
 		this.startToken(TokenType.ATTR_VALE_END);
-		this._cursor.advance();
+		this.cursor.advance();			
 		this.buildToken();
+		this.cursor.offset--;
 	}
 	buildElementEndToken(){
-		this.startToken(TokenType.ELEMENT_END);
-		this._cursor.advance();
+		this.startToken(TokenType.TAG_END);
+		this.cursor.advance();
 		this.buildToken();
 	}
+	buildComment(){
+		this._tokenInBuild = new Token(TokenType.COMMENT,this.cursor.offset-3);
+		let _end = this.content.indexOf("-->");
+		this.cursor = new Cursor(this.content,_end+3,this.cursor.getEOF());
+		this.buildToken()
+	}
+	buildDocumentTag(){
+		this._tokenInBuild = new Token(TokenType.DOCUMENT,this.cursor.offset-2);
+		this.tryStopAt([chars.$GT]);
+		this.cursor.advance();
+		this.buildToken();
+	}
+	/**
+	 * 功能函数
+	 */
+
 } 
 export class Cursor{
-	private peekvalue = -1;
+	public peekvalue = -1;
 	constructor(
 		private text:string,
-		private offset:number,
+		public offset:number,
+		private EOF:number
 	){}
 	getoffset(){return this.offset}
 	advance(){
@@ -237,11 +309,11 @@ export class Cursor{
 			this.offset++;
 		}
 		this.offset++;
-		if(this.offset === this.text.length||peek===chars.$EOF||peek===chars.$LT){
+		if(this.offset >=this.EOF){
 			this.offset--;
-			throw Error(`Char At EOF Or a '<' in element!!!!!`);
+			throw Error(`Char At EOF At ${this.offset}`);
 		}
-	}
+	}  
 
 	peek():number{
 		this.peekvalue = this.text.charCodeAt(this.offset);
@@ -251,9 +323,32 @@ export class Cursor{
 		return new Span(this.offset,cursor.offset);
 	}
 	copy(){
-		return new Cursor(this.text,this.offset)
+		return new Cursor(this.text,this.offset,this.EOF);
 	}
 	forceAdvance(){
 		this.offset++;
 	}
+	getEOF(){
+		return this.EOF;
+	}
 }
+// while(this.cursor.getoffset()<this.end){
+// 	//解决string和lspoffset不同的问题
+// 	this.cursor.forceAdvance();			
+// 	this.buildOpenTag();
+// 	/*开始属性ATTR */
+// 	while(this.cursor.peek()!==chars.$GT){
+// 		this.tryAdvanceThrogh(chars.WhiteChars);
+// 		/**
+// 		 * #开头类型(内属性)
+// 		 */
+// 		if(this.cursor.peek() === chars.$HASH){
+// 			this.buildInnerAttrToken();
+// 		/**
+// 		 * 普通属性
+// 		 */
+// 		}else if(this.cursor.peek() !== chars.$GT){
+// 			this.buildATTRToken();		
+// 		}
+// 	}
+// }
