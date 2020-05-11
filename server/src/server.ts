@@ -257,7 +257,7 @@ documents.onDidChangeContent(
         // logger.debug('document change received.');
 		// logger.debug(`document version:${e.document.version}`);
 		logger.debug(`language id:${e.document.languageId}`);
-		logger.debug(`text:${e.document.getText()}`);
+		// logger.debug(`text:${e.document.getText()}`);
 		parser.parseTextDocument(e.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
 		// logger.debug(`line count:${e.document.lineCount}`);
 		// let tokenizer = new Tokenizer(e.document,new TokenizeOption("<d-"));

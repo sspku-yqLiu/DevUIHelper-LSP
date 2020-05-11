@@ -1,7 +1,7 @@
 {
-	"name": "devui-language-support",
-	"description": "Example implementation of a language server in node.",
-	"version": "1.0.0",
+	"name": "UI_Components_Helper_Server",
+	"description": "UI_components_helper_server",
+	"version": "4.0.0",
 	"author": "yqLiu",
 	"license": "MIT",
 	"engines": {

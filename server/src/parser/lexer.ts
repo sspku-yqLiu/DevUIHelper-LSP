@@ -5,14 +5,15 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import {Span,TokenType} from './type';
+import {Span} from '../DataStructor/type';
+import {TokenType} from './type';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as chars from './chars';
 import {logger} from '../server';
 export class Token{
 	private end:number=-1;
 	private span:Span;
-	public value:string="";
+	public value:string|undefined;
 	constructor(
 		private type:TokenType,
 		private start:number,
@@ -34,6 +35,9 @@ export class Token{
 	}
 	setType(type:TokenType){
 		this.type = type;
+	}
+	getValue(){
+		return this.value;
 	}
 }
 export class TokenizeOption{
@@ -103,14 +107,19 @@ export class Tokenizer{
 					this.cursor.advance();
 				}
 			}
-		}catch{
+		}catch(e){
 			this.buildToken();
 		}
+		// this._tokenInBuild= new Token(TokenType.EOF,-1);
+		// this.buildToken();
 		//ALERT:这仅用于测试！，发行版请去掉以下内容，否则将严重影响性能！
 		this.result.forEach(token=>{
-			logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
-			logger.debug(token.getType().toString());
-		})
+			// logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
+			if(token.getValue()){
+				logger.debug(token.value);
+				logger.debug(token.getType().toString());
+			}
+		});
 		return this.result;
 	}
 	/**
@@ -171,8 +180,13 @@ export class Tokenizer{
 	buildToken(){
 		if(this._tokenInBuild){
 			this._tokenInBuild.build(this.cursor.getoffset()-1);
-			//ALERT:这仅用于测试！，发行版请去掉以下内容，否则将严重影响性能！
-			this._tokenInBuild.value = this.content.substring(this._tokenInBuild.getSpan().start,this._tokenInBuild.getSpan().end+1);
+			//我们仅对应该记录value的token生成value:
+			if([2,5,6,7,9].indexOf(this._tokenInBuild.getType())!==-1){
+				this._tokenInBuild.value = this.content.substring(this._tokenInBuild.getSpan().start,this._tokenInBuild.getSpan().end+1);
+			}
+			else if(this._tokenInBuild.getType()===TokenType.CLOSED_TAG){
+				this._tokenInBuild.value = this.content.substring(this._tokenInBuild.getSpan().start+2,this._tokenInBuild.getSpan().end).replace(" ","");
+			}
 			this.result.push(this._tokenInBuild);
 			this._tokenInBuild=undefined;
 		}
@@ -184,33 +198,43 @@ export class Tokenizer{
 
 	buildOpenTag(){
 		// this.cursor.advance();
-		this.buildToken(); 
-		this.startToken(TokenType.TAG_NAME);
-		//如果关闭的情况下 closeTag
-		if(!this.tryStopbyFilter([chars.$GT,chars.$SLASH],chars.WhiteChars)){
-			this.buildToken();
+		this.buildToken();
+		if(this.cursor.peek()===chars.$GT||this.cursor.peek()===chars.$SLASH){
+			this.buildATTROrEndToken(this.cursor.peek());
+			return;
 		}
-		let s:string = this.content.substring(this.cursor.offset,this.cursor.offset+1); 
-		while(!this.buildATTROrEndToken(this.cursor.peek()))
-			this.cursor.advance();
+		else{
+			this.startToken(TokenType.TAG_NAME);
+			//如果关闭的情况下 closeTag
+			if(!this.tryStopbyFilter([chars.$GT,chars.$SLASH,chars.$LT],chars.WhiteChars)){
+				this.buildToken();
+			}
+			if(this.cursor.peek() === chars.$LT)
+				return;
+			while(!this.buildATTROrEndToken(this.cursor.peek()))
+				this.cursor.advance();
+		}
 
 	}
 
 	buildClosedTag(){
 		// this.cursor.advance();
-		this._tokenInBuild?.setType(TokenType.CLOSED_TAG_START);
-		this.buildToken();
-		this.startToken(TokenType.TAG_NAME);
+		this._tokenInBuild?.setType(TokenType.CLOSED_TAG);
+		// this.buildToken();
+		// this.startToken(TokenType.TAG_NAME);
 		// this._tokenInBuild = new Token(TokenType.TAG_NAME,this.cursor.offset);
 		this.tryStopAt([chars.$GT]);
-		this.buildToken();
-		this.startToken(TokenType.TAG_END);
+
 		// this._tokenInBuild = new Token(TokenType.TAG_END,this.cursor.offset);
 		this.cursor.advance();
+		this.buildToken();
 		this.buildToken();
 	}
 
 	buildATTROrEndToken(char:number){
+		if(char === chars.$LT){
+			return true;
+		}
 		if([chars.$GT,chars.$SLASH].indexOf(char)!==-1){
 			this.buildTagSelfClosedToken(char);
 			return true;
@@ -244,15 +268,19 @@ export class Tokenizer{
 		this.buildToken();
 	}
 	buildATTRToken(){	
-		this.startToken(TokenType.ATTR_NAME);
-		if(this.tryStopbyFilter([chars.$EQ],[chars.$GT,chars.$SLASH])){
+		if(this.cursor.peek()===chars.$HASH){
+			this.startToken(TokenType.TEMPLATE);
+		}else{
+			this.startToken(TokenType.ATTR_NAME);
+		}
+		if(this.tryStopbyFilter([chars.$EQ,],[chars.$GT,chars.$SLASH,chars.$LT,...chars.WhiteChars])){
 			this.buildToken();
 		}else{
 			this.buildToken();
 			this.cursor.offset--;
 			return;
 		}
-		
+		 
 		this.startToken(TokenType.ATTR_VALUE_START);
 		this.cursor.advance();
 		if(this.tryStopbyFilter([chars.$DQ],[chars.$GT,chars.$SLASH])){
@@ -280,9 +308,9 @@ export class Tokenizer{
 	}
 	buildComment(){
 		this._tokenInBuild = new Token(TokenType.COMMENT,this.cursor.offset-3);
-		let _end = this.content.indexOf("-->");
+		let _end = this.content.indexOf("-->",this.cursor.offset);
 		this.cursor = new Cursor(this.content,_end+3,this.cursor.getEOF());
-		this.buildToken()
+		this.buildToken();
 	}
 	buildDocumentTag(){
 		this._tokenInBuild = new Token(TokenType.DOCUMENT,this.cursor.offset-2);
@@ -310,7 +338,7 @@ export class Cursor{
 		}
 		this.offset++;
 		if(this.offset >=this.EOF){
-			this.offset--;
+			this.offset++;
 			throw Error(`Char At EOF At ${this.offset}`);
 		}
 	}  

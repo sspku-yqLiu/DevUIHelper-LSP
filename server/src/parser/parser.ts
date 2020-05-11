@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2020-04-09 18:58:10
- * @LastEditTime: 2020-05-02 12:08:14
+ * @LastEditTime: 2020-05-11 20:02:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\parser.ts
  */
-import {Spankind,ParseResult,ParseOption} from './type';
-import { HTMLAST, ASTType } from './ast';
+import {ParseResult,ParseOption} from './type';
+import { HTMLAST,  } from './ast';
 import { Tokenizer } from './lexer';
 import { TreeBuilder} from './ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -22,9 +22,10 @@ export class Parser{
 		const uri = textDocument.uri;
 		const tokenizer = new Tokenizer(textDocument.getText()); 
 		const tokens = tokenizer.Tokenize();
-		// const treebuilder =new TreeBuilder(tokens);
-		// const root = treebuilder.build();
-		// this.snapshotSet[uri]= new SnapShot(root,textDocument);
+		const treebuilder =new TreeBuilder(tokens);
+		const root = treebuilder.build();
+		this.snapshotSet[uri]= new SnapShot(root,textDocument);
+		JSON.stringify(root);
 	}
 	
 }

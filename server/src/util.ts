@@ -1,16 +1,16 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-04-17 18:31:27
+ * @LastEditTime: 2020-05-11 23:15:42
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
  */
 import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem,Range} from 'vscode-languageserver';
-import { Span } from './parser/type';
+import { Span } from './DataStructor/type';
 import { logger } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { AST,HTMLAST } from './parser/ast';
+import { HTMLAST } from './parser/ast';
 import {CompletionRangeKind} from './type';
 export function getName(text: string,componentRegex: RegExp){
     text.match(componentRegex);
