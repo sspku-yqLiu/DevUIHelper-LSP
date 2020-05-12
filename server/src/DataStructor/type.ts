@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-10 11:47:06
- * @LastEditTime: 2020-05-10 11:47:07
+ * @LastEditTime: 2020-05-12 16:34:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\DataStructor\tytpe.ts
@@ -31,7 +31,7 @@ export class Span{
 		if(offset>=this.start&&offset<=this.end+1){return true;}
 		return false;
 	}
-	shift(offset:number,directive:boolean){
+	shift(offset:number,directive:boolean):Span{
 		if(directive){
 			this.start+=offset;
 			this.end+=offset;
@@ -39,5 +39,12 @@ export class Span{
 			this.start-=offset;
 			this.end-=offset;
 		}
+		return this;
+	}
+	toJSON = ()=>{
+		return `[start:${this.start} end:${this.end}]`;
+	}
+	clone():Span{
+		return new Span(this.start,this.end);
 	}
 }

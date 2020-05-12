@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-05-11 20:33:53
+ * @LastEditTime: 2020-05-12 16:34:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -9,7 +9,7 @@
 /**
  * Token 相关
  */
-import {HTMLAST, ATTRASTNode, TagASTNode} from './ast';
+import {HTMLAST, HTMLATTRAST, HTMLTagAST} from './ast';
 import {Span} from '../DataStructor/type';
 import * as lsp from 'vscode-languageserver';
 import { HTMLInfoNode } from '../source/html_info';
@@ -114,7 +114,7 @@ export class Token{
 
 
 
-export interface ParseResult{
+export interface SearchResult{
 	
 	/**
 	 * 是否提供补全标签
@@ -137,7 +137,7 @@ export interface ParseResult{
 /**
  * AST相关
  */
-export enum ASTNodeType{
+export enum HTMLASTNodeType{
 	TAG,
 	ATTR,
 	ATTR_VALUE,
@@ -149,19 +149,20 @@ export interface tagSubNodes{
 	/**
 	 * 指令
 	 */
-	directive:LinkedList<ATTRASTNode>
-	/**
-	 * 模板
-	 */
-	template:LinkedList<ATTRASTNode>
-	/**
-	 * 属性
-	 */
-	attr:LinkedList<ATTRASTNode>
-	/**
-	 * 内容
-	 */
-	content:LinkedList<TagASTNode>
+	// [directive:string]:LinkedList<HTMLATTRAST>,
+	[directive:string]:LinkedList<HTMLAST>,
+	// /**
+	//  * 模板
+	//  */
+	// [template:string]:LinkedList<HTMLATTRAST>
+	// /**
+	//  * 属性
+	//  */
+	// [attr:string]:LinkedList<HTMLATTRAST>
+	// /**
+	//  * 内容
+	//  */
+	// [content:string]:LinkedList<HTMLTagAST>
 
 }
 export enum ParseErrorLevel {
@@ -175,6 +176,9 @@ export class TreeError{
       public level: ParseErrorLevel = ParseErrorLevel.ERROR
 	){}
 }
-
+export interface ParseResult{
+	root:HTMLAST,
+	errors:TreeError[]
+} 
 
 

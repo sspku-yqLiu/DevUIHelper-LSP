@@ -1,14 +1,14 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-05-08 10:28:01
+ * @LastEditTime: 2020-05-12 16:02:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
 import{converStringToName,getRangeFromDocument,getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan}from './util';
 import { HTMLInfoNode, Element, Attribute } from './source/html_info';
-import{htmlSourceTreeRoot,parser} from'./server'; 
+import{htmlSourceTreeRoot,host} from'./server'; 
 import { } from './parser/type';
 import{CompletionItem,Range, HoverParams} from 'vscode-languageserver';
 import { HTMLAST } from './parser/ast';

@@ -23,11 +23,12 @@ import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
 import { CompletionProvider} from './completion';
-import {Parser} from './parser/parser';
+import {YQ_Parser} from './parser/parser';
 import { DevUIParamsConstructor, } from './source/html_info';
 import * as fs from 'fs';
 import { HoverProvider } from './HoverProvider';
 import { SupportFrameName } from './parser/type';
+import { Host, Hunter } from './GlobalData/Host';
 configure({
     appenders: {
         lsp_demo: {
@@ -140,17 +141,22 @@ connection.onDidChangeWatchedFiles(_change => {
 });
 
 //分析器
-export const parser = new Parser();
+export const host = new Host();
+export const hunter = new Hunter();
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
 		logger.debug(`Completion work`);
-		logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`);
+
+		let uri = _textDocumentPosition.textDocument.uri;
+		let _offset = documents.get(uri)!.offsetAt(_textDocumentPosition.position);
+		logger.debug(`cursorOffset at : ${ _offset}`);
 		const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
 		if(_textDocument){
 			//TODO : 将分析放到外层。
-		parser.parseTextDocument(_textDocument,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
+		host.parseTextDocument(_textDocument,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
 		}
+		hunter.searchTerminalASTForCompletion(_offset,uri)
 		// let source = htmlSourceTreeRoot;
 		
 
@@ -249,7 +255,7 @@ documents.onDidOpen(
         logger.debug(`file content:${event.document.getText()}`);
         logger.debug(`language id:${event.document.languageId}`);
 		logger.debug(`line count:${event.document.lineCount}`);
-		parser.parseTextDocument(event.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
+		host.parseTextDocument(event.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
     }
 );
 documents.onDidChangeContent(
@@ -258,7 +264,7 @@ documents.onDidChangeContent(
 		// logger.debug(`document version:${e.document.version}`);
 		logger.debug(`language id:${e.document.languageId}`);
 		// logger.debug(`text:${e.document.getText()}`);
-		parser.parseTextDocument(e.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
+		host.parseTextDocument(e.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
 		// logger.debug(`line count:${e.document.lineCount}`);
 		// let tokenizer = new Tokenizer(e.document,new TokenizeOption("<d-"));
 		// tokenizer.Tokenize();

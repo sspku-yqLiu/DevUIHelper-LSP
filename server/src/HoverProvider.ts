@@ -1,15 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2020-05-03 09:30:22
- * @LastEditTime: 2020-05-08 10:28:09
- * @LastEditors: your name
+ * @LastEditTime: 2020-05-12 16:02:30
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\HoverProvider.ts
  */
 
 import{converStringToName,getRangeFromDocument,getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan}from './util';
 import { HTMLInfoNode, Element, Attribute } from './source/html_info';
-import{htmlSourceTreeRoot,parser} from'./server'; 
+import{htmlSourceTreeRoot,host} from'./server'; 
 import { } from './parser/type';
 import{CompletionItem,Range, HoverParams, Hover} from 'vscode-languageserver';
 import { HTMLAST } from './parser/ast';

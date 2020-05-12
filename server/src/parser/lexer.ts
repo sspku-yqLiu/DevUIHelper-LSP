@@ -218,14 +218,19 @@ export class Tokenizer{
 	}
 
 	buildClosedTag(){
-		// this.cursor.advance();
 		this._tokenInBuild?.setType(TokenType.CLOSED_TAG);
-		// this.buildToken();
-		// this.startToken(TokenType.TAG_NAME);
-		// this._tokenInBuild = new Token(TokenType.TAG_NAME,this.cursor.offset);
-		this.tryStopAt([chars.$GT]);
+		this.buildToken();
+		this.startToken(TokenType.TAG_NAME);
+		this._tokenInBuild = new Token(TokenType.TAG_NAME,this.cursor.offset);
+		if(this.tryStopbyFilter([chars.$GT],chars.WhiteCharsAndLT)){
+			this.buildToken();
+			this.startToken(TokenType.TAG_END);
+		}
+		else{
+			this.buildToken();
+			return;
+		}
 
-		// this._tokenInBuild = new Token(TokenType.TAG_END,this.cursor.offset);
 		this.cursor.advance();
 		this.buildToken();
 		this.buildToken();

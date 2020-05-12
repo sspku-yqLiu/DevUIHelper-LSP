@@ -12,5 +12,6 @@
 		"dom.iterable",//这里是新增项
 	],
 	"include": ["src"],
-	"exclude": ["node_modules", ".vscode-test"]
+	"exclude": ["node_modules", ".vscode-test"],
+	"suppressImplicitAnyIndexErrors":true
 }

@@ -4,7 +4,7 @@ import{Span} from './type';
 /*
  * @Author: your name
  * @Date: 2020-05-03 09:59:29
- * @LastEditTime: 2020-05-12 09:48:50
+ * @LastEditTime: 2020-05-12 22:13:01
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\dataStructor\LinkList.ts
@@ -19,11 +19,11 @@ export interface Node{
 	/**
 	 * 后继指针
 	 */
-	next:Node|null;
+	next:Node|undefined;
 	/**
 	 * 前驱指针
 	 */
-	pre:Node|null;
+	pre:Node|undefined;
 
 }
 export interface LinkList<T>{
@@ -39,7 +39,7 @@ export interface LinkList<T>{
 	/**
 	 * 尾节点
 	 */
-	end:LinkNode<T>|null;
+	end:LinkNode<T>|undefined;
 	
 	/**
 	 * 插入节点
@@ -54,13 +54,13 @@ export interface LinkList<T>{
 	/**
 	 * 获取元素
 	 */
-	getElement(element:T,cb?:(oldarg:T,newarg:T)=>boolean):Node|null;
+	getElement(cb?:()=>any,param?:T):T|undefined;
 
 	/**
 	 * 依据下标获取元素
 	 * @param num 
 	 */
-	get(num:number):Node;
+	get(num:number):Node|undefined;
 	/**
 	 * 转化为数组
 	 */
@@ -70,8 +70,8 @@ export interface LinkList<T>{
 }
 export class HeadNode implements Node{
 	data:HeadNodeData;
-	pre:Node|null=null;
-	next:Node|null=null;
+	pre:Node|undefined;
+	next:Node|undefined;
 	constructor(headInfo:HeadNodeData){
 		this.data = headInfo;
 	}
@@ -93,11 +93,11 @@ export interface HeadNodeData{
 }
 export class LinkNode<N> implements Node{
 
-	data :N|null = null;
+	data :N|undefined;
 
-	next:LinkNode<N>|null =null ;
+	next:LinkNode<N>|undefined ;
 
-	pre:Node|null =null ;
+	pre:Node|undefined ;
 
 	constructor(element:N){ this.data = element}
 }
@@ -111,12 +111,11 @@ export class LinkedList<T>implements LinkList<T>{
 	head:HeadNode;
 	headInfo:HeadNodeData;
 	length:number;
-	end:LinkNode<T>|null;
+	end:LinkNode<T>|undefined;
 
 	constructor(headInfo:HeadNodeData){
 		this.head = new HeadNode(headInfo);
 		this.headInfo = this.head.data;
-		this.end = null;
 		this.length = 0 ;
 	}
 	/**
@@ -129,13 +128,11 @@ export class LinkedList<T>implements LinkList<T>{
 	getHeadData(){
 		return this.head.data;
 	}
-	getEnd():T|null{
-		if(this.end === null){
-			return null;
-		}
-		else{
+	getEnd():T|undefined{
+		if(this.end ){
 			return this.end.data;
 		}
+		return;
 	}
 	insertNode(newElement:T,node?:Node):LinkNode<T>{
 		let _newnode = new LinkNode(newElement);
@@ -149,12 +146,12 @@ export class LinkedList<T>implements LinkList<T>{
 			}
 		}
 		else{
-			if(this.end === null){
-				this.head.next = _newnode;
-				_newnode.pre = this.head;
-			}else{
+			if(this.end){
 				this.end.next = _newnode;
 				_newnode.pre = this.end;
+			}else{
+				this.head.next = _newnode;
+				_newnode.pre = this.head;
 			}
 			this.end = _newnode;
 		}
@@ -166,7 +163,10 @@ export class LinkedList<T>implements LinkList<T>{
 		return _newnode;
 	}
 	insetLinkList(list:LinkList<T>,node?:Node){
-		if(list.length>0){
+		if(!list.end){
+			return;
+		}
+		if(this.end){
 			if(node){
 				let p = node.next;
 				node.next = list.head.next;
@@ -174,31 +174,49 @@ export class LinkedList<T>implements LinkList<T>{
 				if(p)
 					p.pre = list.end;
 			}else{
-				if(this.end === null){
-					this.head.next = list.head.next;
-					list.head.pre = this.head;
-				}else{
+				if(this.end){
 					this.end.next = list.head.next;
 					list.head.next!.pre = this.end;
+
+				}else{
+					this.head.next = list.head.next;
+					list.head.pre = this.head;
 				}
 			}
 			this.end = list.end;
 			this.length+=list.length;
 		}
 	}
-	getElement(param:T,cb:(oldarg:T,newarg:T)=>boolean):Node|null{
-		if(!cb){
-			cb = this.objectDeepEqual;
-		}
+	getElement(cb?:()=>any,param?:T):T|undefined{
 		let _node = this.head.next;
-		while(_node!=null){
-			if(cb(param,_node.data))
-				return _node;
-			_node = _node.next;
+		if(this.length<=0||(!cb&&!param)){
+			return;
 		}
-		return null;
+		if(!param&&cb){
+			while(_node){
+				if(cb.call(_node.data)){
+					return _node.data;
+				}
+				_node = _node.next;
+			}
+		}
+		else if(!cb&&param){
+			while(_node!=null){
+				if(this.objectDeepEqual(param,_node.data)){
+					return _node.data;
+				}
+				_node = _node.next;
+			}
+		}else{
+			while(_node!=null){
+				if(cb?.call(_node.data)&&this.objectDeepEqual(param,_node.data))
+					return _node.data;
+				_node = _node.next;
+			}
+		}
+		return;
 	}
-	get(param:number):Node{
+	get(param:number):Node|undefined{
 		let _node = this.head.next;
 		while(_node!=null&&param>0){
 			_node = _node.next;
@@ -243,9 +261,9 @@ export class LinkedList<T>implements LinkList<T>{
 	 * @param action 操作的回调函数
 	 */
 	popAndShiftWithAction(node:Node,action?:(node:Node)=>boolean):boolean{
-		let _node:Node|null = node;
+		let _node:Node|undefined = node;
 	
-		while(_node?.next!==null){
+		while(_node?.next){
 			if(action){
 				if(!action(_node.data)){ return false;}
 			}
@@ -254,7 +272,7 @@ export class LinkedList<T>implements LinkList<T>{
 		if(action){
 			if(!action(_node.data)){ return false;}
 		}
-		node.pre!.next=null;
+		node.pre!.next=undefined;
 		_node.pre=this.head;
 		let p = this.head.next;
 		this.head.next = node;

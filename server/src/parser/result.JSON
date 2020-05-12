@@ -1,109 +1,144 @@
 {
+	"span": "[start:0 end:500]",
+	"nameSpan": "[start:-1 end:-1]",
+	"contentSpan": "[start:0 end:500]",
 	"lists": {
 		"directive": [],
 		"template": [],
 		"attr": [],
 		"content": [
 			{
+				"span": "[start:0 end:12]",
+				"nameSpan": "[start:1 end:5]",
+				"contentSpan": "[start:-1 end:-1]",
 				"name": "input",
 				"lists": {
 					"directive": [
 						{
 							"name": "type",
-							"valueNode": null
+							"span": "[start:7 end:10]",
+							"nameSpan": "[start:7 end:10]"
 						}
 					],
 					"template": [],
 					"attr": [],
 					"content": []
-				}
+				},
+				"tagOffset": 243
 			},
 			{
-				"name": "section",
-				"lists": {
-					"directive": [],
-					"template": [],
-					"attr": [],
-					"content": [
-						{
-							"name": "d-alert",
-							"lists": {
-								"directive": [
-									{
-										"name": "primary\"",
-										"valueNode": null
-									}
-								],
-								"template": [],
-								"attr": [
-									{
-										"name": "[type]",
-										"valueNode": {
-											"name": "'danger'\r\n    bsStyle="
-										}
-									}
-								],
-								"content": []
-							}
-						},
-						{
-							"name": "d-fullscreen",
-							"lists": {
-								"directive": [
-									{
-										"name": "ddropdown",
-										"valueNode": null
-									},
-									{
-										"name": "[]",
-										"valueNode": null
-									}
-								],
-								"template": [
-									{
-										"name": "#template",
-										"valueNode": null
-									}
-								],
-								"attr": [
-									{
-										"name": "[fullscreen-target]",
-										"valueNode": {
-											"name": "111"
-										}
-									},
-									{
-										"name": "[fullscreen-launch]",
-										"valueNode": {
-											"name": "222"
-										}
-									}
-								],
-								"content": [
-									{
-										"name": "d-button",
-										"lists": {
-											"directive": [],
-											"template": [],
-											"attr": [],
-											"content": []
-										}
-									}
-								]
-							}
-						}
-					]
-				}
-			},
-			{
+				"span": "[start:0 end:23]",
+				"nameSpan": "[start:1 end:8]",
+				"contentSpan": "[start:10 end:23]",
 				"name": "d-button",
 				"lists": {
 					"directive": [],
 					"template": [],
 					"attr": [],
 					"content": []
-				}
+				},
+				"tagOffset": 258
+			},
+			{
+				"span": "[start:0 end:43]",
+				"nameSpan": "[start:1 end:7]",
+				"contentSpan": "[start:34 end:43]",
+				"name": "d-alert",
+				"lists": {
+					"directive": [],
+					"template": [],
+					"attr": [
+						{
+							"name": "[type]",
+							"valueNode": {
+								"name": "'danger'",
+								"span": "[start:22 end:29]"
+							},
+							"span": "[start:14 end:29]",
+							"nameSpan": "[start:14 end:19]"
+						}
+					],
+					"content": []
+				},
+				"tagOffset": 284
+			},
+			{
+				"span": "[start:0 end:159]",
+				"nameSpan": "[start:1 end:12]",
+				"contentSpan": "[start:0 end:159]",
+				"name": "d-fullscreen",
+				"lists": {
+					"directive": [
+						{
+							"name": "ddropdown",
+							"span": "[start:34 end:42]",
+							"nameSpan": "[start:34 end:42]"
+						},
+						{
+							"name": "[]",
+							"span": "[start:111 end:112]",
+							"nameSpan": "[start:111 end:112]"
+						}
+					],
+					"template": [
+						{
+							"name": "#template",
+							"span": "[start:19 end:27]",
+							"nameSpan": "[start:19 end:27]"
+						}
+					],
+					"attr": [
+						{
+							"name": "[fullscreen-target]",
+							"valueNode": {
+								"name": "111",
+								"span": "[start:70 end:72]"
+							},
+							"span": "[start:49 end:72]",
+							"nameSpan": "[start:49 end:67]"
+						},
+						{
+							"name": "[fullscreen-launch]",
+							"valueNode": {
+								"name": "222",
+								"span": "[start:101 end:103]"
+							},
+							"span": "[start:80 end:103]",
+							"nameSpan": "[start:80 end:98]"
+						}
+					],
+					"content": [
+						{
+							"span": "[start:0 end:26]",
+							"nameSpan": "[start:1 end:8]",
+							"contentSpan": "[start:10 end:26]",
+							"name": "d-button",
+							"lists": {
+								"directive": [],
+								"template": [],
+								"attr": [],
+								"content": []
+							},
+							"tagOffset": 118
+						}
+					]
+				},
+				"tagOffset": 330
+			},
+			{
+				"span": "[start:0 end:8]",
+				"nameSpan": "[start:1 end:8]",
+				"contentSpan": "[start:-1 end:-1]",
+				"name": "d-accod",
+				"lists": {
+					"directive": [],
+					"template": [],
+					"attr": [],
+					"content": []
+				},
+				"tagOffset": 492
 			}
 		]
-	}
+	},
+	"tagOffset": 0
 }
