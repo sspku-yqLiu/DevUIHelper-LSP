@@ -1,0 +1,109 @@
+{
+	"lists": {
+		"directive": [],
+		"template": [],
+		"attr": [],
+		"content": [
+			{
+				"name": "input",
+				"lists": {
+					"directive": [
+						{
+							"name": "type",
+							"valueNode": null
+						}
+					],
+					"template": [],
+					"attr": [],
+					"content": []
+				}
+			},
+			{
+				"name": "section",
+				"lists": {
+					"directive": [],
+					"template": [],
+					"attr": [],
+					"content": [
+						{
+							"name": "d-alert",
+							"lists": {
+								"directive": [
+									{
+										"name": "primary\"",
+										"valueNode": null
+									}
+								],
+								"template": [],
+								"attr": [
+									{
+										"name": "[type]",
+										"valueNode": {
+											"name": "'danger'\r\n    bsStyle="
+										}
+									}
+								],
+								"content": []
+							}
+						},
+						{
+							"name": "d-fullscreen",
+							"lists": {
+								"directive": [
+									{
+										"name": "ddropdown",
+										"valueNode": null
+									},
+									{
+										"name": "[]",
+										"valueNode": null
+									}
+								],
+								"template": [
+									{
+										"name": "#template",
+										"valueNode": null
+									}
+								],
+								"attr": [
+									{
+										"name": "[fullscreen-target]",
+										"valueNode": {
+											"name": "111"
+										}
+									},
+									{
+										"name": "[fullscreen-launch]",
+										"valueNode": {
+											"name": "222"
+										}
+									}
+								],
+								"content": [
+									{
+										"name": "d-button",
+										"lists": {
+											"directive": [],
+											"template": [],
+											"attr": [],
+											"content": []
+										}
+									}
+								]
+							}
+						}
+					]
+				}
+			},
+			{
+				"name": "d-button",
+				"lists": {
+					"directive": [],
+					"template": [],
+					"attr": [],
+					"content": []
+				}
+			}
+		]
+	}
+}

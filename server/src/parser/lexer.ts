@@ -110,8 +110,8 @@ export class Tokenizer{
 		}catch(e){
 			this.buildToken();
 		}
-		// this._tokenInBuild= new Token(TokenType.EOF,-1);
-		// this.buildToken();
+		this.startToken(TokenType.EOF);
+		this.buildToken();
 		//ALERT:这仅用于测试！，发行版请去掉以下内容，否则将严重影响性能！
 		this.result.forEach(token=>{
 			// logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
@@ -261,19 +261,13 @@ export class Tokenizer{
 		}
 		this.buildToken();
 	}
- 
-	buildInnerAttrToken(){
-		this.startToken(TokenType.TEMPLATE);
-		this.tryStopAt([chars.$GT,...chars.WhiteChars]);
-		this.buildToken();
-	}
 	buildATTRToken(){	
 		if(this.cursor.peek()===chars.$HASH){
 			this.startToken(TokenType.TEMPLATE);
 		}else{
 			this.startToken(TokenType.ATTR_NAME);
 		}
-		if(this.tryStopbyFilter([chars.$EQ,],[chars.$GT,chars.$SLASH,chars.$LT,...chars.WhiteChars])){
+		if(this.tryStopbyFilter([chars.$EQ],[chars.$GT,chars.$SLASH,chars.$LT,...chars.WhiteChars])){
 			this.buildToken();
 		}else{
 			this.buildToken();

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-09 18:58:10
- * @LastEditTime: 2020-05-11 20:02:02
+ * @LastEditTime: 2020-05-12 09:32:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\parser.ts
@@ -11,7 +11,7 @@ import { HTMLAST,  } from './ast';
 import { Tokenizer } from './lexer';
 import { TreeBuilder} from './ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { htmlSourceTreeRoot } from '../server';
+import { htmlSourceTreeRoot,logger } from '../server';
 import { HTMLInfoNode, Attribute, RootNode } from '../source/html_info';
 export class Parser{
 
@@ -25,7 +25,7 @@ export class Parser{
 		const treebuilder =new TreeBuilder(tokens);
 		const root = treebuilder.build();
 		this.snapshotSet[uri]= new SnapShot(root,textDocument);
-		JSON.stringify(root);
+		logger.debug(JSON.stringify(root));
 	}
 	
 }

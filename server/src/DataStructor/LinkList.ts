@@ -4,7 +4,7 @@ import{Span} from './type';
 /*
  * @Author: your name
  * @Date: 2020-05-03 09:59:29
- * @LastEditTime: 2020-05-10 12:08:29
+ * @LastEditTime: 2020-05-12 09:48:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\dataStructor\LinkList.ts
@@ -297,6 +297,21 @@ export class LinkedList<T>implements LinkList<T>{
         else {
             return obj1 == obj2
         }
+	}
+	unshift():T|undefined{
+		if(this.length>0){
+			let _nodedata = this.head.next?.data;
+			this.head.next = this.head.next!.next;
+			if(this.head.next){
+			this.head.next.pre = this.head;
+			}
+			this.length--;
+			return _nodedata;
+
+		}
+	}
+	toJSON =()=>{
+		return this.toArray();
 	}
 
 }

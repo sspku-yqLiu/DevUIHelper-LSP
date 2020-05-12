@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-05-11 23:15:02
+ * @LastEditTime: 2020-05-12 10:10:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
@@ -64,7 +64,6 @@ export class TreeBuilder {
 				else {
 					this.advance();
 				}
-				
 			}
 		}catch{
 
@@ -207,7 +206,10 @@ export class TreeBuilder {
 		if(!this.attrInBuild){
 			return;
 		}
-		if(this.attrInBuild?.valueNode){
+		if(this.attrInBuild.getType()===ASTNodeType.TEMPLATE){
+			this.addToList(this.tagInBuld?.getTagLists()!.template,this.attrInBuild);
+		}
+		else if(this.attrInBuild?.valueNode){
 			this.addToList(this.tagInBuld?.getTagLists()!.attr,this.attrInBuild);
 		}else{
 			this.attrInBuild?.setType(ASTNodeType.DIRECTIVE);
@@ -225,7 +227,7 @@ export class TreeBuilder {
 	}
 	adjustSpan(_span:Span){
 		for(let ast of this.buildStack){
-			_span.shift(ast.getSpan().start,false);
+			_span.shift(ast.tagStart,false);
 		}
 		if(this.tagInBuld){
 			_span.shift(this.tagInBuld.tagStart,false);
@@ -243,9 +245,7 @@ export class TreeBuilder {
 		}
 		node.linkListPointer=list.insertNode(node);
 		node.parentPointer = this.tagInBuld;
-		list.head.data.span.end=node.getSpan().end;
-		//TODO :是否会更新呢？也许不需要这一步。
-		list.headInfo = list.head.data;
+		list.headInfo.span.end=node.getSpan().end;
 	}
 	buildLastAttr(){
 		if(this.attrInBuild){
@@ -310,6 +310,11 @@ export class HTMLAST  {
 	search():boolean{
 		return false;
 	}
+	toJSON =()=>{
+		return{
+			name:this.name
+		}
+	}
 }
 export class TagASTNode extends HTMLAST{
 	linkListPointer:LinkNode<TagASTNode>|undefined;
@@ -364,6 +369,12 @@ export class TagASTNode extends HTMLAST{
 	getTagLists():tagSubNodes|undefined{
 		return this.attrLists;
 	}
+	toJSON =()=>{
+		return{
+			name:this.name,
+			lists:this.attrLists,
+		}
+	}
 
 } 
 export class ATTRASTNode extends HTMLAST{
@@ -381,5 +392,11 @@ export class ATTRASTNode extends HTMLAST{
 		this.span.end = node.getSpan().end;
 		this.valueNode = node;
 		node.parentPointer = this;
+	}
+	toJSON =()=>{
+		return{
+			name:this.name,
+			valueNode:this.valueNode
+		}
 	}
 }
