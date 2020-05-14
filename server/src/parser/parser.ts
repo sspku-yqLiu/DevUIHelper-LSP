@@ -1,20 +1,17 @@
 /*
  * @Author: your name
  * @Date: 2020-04-09 18:58:10
- * @LastEditTime: 2020-05-12 16:00:45
+ * @LastEditTime: 2020-05-13 20:48:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\parser.ts
  */
-import {SearchResult,ParseOption, TreeError, ParseResult} from './type';
-import { HTMLAST,  } from './ast';
+import {SearchResult,ParseOption, TreeError, ParseResult, SearchResultType} from './type';
+import { HTMLAST, HTMLTagAST,  } from './ast';
 import { Tokenizer } from './lexer';
 import { TreeBuilder} from './ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { htmlSourceTreeRoot,logger } from '../server';
-import { HTMLInfoNode, Attribute, RootNode } from '../source/html_info';
 export class YQ_Parser{
-
 	constructor(){
 	}
 	parseTextDocument(textDocument:TextDocument,parseOption:ParseOption):ParseResult{
@@ -24,19 +21,28 @@ export class YQ_Parser{
 		const treebuilder =new TreeBuilder(tokens);
 		return treebuilder.build();
 	}
-	
-	
 }
 export class TextParser{
 	
 }
-export class SerachParser{
-		// private tokenizer:Tokenizer;
-	// private treebuilder:TreeBuilder;
-	// private astNodeChain:HTMLAST[]=[];
-	private noCompletionFlag:boolean=false;
-	private terminalNode:HTMLAST|undefined;
-	
+export class SearchParser{
+	constructor(){}
+	DFS(offset:number,root:HTMLAST):SearchResult|undefined{
+		if(root instanceof HTMLTagAST){
+			offset-=root.tagOffset;
+		}
+		let _searchresult = root.search(offset);
+		let{ast,type}= _searchresult;
+		if(!_searchresult||(!ast&&type===SearchResultType.Null)){
+			return;
+		}
+		else if(!ast&&type!==SearchResultType.Null){
+			return {ast:root,type:type};
+		}else if(ast){
+			let _result = this.DFS(offset,ast);
+			return _result;
+		}
+	}
 }
 
 

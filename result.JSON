@@ -1,7 +1,8 @@
 {
-	"span": "[start:0 end:500]",
+	"span": "[start:0 end:495]",
 	"nameSpan": "[start:-1 end:-1]",
-	"contentSpan": "[start:0 end:500]",
+	"contentSpan": "[start:0 end:495]",
+	"name": "$$ROOT$$",
 	"lists": {
 		"directive": [],
 		"template": [],
@@ -22,27 +23,29 @@
 					],
 					"template": [],
 					"attr": [],
-					"content": []
+					"content": [],
+					"comment": []
 				},
 				"tagOffset": 243
 			},
 			{
 				"span": "[start:0 end:23]",
 				"nameSpan": "[start:1 end:8]",
-				"contentSpan": "[start:10 end:23]",
+				"contentSpan": "[start:10 end:12]",
 				"name": "d-button",
 				"lists": {
 					"directive": [],
 					"template": [],
 					"attr": [],
-					"content": []
+					"content": [],
+					"comment": []
 				},
 				"tagOffset": 258
 			},
 			{
 				"span": "[start:0 end:43]",
 				"nameSpan": "[start:1 end:7]",
-				"contentSpan": "[start:34 end:43]",
+				"contentSpan": "[start:34 end:33]",
 				"name": "d-alert",
 				"lists": {
 					"directive": [],
@@ -58,14 +61,15 @@
 							"nameSpan": "[start:14 end:19]"
 						}
 					],
-					"content": []
+					"content": [],
+					"comment": []
 				},
 				"tagOffset": 284
 			},
 			{
 				"span": "[start:0 end:159]",
 				"nameSpan": "[start:1 end:12]",
-				"contentSpan": "[start:0 end:159]",
+				"contentSpan": "[start:0 end:144]",
 				"name": "d-fullscreen",
 				"lists": {
 					"directive": [
@@ -111,34 +115,38 @@
 						{
 							"span": "[start:0 end:26]",
 							"nameSpan": "[start:1 end:8]",
-							"contentSpan": "[start:10 end:26]",
+							"contentSpan": "[start:10 end:15]",
 							"name": "d-button",
 							"lists": {
 								"directive": [],
 								"template": [],
 								"attr": [],
-								"content": []
+								"content": [],
+								"comment": []
 							},
 							"tagOffset": 118
 						}
-					]
+					],
+					"comment": []
 				},
 				"tagOffset": 330
 			},
 			{
-				"span": "[start:0 end:8]",
-				"nameSpan": "[start:1 end:8]",
+				"span": "[start:0 end:3]",
+				"nameSpan": "[start:1 end:3]",
 				"contentSpan": "[start:-1 end:-1]",
-				"name": "d-accod",
+				"name": "d-a",
 				"lists": {
 					"directive": [],
 					"template": [],
 					"attr": [],
-					"content": []
+					"content": [],
+					"comment": []
 				},
 				"tagOffset": 492
 			}
-		]
+		],
+		"comment": []
 	},
 	"tagOffset": 0
 }

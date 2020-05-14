@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-06 16:17:11
- * @LastEditTime: 2020-04-06 16:17:11
+ * @LastEditTime: 2020-05-13 19:37:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\source\html_source.ts
@@ -15,7 +15,8 @@
  * @FilePath: \DevUIHelper\src\html_source.ts
  */
 export const HTML_SCHEMA=[
-    "accordion||这是一个accordion组件",
+"DevUI组件库||d-||NoPicture",
+"accordion||这是一个accordion组件",
 "data||Array<any>或AccordionMenuType||null||数据源||必选，数据源，可以自定义数组或者使用预设的AccordionMenuType||true||false||[]",
 "titleKey||string||title||标题的属性名||可选，标题的属性名，item[titleKey]类型为string，为标题显示内容||false||false||[]",
 "loadingKey||string||loading||子菜单是否加载中的判断属性名||可选，子菜单是否加载中的判断属性名，item[loadingKey]类型为boolean||false||false||[]",

@@ -38,13 +38,12 @@ configure({
     categories: { default: { appenders: ["lsp_demo"], level: "debug" } }
 });
 export const logger = getLogger("lsp_demo");
+export const host = new Host();
 // Create a connection for the server. The connection uses Node's IPC as a transport.
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
 
-// Create a simple text document manager. The text document manager
-// supports full document sync only
-export let documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+ let documents = host.documents;
 
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
@@ -141,7 +140,7 @@ connection.onDidChangeWatchedFiles(_change => {
 });
 
 //分析器
-export const host = new Host();
+
 export const hunter = new Hunter();
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
@@ -152,11 +151,11 @@ connection.onCompletion(
 		let _offset = documents.get(uri)!.offsetAt(_textDocumentPosition.position);
 		logger.debug(`cursorOffset at : ${ _offset}`);
 		const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
-		if(_textDocument){
+		// if(_textDocument){
 			//TODO : 将分析放到外层。
-		host.parseTextDocument(_textDocument,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
-		}
-		hunter.searchTerminalASTForCompletion(_offset,uri)
+		// host.hunter.parseTextDocument(_textDocument,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
+		// }
+		hunter.searchTerminalASTForCompletion(_offset,uri);
 		// let source = htmlSourceTreeRoot;
 		
 
@@ -173,21 +172,7 @@ connection.onCompletion(
 connection.onHover((_textDocumentPosition)=>{
 	logger.debug(`HoverProvider works!`);
 	logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`)
-	// let document = documents.get(_textDocumentPosition.textDocument.uri);
-
-	// let source = htmlSourceTreeRoot;
-
-	// const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
-	// if(_textDocument){
-	// 	//TODO : 将分析放到外层。
-	// 	parser.parseTextDocument(_textDocument);
-	// 	const _offset = _textDocument!.offsetAt(_textDocumentPosition.position);
-	// 	if(_textDocument){
-	// 		return hoverProvider.provideHoverInfoForHTML(_offset,_textDocument);
-	// 	}
-	// }
-	return undefined;
-
+	return host.hoverProvider.provideHoverInfoForHTML(_textDocumentPosition)
 });
 
 documents.onDidChangeContent(change => {
@@ -250,21 +235,21 @@ async function validateTextDocument(textDocument: TextDocument): Promise<void> {
 
 documents.onDidOpen(
     (event: TextDocumentChangeEvent<TextDocument>) => {
-        logger.debug(`on open:${event.document.uri}`);
-        logger.debug(`file version:${event.document.version}`);
-        logger.debug(`file content:${event.document.getText()}`);
-        logger.debug(`language id:${event.document.languageId}`);
-		logger.debug(`line count:${event.document.lineCount}`);
-		host.parseTextDocument(event.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
+        // logger.debug(`on open:${event.document.uri}`);
+        // logger.debug(`file version:${event.document.version}`);
+        // logger.debug(`file content:${event.document.getText()}`);
+        // logger.debug(`language id:${event.document.languageId}`);
+		// logger.debug(`line count:${event.document.lineCount}`);
+		// host.parseTextDocument(event.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
     }
 );
 documents.onDidChangeContent(
     (e: TextDocumentChangeEvent<TextDocument>) => {
         // logger.debug('document change received.');
 		// logger.debug(`document version:${e.document.version}`);
-		logger.debug(`language id:${e.document.languageId}`);
-		// logger.debug(`text:${e.document.getText()}`);
-		host.parseTextDocument(e.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
+		// logger.debug(`language id:${e.document.languageId}`);
+		// // logger.debug(`text:${e.document.getText()}`);
+		// host.parseTextDocument(e.document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
 		// logger.debug(`line count:${e.document.lineCount}`);
 		// let tokenizer = new Tokenizer(e.document,new TokenizeOption("<d-"));
 		// tokenizer.Tokenize();

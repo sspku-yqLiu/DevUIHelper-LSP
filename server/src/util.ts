@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-05-11 23:15:42
+ * @LastEditTime: 2020-05-13 23:35:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
@@ -10,7 +10,7 @@ import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem,Range} from 
 import { Span } from './DataStructor/type';
 import { logger } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { HTMLAST } from './parser/ast';
+import { HTMLAST, HTMLTagAST } from './parser/ast';
 import {CompletionRangeKind} from './type';
 export function getName(text: string,componentRegex: RegExp){
     text.match(componentRegex);
@@ -57,7 +57,7 @@ export function autoIcon(type:CompletionItemKind):string{
             return "$(array)";
     }
 }
-export function converStringToName(name:string):string{
+export function convertStringToName(name:string):string{
     let bananaset = ['[',']','(',')']
     for(let banana of bananaset){
         name = name.replace(banana,"");
@@ -194,5 +194,22 @@ export class MarkUpBuilder{
                 '```'
             ].join('\n');
         return this;
+    }
+}
+export function convertSpanToRange(span:Span,textDocument:TextDocument):Range{
+    let _start = textDocument.positionAt(span.start)
+    let _end = textDocument.positionAt(span.end)
+    return {start:_start,end:_end};
+}
+export function adjustSpanToAbosultOffset(node:HTMLAST,span:Span):void{
+    _adjustSpanToAbosultOffset(node,span);
+    span.end++;
+}
+export function _adjustSpanToAbosultOffset(node:HTMLAST,span:Span):void{
+    if(node.getName()!="$$ROOT$$"){
+        if(node instanceof HTMLTagAST){
+            span.selfShift(node.tagOffset,true);
+        }
+        _adjustSpanToAbosultOffset(node.parentPointer!,span);
     }
 }

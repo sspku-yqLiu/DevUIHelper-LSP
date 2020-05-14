@@ -4,7 +4,7 @@ import{Span} from './type';
 /*
  * @Author: your name
  * @Date: 2020-05-03 09:59:29
- * @LastEditTime: 2020-05-12 22:13:01
+ * @LastEditTime: 2020-05-13 10:04:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\dataStructor\LinkList.ts
@@ -187,34 +187,38 @@ export class LinkedList<T>implements LinkList<T>{
 			this.length+=list.length;
 		}
 	}
-	getElement(cb?:()=>any,param?:T):T|undefined{
+	getElement(cb?:(param:T,data?:any)=>any,param?:T):T|undefined{
 		let _node = this.head.next;
 		if(this.length<=0||(!cb&&!param)){
 			return;
 		}
 		if(!param&&cb){
 			while(_node){
-				if(cb.call(_node.data)){
+				if(cb(_node.data)){
 					return _node.data;
 				}
 				_node = _node.next;
 			}
 		}
 		else if(!cb&&param){
-			while(_node!=null){
+			while(_node){
 				if(this.objectDeepEqual(param,_node.data)){
 					return _node.data;
 				}
 				_node = _node.next;
 			}
 		}else{
-			while(_node!=null){
-				if(cb?.call(_node.data)&&this.objectDeepEqual(param,_node.data))
+			while(_node){
+				if(cb!(_node.data)&&this.objectDeepEqual(param,_node.data))
 					return _node.data;
 				_node = _node.next;
 			}
 		}
 		return;
+	}
+	//TODO: 完成function函数
+	filter(fun:Function){
+
 	}
 	get(param:number):Node|undefined{
 		let _node = this.head.next;

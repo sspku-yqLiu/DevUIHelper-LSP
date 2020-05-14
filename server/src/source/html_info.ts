@@ -312,16 +312,22 @@ export class Attribute implements HTMLInfoNode{
 export class DevUIParamsConstructor{
     private readonly rootNode = new RootNode();
     private schema = this.rootNode.schema;
+    private prefix = "";
     constructor(){}
     build():HTMLInfoNode{
         let _elementName:string;
         SCHEMA.forEach(elementInfo => {
             const parts = elementInfo.split("||");
             if(parts.length===2){
-               _elementName = parts[0].toLocaleLowerCase(); 
+               _elementName = this.prefix+parts[0].toLocaleLowerCase(); 
                 this.schema[_elementName.toLowerCase()] = new Element(_elementName,parts[1]);
+                logger.debug(_elementName);
+            }
+            else if(parts.length===3){ 
+                this.prefix = parts[1];
                 // console.log(_elementName);
-            }else{
+            }
+            else{
                 // console.log(_elementName);
                 const _element = this.schema[_elementName];
                 if(_element.getAttribute(parts[0])){

@@ -113,13 +113,13 @@ export class Tokenizer{
 		this.startToken(TokenType.EOF);
 		this.buildToken();
 		//ALERT:这仅用于测试！，发行版请去掉以下内容，否则将严重影响性能！
-		this.result.forEach(token=>{
-			// logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
-			if(token.getValue()){
-				logger.debug(token.value);
-				logger.debug(token.getType().toString());
-			}
-		});
+		// this.result.forEach(token=>{
+		// 	// logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
+		// 	if(token.getValue()){
+		// 		logger.debug(token.value);
+		// 		logger.debug(token.getType().toString());
+		// 	}
+		// });
 		return this.result;
 	}
 	/**
@@ -337,7 +337,6 @@ export class Cursor{
 		}
 		this.offset++;
 		if(this.offset >=this.EOF){
-			this.offset++;
 			throw Error(`Char At EOF At ${this.offset}`);
 		}
 	}  

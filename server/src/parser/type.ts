@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-05-12 16:34:57
+ * @LastEditTime: 2020-05-13 15:35:04
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -114,7 +114,7 @@ export class Token{
 
 
 
-export interface SearchResult{
+export interface CompletionSearchResult{
 	
 	/**
 	 * 是否提供补全标签
@@ -144,25 +144,33 @@ export enum HTMLASTNodeType{
 	DIRECTIVE,
 	TEMPLATE,
 	NAME,
+	COMMENT
 }
 export interface tagSubNodes{
 	/**
 	 * 指令
 	 */
-	// [directive:string]:LinkedList<HTMLATTRAST>,
-	[directive:string]:LinkedList<HTMLAST>,
-	// /**
-	//  * 模板
-	//  */
-	// [template:string]:LinkedList<HTMLATTRAST>
-	// /**
-	//  * 属性
-	//  */
-	// [attr:string]:LinkedList<HTMLATTRAST>
-	// /**
-	//  * 内容
-	//  */
-	// [content:string]:LinkedList<HTMLTagAST>
+	"directive":LinkedList<HTMLAST>,
+	/**
+	 * 模板
+	 */
+	"template":LinkedList<HTMLAST>,
+	/**
+	 * 属性
+	 */
+	"attr":LinkedList<HTMLAST>,
+	/**
+	 * 内容
+	 */
+	"content":LinkedList<HTMLAST>,
+	/**
+	 * 注释
+	 */
+	"comment":LinkedList<HTMLAST>,
+	/**
+	 * 说明：所有的索引都是string
+	 */
+	[listName:string]:LinkedList<HTMLAST>,
 
 }
 export enum ParseErrorLevel {
@@ -180,5 +188,14 @@ export interface ParseResult{
 	root:HTMLAST,
 	errors:TreeError[]
 } 
-
+export enum SearchResultType{
+	Name,
+	Value,
+	Content,
+	Null
+}
+export interface SearchResult{
+	ast:HTMLAST|undefined,
+	type:SearchResultType
+}
 

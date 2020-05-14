@@ -1,12 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-05-12 16:02:37
+ * @LastEditTime: 2020-05-13 20:02:24
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
-import{converStringToName,getRangeFromDocument,getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan}from './util';
+import{convertStringToName,getRangeFromDocument,getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan}from './util';
 import { HTMLInfoNode, Element, Attribute } from './source/html_info';
 import{htmlSourceTreeRoot,host} from'./server'; 
 import { } from './parser/type';

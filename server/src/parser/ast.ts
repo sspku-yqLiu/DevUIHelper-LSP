@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-05-12 23:07:57
+ * @LastEditTime: 2020-05-14 08:48:06
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
@@ -9,7 +9,7 @@
 import * as lsp from 'vscode-languageserver';
 import { htmlInfo } from '../source/html_info';
 import {Span} from '../DataStructor/type';
-import {  TokenType, NodeStatus,HTMLASTNodeType, tagSubNodes, TreeError, ParseErrorLevel, SearchResult, ParseResult } from './type';
+import {  TokenType, NodeStatus,HTMLASTNodeType, tagSubNodes, TreeError, ParseErrorLevel, SearchResult, ParseResult, SearchResultType } from './type';
 import { Token, Cursor } from './lexer';
 import { threadId } from 'worker_threads';
 import { LinkNode, LinkedList } from '../DataStructor/LinkList';
@@ -43,7 +43,7 @@ export class TreeBuilder {
 	errors:TreeError[]=[];
 	// currentSpan: Span | undefined;
 	constructor(private tokens: Token[]) { 
-		this.root = new HTMLTagAST(new Span(0,0));
+		this.root = new HTMLTagAST(new Span(0,0),"$$ROOT$$");
 	}
 	build(): ParseResult {
 		if(this.tokens.length<1){
@@ -225,10 +225,10 @@ export class TreeBuilder {
 	}
 	adjustSpan(){
 		for(let ast of this.buildStack){
-			this.currentSpan.shift(ast.tagOffset,false);
+			this.currentSpan.selfShift(ast.tagOffset,false);
 		}
 		if(this.tagInBuld){
-			this.currentSpan.shift(this.tagInBuld.tagOffset,false);
+			this.currentSpan.selfShift(this.tagInBuld.tagOffset,false);
 		}
 	}
 	/**
@@ -242,7 +242,9 @@ export class TreeBuilder {
 			list.headInfo.span.start = node!.getSpan().start;
 		}
 		node.linkListPointer=list.insertNode(node);
-		node.parentPointer = this.tagInBuld;
+		if(!(node instanceof HTMLTagAST)){
+			node.parentPointer = this.tagInBuld;
+		}
 		list.headInfo.span.end=node.getSpan().end;
 	}
 	buildLastAttr(){
@@ -264,25 +266,31 @@ export class TreeBuilder {
 		}
 		this.currentSpan = this.currentToken.getSpan();
 		this.adjustSpan();
+		if(this.currentToken.getType()===TokenType.COMMENT){
+			let _commentAst = new HTMLAST(HTMLASTNodeType.COMMENT,this.currentSpan);
+			this.getStackpeek().subLists!.comment.insertNode(_commentAst);
+			this.advance();
+		}
+
 	}
 }
 export class HTMLAST  {
 	linkListPointer:LinkNode<HTMLAST>|undefined;
 	status:NodeStatus = NodeStatus.DEFAULT;
-	parentPointer:HTMLAST|undefined;
+	// parentPointer:HTMLAST|undefined;
 	nameSpan:Span=new Span(-1,-1);
 	//2020/5/11 应该把tag和普通的HTMLAST区分开来
 	constructor(
 		protected type:HTMLASTNodeType,
-		protected span:Span= new Span(-1,-1),
+		protected span:Span,
 		protected name?:string|undefined,
-		parentPointer?:HTMLAST|undefined,
+		public parentPointer?:HTMLAST|undefined,
 		) {
 			this.parentPointer=parentPointer;
 	}
 	getSpan(){return this.span;}
 
-	getName(){
+	getName():string|undefined{
 		return this.name;
 	}
 	setName(name:string,nameSpan:Span){
@@ -297,11 +305,11 @@ export class HTMLAST  {
 		this.type = type;
 	}
 	//普通的节点只需要检查span
-	search(offset:number):HTMLAST|undefined{
+	search(offset:number):SearchResult{
 		if(this.span.inSpan(offset)){
-			return this;
+			return {ast:undefined,type:SearchResultType.Name};
 		}
-		return;
+		return{ast:undefined,type:SearchResultType.Null};
 	}
 	toJSON =()=>{
 		return{
@@ -322,7 +330,7 @@ export class HTMLTagAST extends HTMLAST{
 		super(HTMLASTNodeType.TAG,span,name,parentPointer);
 		this.buildLinkedLists();
 		this.tagOffset = span.start;
-		this.span.shift(this.tagOffset,false);
+		this.span.selfShift(this.tagOffset,false);
 	}
 	
 	buildLinkedLists(){
@@ -338,13 +346,19 @@ export class HTMLTagAST extends HTMLAST{
 		let  _content:LinkedList<HTMLTagAST> = new LinkedList<HTMLTagAST>(
 		   {name:"content",span:new Span(-1,-1)}
 		   );
+		let  _comment:LinkedList<HTMLTagAST> = new LinkedList<HTMLTagAST>(
+		   {name:"comment",span:new Span(-1,-1)}
+		   );
+		
 	   this.subLists = {
 		   directive:_directive,
 		   template:_template,
 		   attr:_attr,
-		   content:_content
+		   content:_content,
+		   comment:_comment
 	   }
-   }
+
+   	}
 	findATTREnd():number{
 		if(this.type!==HTMLASTNodeType.TAG){
 			return -1;
@@ -377,30 +391,34 @@ export class HTMLTagAST extends HTMLAST{
 
 		}
 	}
-	search(offset:number):HTMLAST|undefined{
-		offset -= this.tagOffset;
-		if(this.nameSpan.inSpan(offset)){
-			return this;
-		}
+	search(offset:number):SearchResult{
+		// offset -= this.tagOffset;
 		if(!this.span.inSpan(offset)){
-			return;
+			return{ast:undefined,type:SearchResultType.Null};
+		}
+		if(!this.name||this.nameSpan.inSpan(offset)){
+			return {ast:undefined,type:SearchResultType.Name};
 		}
 		for(let listName in this.subLists){
 			let _list= this.subLists[listName];
 			if(!_list.headInfo.span.inSpan(offset)){
 				continue;
 			}else{
-				let _result = _list.getElement(this.search);
+				let _result = _list.getElement((param:HTMLAST)=>{
+					if(param instanceof HTMLTagAST){
+						return param.getSpan().inSpan(offset-param.tagOffset);
+					}
+					return param.getSpan().inSpan(offset);
+				});
 				if(_result){
-				_result.getSpan().shift(this.tagOffset,true);
-				return _result; 
+					return {ast:_result,type:SearchResultType.Null};
 				}
 			}
 		}
-		return undefined;
+ 
+		return this.subLists?.comment.headInfo.span.inSpan(offset)?
+		{ast:undefined,type:SearchResultType.Content}:{ast:undefined,type:SearchResultType.Value};
 	}
-	
-
 } 
 export class HTMLATTRAST extends HTMLAST{
 	valueNode:HTMLAST|undefined;
@@ -418,6 +436,7 @@ export class HTMLATTRAST extends HTMLAST{
 		this.span.end = node.getSpan().end;
 		this.valueNode = node;
 		node.parentPointer = this;
+		this.valueNode.nameSpan = this.valueNode.getSpan();
 	}
 	toJSON =()=>{
 		return{
@@ -427,14 +446,15 @@ export class HTMLATTRAST extends HTMLAST{
 			nameSpan:this.nameSpan
 		}
 	}
-	search(offset:number):HTMLAST|undefined{
-		let _result = super.search(offset);
-		if(_result){
-			return _result;
+	search(offset:number):SearchResult{
+		
+		if(this.nameSpan.inSpan(offset)){
+			return {ast:undefined,type:SearchResultType.Name};
 		}
-		if(this.valueNode){
-			return this.valueNode.search(offset);
+		if(this.valueNode?.getSpan().inSpan(offset)){
+			return{ast:this.valueNode,type:SearchResultType.Null};
 		}
-		return;
+		return{ast:undefined,type:SearchResultType.Null}
+
 	}
 }
