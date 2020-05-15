@@ -1,14 +1,15 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-08 19:29:37
- * @LastEditTime: 2020-04-13 07:15:15
+ * @LastEditTime: 2020-05-15 12:59:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit 
  * @FilePath: \DevUI-Language-Support\README.md
  -->
 # 一个基于LSP的DevUI语言组件
 
-请暂时不要使用这个版本,请移步DevUIHelper,此版本仅供内部测试人员使用。
+欢迎使用DevUIHelper!
+您可以在vscode上享受到比webstome还要优秀的的组件库提示！
 
 #### 说明
 
@@ -17,7 +18,6 @@
 - 代码纠错
 - 悬浮提醒
 - 跳转帮助
-(以上内容均在开发中)
 
 #### 下载方式
 
@@ -33,5 +33,6 @@
 
 #### 关于DevUI
 
+- 本插件仓库:https://github.com/sspku-yqLiu/DevUIHelper-LSP 欢迎star!
 - DevUI官方网址:https://devui.design/home
 - DevUI组件库:https://github.com/DevCloudFE/ng-devui/issues

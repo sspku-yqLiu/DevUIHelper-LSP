@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-12 14:52:22
- * @LastEditTime: 2020-05-15 11:00:23
+ * @LastEditTime: 2020-05-15 18:21:00
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
@@ -16,7 +16,7 @@ import { HoverProvider } from './HoverProvider';
 import { TextDocuments } from 'vscode-languageserver';
 import { convertStringToName,adjustSpanToAbosulutOffset } from './util';
 import { HoverSearchResult } from './type';
-import { Span } from './DataStructor/type';
+import { Span } from './DataStructure/type';
 import { CompletionProvider } from './CompletionProvider';
 import * as fs from 'fs';
 import { stringify } from 'querystring';
@@ -118,6 +118,7 @@ export class Igniter{
 	parseTextDocument(textDocument:TextDocument,parseOption:ParseOption){
 		let {root,errors}=host.parser.parseTextDocument(textDocument,parseOption);
 		host.snapshotMap.set(textDocument.uri,new SnapShot(root,errors,textDocument));
+		logger.debug(JSON.stringify(root));
 		//ALERT:DEBUG用,发行版应该删除
 		// fs.writeFile(__dirname+'\\result.json',JSON.stringify(root),(err)=>{
 		// 	if(err){

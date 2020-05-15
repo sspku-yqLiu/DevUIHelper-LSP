@@ -5,7 +5,7 @@
  * Use of this source code is governed by an MIT-style license that can be
  * found in the LICENSE file at https://angular.io/license
  */
-import {Span} from '../DataStructor/type';
+import {Span} from '../DataStructure/type';
 import {TokenType} from './type';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as chars from './chars';
@@ -112,14 +112,14 @@ export class Tokenizer{
 		}
 		this.startToken(TokenType.EOF);
 		this.buildToken();
-		//ALERT:这仅用于测试！，发行版请去掉以下内容，否则将严重影响性能！
-		// this.result.forEach(token=>{
-		// 	// logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
-		// 	if(token.getValue()){
-		// 		logger.debug(token.value);
-		// 		logger.debug(token.getType().toString());
-		// 	}
-		// });
+		// ALERT:这仅用于测试！，发行版请去掉以下内容，否则将严重影响性能！
+		this.result.forEach(token=>{
+			// logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
+			if(token.getValue()){
+				logger.debug(token.value);
+				logger.debug(token.getType().toString());
+			}
+		});
 		return this.result;
 	}
 	/**
@@ -289,10 +289,9 @@ export class Tokenizer{
 		 
 		this.startToken(TokenType.ATTR_VALUE_START);
 		this.cursor.advance();
-		if(this.tryStopbyFilter([chars.$DQ],[chars.$GT,chars.$SLASH])){
+		if(this.tryStopbyFilter([chars.$DQ],[chars.$GT,chars.$SLASH,chars.$LT])){
 			this.cursor.advance();
 			this.buildToken();
-
 		}else{
 			this.buildToken();
 			this.cursor.offset--;

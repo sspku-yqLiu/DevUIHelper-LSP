@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-05-14 16:32:23
+ * @LastEditTime: 2020-05-15 16:44:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -10,10 +10,10 @@
  * Token 相关
  */
 import {HTMLAST, HTMLATTRAST, HTMLTagAST} from './ast';
-import {Span} from '../DataStructor/type';
+import {Span} from '../DataStructure/type';
 import * as lsp from 'vscode-languageserver';
 import { HTMLInfoNode } from '../source/html_info';
-import { LinkedList } from '../DataStructor/LinkList';
+import { LinkedList } from '../DataStructure/LinkList';
 
 
 export enum SupportFrameName{

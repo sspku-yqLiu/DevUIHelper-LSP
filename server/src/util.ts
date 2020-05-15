@@ -1,13 +1,13 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-05-15 12:13:08
+ * @LastEditTime: 2020-05-15 16:48:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
  */
 import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem,Range} from 'vscode-languageserver';
-import { Span } from './DataStructor/type';
+import { Span } from './DataStructure/type';
 import { logger } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { HTMLAST, HTMLTagAST } from './parser/ast';
@@ -87,7 +87,7 @@ export function converValueSetToValueString(valueSet:string[]){
         if(_value !== "")
             res+=`\'${_value}\',`
     }
-    return res==""?"":`|${res}|`;
+    return res==""?"":`|${res.substring(0,res.length-1)}|`;
 }
 export function getRangeFromDocument(terminalNode:HTMLAST|undefined,textDocument:TextDocument):Range{
     if(!terminalNode){

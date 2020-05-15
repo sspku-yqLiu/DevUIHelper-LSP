@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-05-15 12:30:03
+ * @LastEditTime: 2020-05-15 19:01:36
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
@@ -14,7 +14,7 @@ import { HTMLAST, HTMLTagAST, NULLHTMLAST } from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { FileType,CompletionSearchResult, CompletionType } from './type';
 import { SearchResultType, SupportFrameName } from './parser/type';
-import { Span } from './DataStructor/type';
+import { Span } from './DataStructure/type';
 import { SnapShot } from './Host';
 import { WhiteChars, Space, WhiteCharsAndGTAndSPLASH, WhiteCharsAndLTAndLTANDSPLASH, newLine } from './parser/chars';
 import { forEachTrailingCommentRange } from 'typescript/lib/tsserverlibrary';
@@ -39,7 +39,7 @@ export class CompletionProvider{
 		};
 		let _range = convertSpanToRange(_textDocument,span);
 		if(node instanceof Component && ast instanceof HTMLTagAST){
-			return this.CompletionItemsFactory(node,ast,type,_range)
+			return this.CompletionItemsFactory(node,ast,type,_range);
 		}
 		if(!_range){
 			return node.getFullCompltionItems();
@@ -56,11 +56,7 @@ export class CompletionProvider{
 		let {ast,type} =  host.hunter.searchTerminalAST(offset-1,textDocument.uri);
 		if(!ast) {throw Error(`this offset does not in any Node :${offset}`)}
 		switch (type){
-			case(SearchResultType.Content):{
-				if(this.getCompletionFlag(textDocument.getText(),offset)){
-					return ({node:host.htmlSourceTreeRoot,span:undefined,ast:ast,type:CompletionType.FUll});
-				}
-			}
+			case(SearchResultType.Content):
 			case(SearchResultType.Name): {
 				let _autoSwitchFlag = (ast.getSpan().end-ast.nameSpan.end>3);
 				let _span = _autoSwitchFlag?ast.nameSpan:ast.getSpan();

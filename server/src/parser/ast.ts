@@ -1,18 +1,18 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-05-15 09:43:46
+ * @LastEditTime: 2020-05-15 16:45:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
  */
 import * as lsp from 'vscode-languageserver';
 import { htmlInfo } from '../source/html_info';
-import {Span} from '../DataStructor/type';
+import {Span} from '../DataStructure/type';
 import {  TokenType, NodeStatus,HTMLASTNodeType, tagSubNodes, TreeError, ParseErrorLevel, SearchResult, ParseResult, SearchResultType } from './type';
 import { Token, Cursor } from './lexer';
 import { threadId } from 'worker_threads';
-import { LinkNode, LinkedList } from '../DataStructor/LinkList';
+import { LinkNode, LinkedList } from '../DataStructure/LinkList';
 import { isTagProps } from './utils';
 export const tagTokenTypesSet = new Set([
 										TokenType.ATTR_NAME,

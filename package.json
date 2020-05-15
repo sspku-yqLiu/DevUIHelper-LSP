@@ -1,15 +1,15 @@
 {
-  "name": "devui-language-support",
-  "description": "DevUI-Language-Support",
+  "name": "devuihelper",
+  "description": "DevUI_Helper",
   "author": "yqLiu",
   "license": "MIT",
-  "version": "4.0.0",
+  "version": "4.0.4",
   "icon": "DevUI.png",
   "repository": {
     "type": "git",
-    "url": "https://github.com/sspku-yqLiu/UI_Components_Helper"
+    "url": "https://github.com/sspku-yqLiu/DevUIHelper-LSP"
   },
-  "publisher": "yqLiu",
+  "publisher": "sspkuDevUI",
   "categories": [],
   "keywords": [
     "multi-root ready"
@@ -22,29 +22,6 @@
   ],
   "main": "./client/out/extension",
   "contributes": {
-    "configuration": {
-      "type": "object",
-      "title": "Example configuration",
-      "properties": {
-        "languageServerExample.maxNumberOfProblems": {
-          "scope": "resource",
-          "type": "number",
-          "default": 100,
-          "description": "Controls the maximum number of problems produced by the server."
-        },
-        "languageServerExample.trace.server": {
-          "scope": "window",
-          "type": "string",
-          "enum": [
-            "off",
-            "messages",
-            "verbose"
-          ],
-          "default": "verbose",
-          "description": "Traces the communication between VS Code and the language server."
-        }
-      }
-    }
   },
   "scripts": {
     "vscode:prepublish": "cd client  && cd .. && npm run compile",

@@ -1,11 +1,11 @@
 import { HTMLInfoNode } from './source/html_info';
-import { Span } from './DataStructor/type';
+import { Span } from './DataStructure/type';
 import { HTMLAST } from './parser/ast';
 
 /*
  * @Author: your name
  * @Date: 2020-04-15 14:26:49
- * @LastEditTime: 2020-05-15 09:41:33
+ * @LastEditTime: 2020-05-15 16:44:35
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\type.ts

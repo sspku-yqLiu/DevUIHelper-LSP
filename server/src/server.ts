@@ -73,7 +73,7 @@ connection.onInitialize((params: InitializeParams) => {
 });
 
 connection.onInitialized(() => {
-	connection.window.showInformationMessage("Welcome to DevUI Helper",)
+	logger.debug(`Welcome to DevUI Helper!`)
 	if (hasConfigurationCapability) {
 		// Register for all configuration changes.
 		connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -174,6 +174,9 @@ connection.onHover((_textDocumentPosition)=>{
 
 documents.onDidChangeContent(change => {
 	validateTextDocument(change.document);
+	logger.debug(`changeHappened!`);
+	logger.debug(change.document.uri);
+
 });
 
 async function validateTextDocument(textDocument: TextDocument): Promise<void> {

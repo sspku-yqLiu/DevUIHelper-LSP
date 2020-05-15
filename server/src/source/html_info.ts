@@ -153,13 +153,14 @@ export class Component implements HTMLInfoNode {
 
 
     buildCompletionItem():CompletionItem{
+        this.buildCompletionItems();
         let completionItem = CompletionItem.create(this.name);
         completionItem.kind= CompletionItemKind.Class;
-        let _insertText:string = "<"+this.name;
+        let _insertText:string = this.name;
         let _snippetNum = 1;
         for(let attr of Object.values(this.attributeMap)){
             if (attr.isNecessary){
-                _insertText+= `\n\t${attr.getCompletionItem(_snippetNum)?.insertText}`.replace("$1","$"+_snippetNum+"");
+                _insertText+= `\n\t${attr.getCompletionItem()?.insertText}`.replace("$1","$"+_snippetNum+"");
                 _snippetNum++;
             }
         }
@@ -271,6 +272,7 @@ export class Attribute implements HTMLInfoNode{
     }
 
     buildCompletionItem():CompletionItem[]{
+        this.buildCompletionItems();
         let _result = [];
         // let _completionItem:CompletionItem; 
             if(this.isEvent){
@@ -280,15 +282,12 @@ export class Attribute implements HTMLInfoNode{
             }else{
                 _result.push(CompletionItem.create(`[${this.name}]`));
             }
-
         _result.forEach((_completionItem)=>{
             _completionItem.detail= this.sortDescription;
             _completionItem.documentation = new MarkUpBuilder().addSpecialContent('typescript',[
                                                                 `type:${this.type}`,
                                                                 "DefaultValue:"+this.getDefaultValue(),
                                                                 "Description:"+ this.getDescription()]).getMarkUpContent();
-            // _completionItem.documentation = new MarkUpBuilder().addContent (
-            //                                                     `<font color=#0099ff >${this.type} </font>`).getMarkUpContent();
             //Question: 是否要统一样式?
             // _completionItem.kind = this.getcompletionKind();
             _completionItem.kind = this.completionKind;
@@ -310,6 +309,8 @@ export class Attribute implements HTMLInfoNode{
             _completionItem.insertTextFormat = InsertTextFormat.Snippet;
             _completionItem.preselect = true;
         });
+        this.completionItem = _result[0];
+        // logger.debug(_result[0]);
         return _result;
     }
     buildNameCompletionItem():CompletionItem{
@@ -360,7 +361,7 @@ export class Attribute implements HTMLInfoNode{
     getSubNode(name:string):undefined{return;}
     getSubNodes():undefined{return;}
     getParent():HTMLInfoNode{return this.parent;}
-    getCompletionItem(_snippetNum:number){return this.completionItem;}
+    getCompletionItem(){return this.completionItem;}
     
 }
 
@@ -412,12 +413,11 @@ export class DevUIParamsConstructor{
         return this.rootNode;
     }
     buildCompletionItems(){
+        this.rootNode.buildCompletionItems();
         this._buildCompletionItems(this.rootNode);
- 
     }
     _buildCompletionItems(node:HTMLInfoNode){
-        node.buildCompletionItems();
-        node.buildCompletionItem();
+        node.buildNameCompletionItem();
         let subnodes = node.getSubNodes();
         if(subnodes){
             for (let subnode of subnodes){
