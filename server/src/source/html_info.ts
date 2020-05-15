@@ -23,7 +23,7 @@ export interface HTMLInfoNode {
      * 获取资源树下方节点
      * @param name 下方节点的string类型的名称
      */
-    getsubNode(name:string):HTMLInfoNode|undefined;
+    getSubNode(name:string):HTMLInfoNode|undefined;
 
     /**
      * 获得它的全部子节点
@@ -36,21 +36,26 @@ export interface HTMLInfoNode {
     buildCompletionItem():void;
 
     /**
-     * 预处理对CompletionItem进行生成。
+     * 生成只含有名字的CompletionItem。
+     */
+    buildNameCompletionItem():void;
+
+    /**
+     * 生成当前节点的CompletionItem
      */
     buildCompletionItems():void;
 
     /**
-     * 获取补全代码
+     * 获取补全代码(仅名字)
      * @param name 
      */
-    getCompltionItems():CompletionItem[];
+    getNameCompltionItems(range:Range):CompletionItem[];
 
     /**
-     * 获取add类型的补全代码
+     * 获取Snippet式补全代码
      * @param name 
      */
-    getAddCompltionItems(range?:Range,kind?:CompletionRangeKind):CompletionItem[];
+    getFullCompltionItems(range?:Range,kind?:CompletionRangeKind):CompletionItem[];
 
     /**
      *  提供悬浮提示内容
@@ -60,31 +65,37 @@ export interface HTMLInfoNode {
 
 }
 export class RootNode implements HTMLInfoNode{
-    schema = <{[elementName:string]:Element}>{};
+    schema = <{[elementName:string]:Component}>{};
     private completionItems:CompletionItem[] = [];
-    private addCompletionItems:CompletionItem[] = [];
+    private nameCompletionItems:CompletionItem[] = [];
     constructor(){} 
     buildCompletionItem(){}
+    buildNameCompletionItem(){}
     buildCompletionItems(){
         this.completionItems = Object.values(this.schema).map(element=>{
            return element.buildCompletionItem();
         });
-    }
-
-    getCompltionItems():CompletionItem[]{
-        this.buildCompletionItems();
-        return this.completionItems;
-    }
-    getAddCompltionItems(currentRange:Range){
-        return this.completionItems.map(_completionItem=>{
-            _completionItem.textEdit = {
-                range: currentRange,
-                newText:_completionItem.insertText? _completionItem.insertText:""
-            }
-            return _completionItem;
+        this.nameCompletionItems = Object.values(this.schema).map(element=>{
+           return element.buildNameCompletionItem();
         });
     }
-    getsubNode(name:string):HTMLInfoNode|undefined{
+
+    getNameCompltionItems(range:Range):CompletionItem[]{
+        return this.completionItems;
+    }
+    getFullCompltionItems(range?:Range){
+        if(range){
+            return this.completionItems.map(_completionItem=>{
+                _completionItem.textEdit = {
+                    range: range,
+                    newText:_completionItem.insertText? _completionItem.insertText:""
+                }
+                return _completionItem;
+            });
+        }
+        return this.completionItems;
+    }
+    getSubNode(name:string):HTMLInfoNode|undefined{
         return this.schema[name];
     }
     getSubNodes(){
@@ -94,18 +105,26 @@ export class RootNode implements HTMLInfoNode{
         return;
     }
     getHoverInfo():undefined{return undefined;}
+    getDirectives(name:string):Directive|undefined{
+        const _result  = this.getSubNode(name);
+        if(_result instanceof Directive){
+            return _result
+        }
+        return;
+    }
 }
 
-export class Element implements HTMLInfoNode {
-    private attributeMap = <{[attrName:string]:Attribute}>{}
-    private addCompletionItems:CompletionItem[] = [];
-    private completionItems:CompletionItem[] = [];
+export class Component implements HTMLInfoNode {
+    protected attributeMap = <{[attrName:string]:Attribute}>{}
+    protected nameCompletionItems:CompletionItem[] = [];
+    protected completionItems:CompletionItem[] = [];
+    protected completionItemKind:CompletionItemKind = CompletionItemKind.Class;
     
-    constructor(private name:string,
-        private description:string = "",
-        private attritubes:Attribute[]=[],
+    constructor(protected name:string,
+        protected description:string = "",
+        protected attritubes:Attribute[]=[],
         ){};
-    getElement(s:string):Element|undefined{
+    getElement(s:string):Component|undefined{
         if(s=== this.name){
             return this;
         }
@@ -121,25 +140,22 @@ export class Element implements HTMLInfoNode {
     getAttributes(){return this.attritubes;}
     getDescription(){return this.description;}
     getAttribute(attrname:string):Attribute{  return this.attributeMap[attrname];}
-    getcompletionKind(){ return CompletionItemKind.Class;}
+    getcompletionKind(){ return this.completionItemKind;}
 
     buildCompletionItems(){
-        this.completionItems=this.attritubes.map(attr=>{
-            return attr.buildCompletionItem();
+        this.attritubes.forEach(attr=>{
+            this.completionItems.push(...attr.buildCompletionItem());
+        });
+        this.nameCompletionItems = this.attritubes.map(attr=>{
+            return attr.buildNameCompletionItem();
         });
     }
-    buildAddCompletionItems(){
-        this.addCompletionItems = this.completionItems.map(completionItem=>{
-            let addCompletionItem = CompletionItem.create(completionItem.label);
-            copyCompletionItem(completionItem,addCompletionItem);
-            completionItem.label=`+${completionItem.label}`;
-            return completionItem;
-        });
-    }
+
+
     buildCompletionItem():CompletionItem{
-        let completionItem = CompletionItem.create("d-"+this.name);
+        let completionItem = CompletionItem.create(this.name);
         completionItem.kind= CompletionItemKind.Class;
-        let _insertText:string = "d-"+this.name;
+        let _insertText:string = "<"+this.name;
         let _snippetNum = 1;
         for(let attr of Object.values(this.attributeMap)){
             if (attr.isNecessary){
@@ -148,50 +164,39 @@ export class Element implements HTMLInfoNode {
             }
         }
         if(_snippetNum===1){
-            _insertText+=">${1:}"+`</d-${this.name}>`
+            _insertText+=">${1:}"+`</${this.name}>`
         }
         else{
-            _insertText+=`\n>$${_snippetNum}</d-${this.name}>`
+            _insertText+=`\n>$${_snippetNum}</${this.name}>`
         }
         completionItem.insertText=_insertText;
         completionItem.detail=`这是一个${this.name}组件`;
         completionItem.insertTextFormat = InsertTextFormat.Snippet;
         return completionItem;
     }
-    getCompltionItems(){
-            return this.completionItems;
-
+    buildNameCompletionItem():CompletionItem{
+        let _result = CompletionItem.create(this.name);
+        _result.detail = `这是一个${this.name}组件`
+        return _result;
     }
-    getAddCompltionItems(currentRange:Range,kind:CompletionRangeKind){
+    getNameCompltionItems(){
+            return this.completionItems;
+    }
+    getFullCompltionItems(currentRange:Range){
     if(!currentRange){
         return this.completionItems;
-        }
-    return this.completionItems.filter(_completionItem=>{
-        switch(kind){
-            case CompletionRangeKind.INPUT:
-                return _completionItem.kind!==CompletionItemKind.Event;
-            case CompletionRangeKind.OUTPUT:
-                return _completionItem.kind === CompletionItemKind.Event;
-            case CompletionRangeKind.INOUTPUT:
-                return _completionItem.kind!==CompletionItemKind.Event;
-            default:
-                return true;
-        }
-    }).map(_completionItem=>{
-
-            let _addCompletionItem = CompletionItem.create(_completionItem.label);
-            copyCompletionItem(_completionItem,_addCompletionItem);
-            _addCompletionItem.label = changeDueToCompletionRangeKind(kind,_completionItem.label);
-            let _newText = _addCompletionItem.insertText?_addCompletionItem.insertText:"" ;
-            _addCompletionItem.textEdit = {
-                range : currentRange,
-                newText :changeInsertDueToCompletionRangeKind(kind,_newText),
-            }
-            _addCompletionItem.data="add"+_completionItem.label;
-            return _addCompletionItem;
-        });
     }
-    getsubNode(attrname:string):HTMLInfoNode|undefined{
+    return this.completionItems.map(_completionItem=>{
+        _completionItem.textEdit = {
+            range : currentRange,
+            newText :_completionItem.insertText?_completionItem.insertText:"",
+            // newText :changeInsertDueToCompletionRangeKind(kind,_newText),
+        }
+        return _completionItem;
+    });
+
+    }
+    getSubNode(attrname:string):HTMLInfoNode|undefined{
         return this.attributeMap[attrname];
     }
     getSubNodes(){
@@ -211,8 +216,32 @@ export class Element implements HTMLInfoNode {
     }
     
 }
+export class Directive extends Component{
+    constructor( name:string,
+        description:string = "",
+        attritubes:Attribute[]=[],
+       ){
+        super(name,description,attritubes);
+    }
+    //Question:为什么返回值不同会报错
+    getcompletionKind(){ return CompletionItemKind.Module;}
+    buildAddCompletionItems(){
+        let completionItem = CompletionItem.create(this.name);
+        completionItem.kind= CompletionItemKind.Class;
+        let _insertText:string = this.name;
+        completionItem.insertText=this.name;
+        completionItem.detail=`这是一个${this.name}指令`;
+        completionItem.insertTextFormat = InsertTextFormat.PlainText;
+        return completionItem;
+    }
+    buildNameCompletionItem():CompletionItem{
+        let _result = CompletionItem.create(this.name);
+        _result.detail = `这是一个${name}指令`
+        return _result;
+    }
+}
 export class Attribute implements HTMLInfoNode{
-        private addCompletionItems:CompletionItem[] = [];
+        private nameCompletionItems:CompletionItem[] = [];
         private completionItems:CompletionItem[] = [];
         private completionItem:CompletionItem|undefined;
         constructor( 
@@ -228,63 +257,90 @@ export class Attribute implements HTMLInfoNode{
         private readonly parent:HTMLInfoNode){}
     
 
-
     buildCompletionItems(){
-        this.completionItems =  this.valueSet.map(value=>{
-            let completionItem = CompletionItem.create("+"+value);
+        this.valueSet.forEach(value=>{
+            let completionItem = CompletionItem.create(value);
             completionItem.kind = CompletionItemKind.EnumMember;
             completionItem.insertText = value;
             completionItem.detail= `这是${value}类型`;
             completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();													
         completionItem.preselect = true;
-        return completionItem;
+        this.completionItems.push(completionItem);
         });
+        this.nameCompletionItems = this.completionItems;
     }
 
-    buildCompletionItem(){
-        let completionItem = CompletionItem.create(this.name+"\n");
-        completionItem.detail= this.sortDescription;
-        completionItem.documentation = new MarkUpBuilder().addSpecialContent('typescript',[
-                                                            "Type:"+this.getValueType(),
+    buildCompletionItem():CompletionItem[]{
+        let _result = [];
+        // let _completionItem:CompletionItem; 
+            if(this.isEvent){
+                _result.push(CompletionItem.create(`(${this.name})`));
+            }else if(this.type == STRING){
+                _result.push(CompletionItem.create(`${this.name}`),CompletionItem.create(`[${this.name}]`));
+            }else{
+                _result.push(CompletionItem.create(`[${this.name}]`));
+            }
+
+        _result.forEach((_completionItem)=>{
+            _completionItem.detail= this.sortDescription;
+            _completionItem.documentation = new MarkUpBuilder().addSpecialContent('typescript',[
+                                                                `type:${this.type}`,
+                                                                "DefaultValue:"+this.getDefaultValue(),
+                                                                "Description:"+ this.getDescription()]).getMarkUpContent();
+            // _completionItem.documentation = new MarkUpBuilder().addContent (
+            //                                                     `<font color=#0099ff >${this.type} </font>`).getMarkUpContent();
+            //Question: 是否要统一样式?
+            // _completionItem.kind = this.getcompletionKind();
+            _completionItem.kind = this.completionKind;
+            let _valueString = converValueSetToValueString(this.valueSet);
+            if(_result.length===1){                                           
+                if(this.getcompletionKind()===CompletionItemKind.Event){
+                    _completionItem.insertText ="("+this.name+")=\"$1\"";
+                }else if(this.type === BOOLEAN){
+                    _completionItem.insertText ="["+this.name+"]=\"${1|true,false|}\""; 
+                }else{
+                    _completionItem.insertText = `[${this.name}]=\"\${1${_valueString}}\"`;
+                }
+            }else{
+                if(_completionItem.label.charCodeAt(0)===91)
+                    _completionItem.insertText =`[${this.name}]=\"\${1${_valueString}}\"`;  
+                else
+                    _completionItem.insertText = _valueString==""?`${this.name}=\"$1"`:`${this.name}=\${1${_valueString}}`;
+            }         
+            _completionItem.insertTextFormat = InsertTextFormat.Snippet;
+            _completionItem.preselect = true;
+        });
+        return _result;
+    }
+    buildNameCompletionItem():CompletionItem{
+        let _result = CompletionItem.create(this.name);
+        _result.detail= this.sortDescription;
+        _result.documentation = new MarkUpBuilder().addSpecialContent('typescript',[
+                                                            `type:${this.type}`,
                                                             "DefaultValue:"+this.getDefaultValue(),
                                                             "Description:"+ this.getDescription()]).getMarkUpContent();
-        completionItem.kind = this.getcompletionKind();                                                
-        if(this.getcompletionKind()===CompletionItemKind.Event){
-            completionItem.insertText ="("+this.getName()+")=\"$1\"";
-
-        }else if(this.type === BOOLEAN){
-            completionItem.insertText ="["+this.getName()+"]=\"${1|true,false|}\""; 
-        }else if(this.valueSet.length>0){
-            let valueString = converValueSetToValueString(this.valueSet);
-            completionItem.insertText = `[${this.getName()}]=\"\${1|${valueString}|}\"`;
-        }else{
-        completionItem.insertText ="["+this.getName()+"]=\"$1\"";  
-        }         
-        completionItem.insertTextFormat = InsertTextFormat.Snippet;
-        completionItem.preselect = true;
-        this.completionItem = completionItem;
-        return completionItem;
+        return _result;
     }
 
-    getCompltionItems():CompletionItem[]{
-
+    getNameCompltionItems():CompletionItem[]{
             return this.completionItems;
-
     }
 
-    getAddCompltionItems(comrange:Range):CompletionItem[]{
+    getFullCompltionItems(range?:Range):CompletionItem[]{
+        if(!range){
+            return this.completionItems;
+        }
         return this.completionItems.map(_completionItem=>{
             let _completionAddItem = _completionItem;
             copyCompletionItem(_completionItem,_completionAddItem);
             _completionAddItem.textEdit = {
-                range:comrange,
+                range:range,
                 newText : _completionItem.insertText?_completionItem.insertText:""
             }
             return _completionAddItem;
         });
     }
     getHoverInfo():Hover{
-
         let _markUpBuilder = new MarkUpBuilder(this.getName()+"\n");
         _markUpBuilder.addSpecialContent('typescript',["Description:"+ this.description,
                                             "Type:"+this.getValueType(),
@@ -301,7 +357,7 @@ export class Attribute implements HTMLInfoNode{
     getValueType(){return this.type;}
     getDefaultValue(){return this.defaultValue;}
     getValueSet(){return this.valueSet;}
-    getsubNode(name:string):undefined{return;}
+    getSubNode(name:string):undefined{return;}
     getSubNodes():undefined{return;}
     getParent():HTMLInfoNode{return this.parent;}
     getCompletionItem(_snippetNum:number){return this.completionItem;}
@@ -314,14 +370,13 @@ export class DevUIParamsConstructor{
     private schema = this.rootNode.schema;
     private prefix = "";
     constructor(){}
-    build():HTMLInfoNode{
+    build():RootNode{
         let _elementName:string;
         SCHEMA.forEach(elementInfo => {
             const parts = elementInfo.split("||");
             if(parts.length===2){
                _elementName = this.prefix+parts[0].toLocaleLowerCase(); 
-                this.schema[_elementName.toLowerCase()] = new Element(_elementName,parts[1]);
-                logger.debug(_elementName);
+                this.schema[_elementName] = new Component(_elementName,parts[1]);
             }
             else if(parts.length===3){ 
                 this.prefix = parts[1];
@@ -381,16 +436,8 @@ export class DevUIParamsConstructor{
         if(type.includes("arrray")||type.includes("[]")) {
             return CompletionItemKind.Enum;
         }
-        switch(type){
-            case STRING:
-                return CompletionItemKind.Text;
-            case TEMPLATE:
-                return CompletionItemKind.Module;
-            case FUNCTION:
-                return CompletionItemKind.Function;
-            default: 
-                return  CompletionItemKind.Variable;
-        }
+        return  CompletionItemKind.Variable;
+
     }
     getRoot():HTMLInfoNode{
         return this.rootNode;

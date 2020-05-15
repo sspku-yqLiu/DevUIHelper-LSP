@@ -22,13 +22,14 @@ import {
 import {
 	TextDocument
 } from 'vscode-languageserver-textdocument';
-import { CompletionProvider} from './completion';
+import { CompletionProvider} from './CompletionProvider';
 import {YQ_Parser} from './parser/parser';
 import { DevUIParamsConstructor, } from './source/html_info';
 import * as fs from 'fs';
 import { HoverProvider } from './HoverProvider';
 import { SupportFrameName } from './parser/type';
-import { Host, Hunter } from './GlobalData/Host';
+import { Host, Hunter } from './Host';
+import { FileType } from './type';
 configure({
     appenders: {
         lsp_demo: {
@@ -43,14 +44,13 @@ export const host = new Host();
 // Also include all preview / proposed LSP features.
 let connection = createConnection(ProposedFeatures.all);
 
- let documents = host.documents;
-
+let documents = host.documents;
 let hasConfigurationCapability: boolean = false;
 let hasWorkspaceFolderCapability: boolean = false;
 let hasDiagnosticRelatedInformationCapability: boolean = false;
 
 //初始化htmlInfo
-export const htmlSourceTreeRoot = new DevUIParamsConstructor().build();
+
 export const completionProvider= new CompletionProvider();
 export const hoverProvider = new HoverProvider();
 // logger.debug(JSON.stringify(htmlSourceTreeRoot));
@@ -65,7 +65,7 @@ connection.onInitialize((params: InitializeParams) => {
 			// Tell the client that the server supports code completion
 			completionProvider: {
 				resolveProvider: false,
-				triggerCharacters: ['<', '-', '+', '[', '(']
+				triggerCharacters: ['<', '-', '+', '[', '(','\"',' ','\n']
 			},
 			hoverProvider:true,
 		}
@@ -145,17 +145,14 @@ export const hunter = new Hunter();
 // This handler provides the initial list of the completion items.
 connection.onCompletion(
 	(_textDocumentPosition: TextDocumentPositionParams): CompletionItem[] => {
-		logger.debug(`Completion work`);
-
-		let uri = _textDocumentPosition.textDocument.uri;
-		let _offset = documents.get(uri)!.offsetAt(_textDocumentPosition.position);
-		logger.debug(`cursorOffset at : ${ _offset}`);
+		logger.debug(`Completion work`);		
+		logger.debug(`cursorOffset at : ${documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`);
 		const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
+		return host.completionProvider.provideCompletionItes(_textDocumentPosition,FileType.HTML);
 		// if(_textDocument){
 			//TODO : 将分析放到外层。
 		// host.hunter.parseTextDocument(_textDocument,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
 		// }
-		hunter.searchTerminalASTForCompletion(_offset,uri);
 		// let source = htmlSourceTreeRoot;
 		
 
@@ -164,7 +161,7 @@ connection.onCompletion(
 		// 		return completionProvider.provideCompletionItemsForHTML(_offset,_textDocument);
 		// 	}
 		// }
-		return [];
+		// return [];
 	}
 );
 

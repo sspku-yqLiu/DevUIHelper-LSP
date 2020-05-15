@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 15:11:35
- * @LastEditTime: 2020-05-12 11:37:46
+ * @LastEditTime: 2020-05-15 11:44:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\chars.ts
@@ -109,3 +109,6 @@ export function isOctalDigit(code: number): boolean {
 export const WhiteChars = [9,10,11,12,13,32,160];
 export const WhiteCharsAndGTAndSPLASH = [9,10,11,12,13,32,47,62,160];
 export const WhiteCharsAndLT = [9,10,11,12,13,32,60,160];
+export const WhiteCharsAndLTAndLTANDSPLASH = [9,10,11,12,13,32,47,60,62,160];
+export const Space = [32,160];
+export const newLine = [10,11,13];

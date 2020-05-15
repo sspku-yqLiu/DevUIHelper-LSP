@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-05-13 15:35:04
+ * @LastEditTime: 2020-05-14 16:32:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -113,27 +113,6 @@ export class Token{
 
 
 
-
-export interface CompletionSearchResult{
-	
-	/**
-	 * 是否提供补全标签
-	 */
-	noCompletionFlag:boolean;
-	
-	
-	/**
-	 * 终端节点
-	 */
-	terminalNode:HTMLAST|undefined;
-
-	/**
-	 * 节点互换表
-	 */
-	 HTMLAstToHTMLInfoNode :Map<HTMLAST,HTMLInfoNode>
-
-}
-
 /**
  * AST相关
  */
@@ -189,10 +168,11 @@ export interface ParseResult{
 	errors:TreeError[]
 } 
 export enum SearchResultType{
+	Null,
 	Name,
 	Value,
-	Content,
-	Null
+	Content
+
 }
 export interface SearchResult{
 	ast:HTMLAST|undefined,

@@ -1,23 +1,25 @@
 /*
  * @Author: your name
  * @Date: 2020-05-12 14:52:22
- * @LastEditTime: 2020-05-14 08:42:43
+ * @LastEditTime: 2020-05-15 11:00:23
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
  */
-import {SearchResult,ParseOption, TreeError, SearchResultType} from '../parser/type';
-import { HTMLAST, HTMLTagAST} from '../parser/ast';
+import {SearchResult,ParseOption, TreeError, SearchResultType} from './parser/type';
+import { HTMLAST, HTMLTagAST} from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { htmlSourceTreeRoot,logger, host } from '../server';
-import { HTMLInfoNode, Attribute, RootNode } from '../source/html_info';
-import { YQ_Parser,SearchParser } from '../parser/parser';
-import { HoverProvider } from '../HoverProvider';
+import { logger, host } from './server';
+import { HTMLInfoNode, Attribute, RootNode, DevUIParamsConstructor } from './source/html_info';
+import { YQ_Parser,SearchParser } from './parser/parser';
+import { HoverProvider } from './HoverProvider';
 import { TextDocuments } from 'vscode-languageserver';
-import { convertStringToName,adjustSpanToAbosultOffset } from '../util';
-import { HoverSearchResult } from '../type';
-import { Span } from '../DataStructor/type';
-import { CompletionProvider } from '../completion';
+import { convertStringToName,adjustSpanToAbosulutOffset } from './util';
+import { HoverSearchResult } from './type';
+import { Span } from './DataStructor/type';
+import { CompletionProvider } from './CompletionProvider';
+import * as fs from 'fs';
+import { stringify } from 'querystring';
 
 
 export class Host{
@@ -28,33 +30,29 @@ export class Host{
 	public hoverProvider = new HoverProvider();
 	public completionProvider = new CompletionProvider();
 	public documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
+	public htmlSourceTreeRoot = new DevUIParamsConstructor().build();
 	constructor(){
+
+	}
+	getDocumentFromURI(uri:string):TextDocument{
+		let _result = this.documents.get(uri)
+		if(!_result){
+			throw Error(`Cannot get file from uri ${uri}`)
+		}
+		return _result;
+	}
+	getSnapShotFromURI(uri:string):SnapShot{
+		let _result = this.snapshotMap.get(uri);
+		if(!_result){
+			throw Error(`Cannot get snapShot from uri ${uri}`)
+		}
+		return _result;
 	}
 }
 export class Hunter{
 	private searchParser = new SearchParser();
 	constructor(){
 
-	}
-
-	searchTerminalASTForCompletion(offset:number,uri:string):SearchResult|undefined{
-		return this.searchTerminalAST(offset-1,uri);
-	}
-	searchTerminalASTForHover(offset:number,uri:string):HoverSearchResult{
-		let{ast,type}= this.searchTerminalAST(offset,uri);
-		if(!ast) {throw Error(`this offset does not in any Node :${offset}`)}
-		let _span = ast.nameSpan.clone();
-		adjustSpanToAbosultOffset(ast,_span);
-		let _map = host.snapshotMap.get(uri)?.HTMLAstToHTMLInfoNode;
-		if(!_span){
-			return{node:undefined,span:undefined};
-		}
-		if(type === SearchResultType.Null||!ast){
-			return{node:undefined,span:_span};
-		}else{
-			let _htmlInfoNode = this.findHTMLInfoNode(ast,_map!);
-			return {node:_htmlInfoNode,span:_span};
-		}
 	}
 
 	searchTerminalAST(offset:number,uri:string):SearchResult{
@@ -69,14 +67,19 @@ export class Hunter{
 		return _result?_result:{ast:undefined,type:SearchResultType.Null};
 	}
 
-	findHTMLInfoNode(ast:HTMLAST,map:Map<HTMLAST,HTMLInfoNode>):HTMLInfoNode|undefined{
-
+	findHTMLInfoNode(ast:HTMLAST|undefined,uri:string,map?:Map<HTMLAST,HTMLInfoNode>):HTMLInfoNode|undefined{
+		if(!ast){
+			throw Error(`ast Does not Exits in file: ${uri}`)
+		}
+		if(!map){
+			map = host.getSnapShotFromURI(uri).HTMLAstToHTMLInfoNode;
+		}
 		//表内存在则直接返回
 		let res = map.get(ast);
 		if(res){return res;}
 
 		if(ast.getName()=="$$ROOT$$"){
-			let _htmlroot = htmlSourceTreeRoot;
+			let _htmlroot = host.htmlSourceTreeRoot;
 			map.set(ast,_htmlroot);
 			return _htmlroot;
 		}
@@ -85,17 +88,17 @@ export class Hunter{
 		//没有指针报错
 		if(!_parentast||!_name){ throw Error(`None parent cursor or name of node ${_name}`)}
 		if(ast instanceof HTMLTagAST){
-			return htmlSourceTreeRoot.getsubNode(_name);
+			return host.htmlSourceTreeRoot.getSubNode(_name);
 		}
 		else{
 			//表内没有则向上递归
 			_name = convertStringToName(_name);
 			let _parentInfoNode = map.get(_parentast);
 			if(!_parentInfoNode){
-				 _parentInfoNode = this.findHTMLInfoNode(_parentast,map);
+				 _parentInfoNode = this.findHTMLInfoNode(_parentast,uri);
 			}
 			if(_parentInfoNode){
-				let _currentInfoNode = _parentInfoNode?.getsubNode(_name);
+				let _currentInfoNode = _parentInfoNode?.getSubNode(_name);
 				if(_currentInfoNode){
 					map.set(ast,_currentInfoNode);
 				}
@@ -109,18 +112,35 @@ export class Agent{
 }
 export class Igniter{
 	constructor(){}
+	init(){
+		
+	}
 	parseTextDocument(textDocument:TextDocument,parseOption:ParseOption){
 		let {root,errors}=host.parser.parseTextDocument(textDocument,parseOption);
 		host.snapshotMap.set(textDocument.uri,new SnapShot(root,errors,textDocument));
-		logger.debug(JSON.stringify(root));
+		//ALERT:DEBUG用,发行版应该删除
+		// fs.writeFile(__dirname+'\\result.json',JSON.stringify(root),(err)=>{
+		// 	if(err){
+		// 		logger.debug("SometionWronbg Happen!! ______________")
+		// 		logger.debug(err.message);
+				
+		// 		throw err;
+		// 	}
+		// 	logger.debug("Data Wirte Done !!! ______________")
+		// });
+		// logger.debug(process.execPath);
+		// logger.debug(__dirname);
+		// logger.debug(process.cwd());
 	}
 }
 export class SnapShot{
 	public HTMLAstToHTMLInfoNode = new Map<HTMLAST,HTMLInfoNode>();
+	public context:string = "";
 	constructor(
 		public root:HTMLAST,
 		public errors:TreeError[],
 		public textDocument:TextDocument,
 		){
+			this.context = this.textDocument.getText();
 		}
 }

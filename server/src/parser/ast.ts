@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-05-14 08:48:06
+ * @LastEditTime: 2020-05-15 09:43:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
@@ -331,8 +331,7 @@ export class HTMLTagAST extends HTMLAST{
 		this.buildLinkedLists();
 		this.tagOffset = span.start;
 		this.span.selfShift(this.tagOffset,false);
-	}
-	
+	}	
 	buildLinkedLists(){
 		let  _directive:LinkedList<HTMLATTRAST> = new LinkedList<HTMLATTRAST>(
 			{name:"directive",span:new Span(-1,-1)}
@@ -357,7 +356,6 @@ export class HTMLTagAST extends HTMLAST{
 		   content:_content,
 		   comment:_comment
 	   }
-
    	}
 	findATTREnd():number{
 		if(this.type!==HTMLASTNodeType.TAG){
@@ -415,7 +413,6 @@ export class HTMLTagAST extends HTMLAST{
 				}
 			}
 		}
- 
 		return this.subLists?.comment.headInfo.span.inSpan(offset)?
 		{ast:undefined,type:SearchResultType.Content}:{ast:undefined,type:SearchResultType.Value};
 	}
@@ -446,8 +443,7 @@ export class HTMLATTRAST extends HTMLAST{
 			nameSpan:this.nameSpan
 		}
 	}
-	search(offset:number):SearchResult{
-		
+	search(offset:number):SearchResult{	
 		if(this.nameSpan.inSpan(offset)){
 			return {ast:undefined,type:SearchResultType.Name};
 		}
@@ -455,6 +451,10 @@ export class HTMLATTRAST extends HTMLAST{
 			return{ast:this.valueNode,type:SearchResultType.Null};
 		}
 		return{ast:undefined,type:SearchResultType.Null}
-
+	}
+}
+export class NULLHTMLAST extends HTMLAST{
+	constructor(){
+		super(HTMLASTNodeType.NAME,new Span(-1,-1))
 	}
 }

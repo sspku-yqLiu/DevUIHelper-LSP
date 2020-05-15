@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-05-13 23:35:24
+ * @LastEditTime: 2020-05-15 12:13:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
@@ -12,6 +12,7 @@ import { logger } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { HTMLAST, HTMLTagAST } from './parser/ast';
 import {CompletionRangeKind} from './type';
+import { HTMLInfoNode } from './source/html_info';
 export function getName(text: string,componentRegex: RegExp){
     text.match(componentRegex);
     const n = RegExp.$1.substring(2);
@@ -82,12 +83,11 @@ export function converValueSetToValueString(valueSet:string[]){
         return "";
     let res:string = "";
     for(let value of valueSet){
-        if(value !== "")
-            res+=`\'${value.replace(" ","")}\',`
+        let _value = value.replace(" ","");
+        if(_value !== "")
+            res+=`\'${_value}\',`
     }
-    res+="+";
-    return res;
-
+    return res==""?"":`|${res}|`;
 }
 export function getRangeFromDocument(terminalNode:HTMLAST|undefined,textDocument:TextDocument):Range{
     if(!terminalNode){
@@ -116,6 +116,7 @@ export function autoSelectCompletionRangeKind(word:string):CompletionRangeKind{
     let reg1 = /^\[.*$/; // 匹配[....]
     let reg2 = /^\(.*$/; // 匹配(....)
     let reg3 = /^\[\(.*$/; // 匹配[(.....)]
+    let reg4 = /^\[\(.*$/; // 匹配<.....|>
     if(reg0.test(word)){
         return CompletionRangeKind.ADD;
     }
@@ -127,8 +128,10 @@ export function autoSelectCompletionRangeKind(word:string):CompletionRangeKind{
     }
     else if (reg2.test(word)) {
         return CompletionRangeKind.OUTPUT;
-    }else{
+    }else if(reg3.test(word)){
         return CompletionRangeKind.NONE;
+    }else{
+        return CompletionRangeKind.TAG;
     }
     // const bindParts = word.match(ATTRREGX);
 	// if(!bindParts)
@@ -149,6 +152,7 @@ export function autoSelectCompletionRangeKind(word:string):CompletionRangeKind{
 }
 export function changeDueToCompletionRangeKind(kind:CompletionRangeKind,label:string):string{
     switch(kind){
+        case CompletionRangeKind.TAG:
         case CompletionRangeKind.NONE:
             return label;
         case CompletionRangeKind.INOUTPUT:
@@ -159,6 +163,7 @@ export function changeDueToCompletionRangeKind(kind:CompletionRangeKind,label:st
             return "("+label+")";
         case CompletionRangeKind.ADD:
             return "+"+label;
+    
     }
 }
 
@@ -196,14 +201,23 @@ export class MarkUpBuilder{
         return this;
     }
 }
-export function convertSpanToRange(span:Span,textDocument:TextDocument):Range{
+export function convertSpanToRange(textDocument:TextDocument,span?:Span):Range|undefined{
+    if(!span){
+        return;
+    }
     let _start = textDocument.positionAt(span.start)
     let _end = textDocument.positionAt(span.end)
     return {start:_start,end:_end};
 }
-export function adjustSpanToAbosultOffset(node:HTMLAST,span:Span):void{
+export function adjustSpanToAbosulutOffset(node:HTMLAST,span:Span):void{
     _adjustSpanToAbosultOffset(node,span);
     span.end++;
+}
+export function getSpanOfAbusoluteOffset(node:HTMLAST,span:Span):Span{
+    let _span = span.clone();
+    _adjustSpanToAbosultOffset(node,_span);
+    span.end++;
+    return _span;
 }
 export function _adjustSpanToAbosultOffset(node:HTMLAST,span:Span):void{
     if(node.getName()!="$$ROOT$$"){

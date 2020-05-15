@@ -4,7 +4,7 @@ import{Span} from './type';
 /*
  * @Author: your name
  * @Date: 2020-05-03 09:59:29
- * @LastEditTime: 2020-05-13 10:04:47
+ * @LastEditTime: 2020-05-15 12:20:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\dataStructor\LinkList.ts
@@ -238,6 +238,18 @@ export class LinkedList<T>implements LinkList<T>{
 			_node = _node.next;
 		}
 		return res;
+	}
+	getEach(cb?:(elment:T)=>any):any[]{
+		if(!cb){
+			return [];
+		}
+		let _result = [];
+		let _node = this.head.next;
+		while(_node){
+			_result.push(cb(_node.data));
+			_node = _node.next;
+		}
+		return _result;
 	}
 	/**
 	 * 整个链表都会遵从action进行改变，

@@ -188,6 +188,13 @@ export class Tokenizer{
 				this._tokenInBuild.value = this.content.substring(this._tokenInBuild.getSpan().start+2,this._tokenInBuild.getSpan().end).replace(" ","");
 			}
 			this.result.push(this._tokenInBuild);
+			if(this._tokenInBuild.getType()===TokenType.ATTR_NAME){
+				if(this._tokenInBuild.value=="script"){
+					this.cursor.offset = this.content.indexOf("</script");
+				}else if(this._tokenInBuild.value=="style"){
+					this.cursor.offset = this.content.indexOf("</style");
+				}
+			}
 			this._tokenInBuild=undefined;
 		}
 	}
