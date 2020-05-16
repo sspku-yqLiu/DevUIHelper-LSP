@@ -1,24 +1,25 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-05-15 19:01:36
+ * @LastEditTime: 2020-05-16 22:47:28
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
 import{adjustSpanToAbosulutOffset,getRangeFromDocument,getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan, convertSpanToRange}from './util';
-import { HTMLInfoNode, Component, Attribute, htmlInfo } from './source/html_info';
+import { HTMLInfoNode, Component, Attribute, htmlInfo, RootNode } from './source/html_info';
 import{host} from'./server'; 
 import{CompletionItem,Range, HoverParams, TextDocumentPositionParams} from 'vscode-languageserver';
 import { HTMLAST, HTMLTagAST, NULLHTMLAST } from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { FileType,CompletionSearchResult, CompletionType } from './type';
+import { FileType,CompletionSearchResult, CompletionType, CompletionRangeKind } from './type';
 import { SearchResultType, SupportFrameName } from './parser/type';
 import { Span } from './DataStructure/type';
 import { SnapShot } from './Host';
 import { WhiteChars, Space, WhiteCharsAndGTAndSPLASH, WhiteCharsAndLTAndLTANDSPLASH, newLine } from './parser/chars';
 import { forEachTrailingCommentRange } from 'typescript/lib/tsserverlibrary';
 export class CompletionProvider{
+	private tabCompletionFlag = true;
 
  constructor(){}
 	provideCompletionItes(_params:TextDocumentPositionParams,type:FileType):CompletionItem[]{
@@ -46,6 +47,12 @@ export class CompletionProvider{
 		}
 		//TODO : 会不会出现没有name的情况呢？
 		if(type === CompletionType.FUll){
+			if(node === host.htmlSourceTreeRoot){
+				let _endflag = ast.getSpan()===ast.nameSpan;
+				if(_endflag){
+					return node.getFullCompltionItems(_range,_endflag)
+				}
+			}
 			return node.getFullCompltionItems(_range);
 		}else{
 			return node.getNameCompltionItems(_range);
@@ -57,13 +64,20 @@ export class CompletionProvider{
 		if(!ast) {throw Error(`this offset does not in any Node :${offset}`)}
 		switch (type){
 			case(SearchResultType.Content):
+				if(ast instanceof HTMLTagAST){
+					return ({node:host.htmlSourceTreeRoot,span:undefined,ast:ast,type:CompletionType.NONE})
+				}
 			case(SearchResultType.Name): {
+				this.tabCompletionFlag = true;
 				let _autoSwitchFlag = (ast.getSpan().end-ast.nameSpan.end>3);
 				let _span = _autoSwitchFlag?ast.nameSpan:ast.getSpan();
+				if(ast instanceof HTMLTagAST&&!_autoSwitchFlag){
+					_span.start++;
+				}
 				let _type = _autoSwitchFlag?CompletionType.Name:CompletionType.FUll;
 				adjustSpanToAbosulutOffset(ast,_span);
 				if(ast instanceof HTMLTagAST){
-					return ({node:host.htmlSourceTreeRoot,span:_span,ast:new NULLHTMLAST(),type:_type})
+					return ({node:host.htmlSourceTreeRoot,span:_span,ast:ast,type:_type})
 				}
 				return{node:host.hunter.findHTMLInfoNode(ast.parentPointer,textDocument.uri),span:_span,ast:ast.parentPointer!,type:_type};
 			}
@@ -88,7 +102,11 @@ export class CompletionProvider{
 					_offset--;
 				}
 				if(newLine.indexOf(text.charCodeAt(_offset))!==-1){
-					return true;
+					if(this.tabCompletionFlag){
+						this.tabCompletionFlag = false;
+						return true;
+					}
+
 				}
 				return false;
 			}
@@ -126,7 +144,7 @@ export class CompletionProvider{
 				if(node)
 				_result.push(...node.getNameCompltionItems());
 			});
-			_result.filter((e)=>{
+			_result = _result.filter((e)=>{
 				for(let name of _attrs){
 					if(e.label.includes(name))
 						return false;

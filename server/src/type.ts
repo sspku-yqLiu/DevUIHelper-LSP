@@ -17,7 +17,6 @@ export enum CompletionRangeKind{
 	INPUT,
 	OUTPUT,
 	TAG,
-
 }
 export interface HoverSearchResult{
 	node:HTMLInfoNode|undefined,

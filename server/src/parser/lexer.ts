@@ -10,6 +10,7 @@ import {TokenType} from './type';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as chars from './chars';
 import {logger} from '../server';
+import { rangeStartToString } from './utils';
 export class Token{
 	private end:number=-1;
 	private span:Span;
@@ -69,12 +70,14 @@ export class TokenizeOptions{
 export class Tokenizer{
 	protected cursor:Cursor;
 	private result:Token[] = [];
+	private content:string;
 	constructor(
-		private content:string,
+		private textDocument:TextDocument,
 		private start:number=0,
-		private end:number = content.length
+		private end:number = textDocument.getText().length
 	){
-		this.cursor = new Cursor(content,start,end);		
+		this.content = textDocument.getText();
+		this.cursor = new Cursor(this.content,start,end);		
 	}
 		/**
 		 * Token解析器
@@ -113,13 +116,13 @@ export class Tokenizer{
 		this.startToken(TokenType.EOF);
 		this.buildToken();
 		// ALERT:这仅用于测试！，发行版请去掉以下内容，否则将严重影响性能！
-		this.result.forEach(token=>{
-			// logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
-			if(token.getValue()){
-				logger.debug(token.value);
-				logger.debug(token.getType().toString());
-			}
-		});
+		// this.result.forEach(token=>{
+		// 	// logger.debug(this.content.substring(token.getSpan()!.start,token.getSpan()!.end+1));
+		// 	if(token.value){
+		// 		logger.debug(token.value);
+		// 		logger.debug(token.getType().toString());
+		// 	}
+		// });
 		return this.result;
 	}
 	/**
@@ -164,7 +167,6 @@ export class Tokenizer{
 		if(disgust.includes(this.cursor.peek())){
 			return false;
 		}
-
 		//如果是因为找不到想要的字符 return true
 		return true;
 	}
@@ -181,20 +183,31 @@ export class Tokenizer{
 		if(this._tokenInBuild){
 			this._tokenInBuild.build(this.cursor.getoffset()-1);
 			//我们仅对应该记录value的token生成value:
-			if([2,5,6,7,9].indexOf(this._tokenInBuild.getType())!==-1){
+			if([2,3,6,7,8,10].indexOf(this._tokenInBuild.getType())!==-1){
 				this._tokenInBuild.value = this.content.substring(this._tokenInBuild.getSpan().start,this._tokenInBuild.getSpan().end+1);
 			}
-			else if(this._tokenInBuild.getType()===TokenType.CLOSED_TAG){
-				this._tokenInBuild.value = this.content.substring(this._tokenInBuild.getSpan().start+2,this._tokenInBuild.getSpan().end).replace(" ","");
-			}
+			// else if(this._tokenInBuild.getType()===TokenType.CLOSED_TAG){
+			// 	this._tokenInBuild.value = this.content.substring(this._tokenInBuild.getSpan().start+2,this._tokenInBuild.getSpan().end).replace(" ","");
+			// }
 			this.result.push(this._tokenInBuild);
-			if(this._tokenInBuild.getType()===TokenType.ATTR_NAME){
+			if(this._tokenInBuild.getType()===TokenType.TAG_NAME){
 				if(this._tokenInBuild.value=="script"){
-					this.cursor.offset = this.content.indexOf("</script");
+					const _relocation = this.content.indexOf("</script>",this.cursor.offset)?this.content.indexOf("</script>",this.cursor.offset):this.end;
+					this.cursor.relocate(_relocation);
 				}else if(this._tokenInBuild.value=="style"){
-					this.cursor.offset = this.content.indexOf("</style");
+					const _relocation = this.content.indexOf("</style>",this.cursor.offset)?this.content.indexOf("</style>",this.cursor.offset):this.end;
+					this.cursor.relocate(_relocation);
 				}
 			}
+			//AlERT:DEbug用，发行版应删除
+			// if(this._tokenInBuild.getType()===TokenType.TAG_NAME){
+			// 	logger.debug(`Start at ${rangeStartToString(this.textDocument.positionAt( this._tokenInBuild.getSpan().start))  } 
+			// 	offset：${this._tokenInBuild.getSpan().start} TokenValue: ${this._tokenInBuild.value} Token Type:${this._tokenInBuild.getType()}`);
+			// }
+			// if(this._tokenInBuild.getType()===TokenType.TAG_END_NAME){
+			// 	logger.debug(`BuildTOken at ${rangeStartToString(this.textDocument.positionAt( this._tokenInBuild.getSpan().start))  } 
+			// 	offset：${this._tokenInBuild.getSpan().start} TokenValue: ${this._tokenInBuild.value} Token Type:${this._tokenInBuild.getType()}`);
+			// }
 			this._tokenInBuild=undefined;
 		}
 	}
@@ -207,7 +220,7 @@ export class Tokenizer{
 		// this.cursor.advance();
 		this.buildToken();
 		if(this.cursor.peek()===chars.$GT||this.cursor.peek()===chars.$SLASH){
-			this.buildATTROrEndToken(this.cursor.peek());
+			this.buildATTROrEndToken();
 			return;
 		}
 		else{
@@ -218,8 +231,7 @@ export class Tokenizer{
 			}
 			if(this.cursor.peek() === chars.$LT)
 				return;
-			while(!this.buildATTROrEndToken(this.cursor.peek()))
-				this.cursor.advance();
+			while(!this.buildATTROrEndToken()){}
 		}
 
 	}
@@ -227,8 +239,7 @@ export class Tokenizer{
 	buildClosedTag(){
 		this._tokenInBuild?.setType(TokenType.CLOSED_TAG);
 		this.buildToken();
-		this.startToken(TokenType.TAG_NAME);
-		this._tokenInBuild = new Token(TokenType.TAG_NAME,this.cursor.offset);
+		this.startToken(TokenType.TAG_END_NAME);
 		if(this.tryStopbyFilter([chars.$GT],chars.WhiteCharsAndLT)){
 			this.buildToken();
 			this.startToken(TokenType.TAG_END);
@@ -243,28 +254,30 @@ export class Tokenizer{
 		this.buildToken();
 	}
 
-	buildATTROrEndToken(char:number){
-		if(char === chars.$LT){
+	buildATTROrEndToken(){
+		if(this.cursor.peek() === chars.$LT){
 			return true;
 		}
-		if([chars.$GT,chars.$SLASH].indexOf(char)!==-1){
-			this.buildTagSelfClosedToken(char);
+		if([chars.$GT,chars.$SLASH].indexOf(this.cursor.peek())!==-1){
+			this.buildTagSelfClosedToken();
 			return true;
-		}else if(chars.WhiteChars.indexOf(char)!==-1){
+		}else if(chars.WhiteChars.indexOf(this.cursor.peek())!==-1){
+			this.cursor.advance();
 		}else{
 			this.buildATTRToken();
 		}
 		return false;
 	}
 
-	buildTagSelfClosedToken(char:number){
-
+	buildTagSelfClosedToken(){
 		this.buildToken();
-		if(char===chars.$GT){
+		if(this.cursor.peek()===chars.$GT){
 			this.startToken(TokenType.TAG_END);
 			this.cursor.advance();
+		}else if(this.cursor.peek() === chars.$LT){
+			return;
 		}
-		else{
+		else if(this.cursor.peek() === chars.$SLASH ){
 			this.startToken(TokenType.TAG_SELF_END);
 			this.cursor.advance();
 			if(!this.tryGet(chars.$GT)){
@@ -273,7 +286,10 @@ export class Tokenizer{
 		}
 		this.buildToken();
 	}
-	buildATTRToken(){	
+	buildATTRToken(){
+		if(chars.WhiteCharsAndGTAndSPLASH.indexOf(this.cursor.peek())!==-1){
+			return;
+		}	
 		if(this.cursor.peek()===chars.$HASH){
 			this.startToken(TokenType.TEMPLATE);
 		}else{
@@ -283,28 +299,27 @@ export class Tokenizer{
 			this.buildToken();
 		}else{
 			this.buildToken();
-			this.cursor.offset--;
 			return;
 		}
 		 
 		this.startToken(TokenType.ATTR_VALUE_START);
 		this.cursor.advance();
-		if(this.tryStopbyFilter([chars.$DQ],[chars.$GT,chars.$SLASH,chars.$LT])){
+		let _QtToken =34|39;
+		if(this.tryStopbyFilter([chars.$DQ,chars.$SQ],[chars.$GT,chars.$SLASH,chars.$LT])){
+			_QtToken = this.cursor.peek();
 			this.cursor.advance();
 			this.buildToken();
 		}else{
 			this.buildToken();
-			this.cursor.offset--;
 			return;
 		}
 		this.startToken(TokenType.ATTR_VALUE);
-		this.tryStopAt([chars.$DQ]);
+		this.tryStopAt([_QtToken]);
 		this.buildToken();
 
 		this.startToken(TokenType.ATTR_VALE_END);
 		this.cursor.advance();			
 		this.buildToken();
-		this.cursor.offset--;
 	}
 	buildElementEndToken(){
 		this.startToken(TokenType.TAG_END);
@@ -329,7 +344,7 @@ export class Tokenizer{
 
 } 
 export class Cursor{
-	public peekvalue = -1;
+	private peekvalue = -1;
 	constructor(
 		private text:string,
 		public offset:number,
@@ -345,7 +360,12 @@ export class Cursor{
 		if(this.offset >=this.EOF){
 			throw Error(`Char At EOF At ${this.offset}`);
 		}
+		this.peekvalue = this.text.charCodeAt(this.offset)
 	}  
+	relocate(offset:number){
+		this.offset = offset;
+		this.peekvalue = this.text.charCodeAt(offset);
+	}
 
 	peek():number{
 		this.peekvalue = this.text.charCodeAt(this.offset);
@@ -364,23 +384,3 @@ export class Cursor{
 		return this.EOF;
 	}
 }
-// while(this.cursor.getoffset()<this.end){
-// 	//解决string和lspoffset不同的问题
-// 	this.cursor.forceAdvance();			
-// 	this.buildOpenTag();
-// 	/*开始属性ATTR */
-// 	while(this.cursor.peek()!==chars.$GT){
-// 		this.tryAdvanceThrogh(chars.WhiteChars);
-// 		/**
-// 		 * #开头类型(内属性)
-// 		 */
-// 		if(this.cursor.peek() === chars.$HASH){
-// 			this.buildInnerAttrToken();
-// 		/**
-// 		 * 普通属性
-// 		 */
-// 		}else if(this.cursor.peek() !== chars.$GT){
-// 			this.buildATTRToken();		
-// 		}
-// 	}
-// }

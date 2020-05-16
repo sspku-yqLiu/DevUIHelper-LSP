@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-05-15 16:44:50
+ * @LastEditTime: 2020-05-16 18:49:41
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -36,6 +36,7 @@ export enum TokenType{
 	TAG_START,//
 	CLOSED_TAG,//
 	TAG_NAME,//
+	TAG_END_NAME,
 	TAG_END,//
 	TAG_SELF_END,//
 	//TODO: 如果未来有更多使用我们插件的人，
@@ -167,13 +168,14 @@ export interface ParseResult{
 	root:HTMLAST,
 	errors:TreeError[]
 } 
+
 export enum SearchResultType{
 	Null,
 	Name,
 	Value,
 	Content
-
 }
+
 export interface SearchResult{
 	ast:HTMLAST|undefined,
 	type:SearchResultType

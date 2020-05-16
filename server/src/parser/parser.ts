@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-09 18:58:10
- * @LastEditTime: 2020-05-13 20:48:05
+ * @LastEditTime: 2020-05-16 17:50:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\parser.ts
@@ -16,7 +16,7 @@ export class YQ_Parser{
 	}
 	parseTextDocument(textDocument:TextDocument,parseOption:ParseOption):ParseResult{
 		const uri = textDocument.uri;
-		const tokenizer = new Tokenizer(textDocument.getText()); 
+		const tokenizer = new Tokenizer(textDocument); 
 		const tokens = tokenizer.Tokenize();
 		const treebuilder =new TreeBuilder(tokens);
 		return treebuilder.build();

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-05-15 16:45:17
+ * @LastEditTime: 2020-05-16 20:00:26
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
@@ -14,6 +14,7 @@ import { Token, Cursor } from './lexer';
 import { threadId } from 'worker_threads';
 import { LinkNode, LinkedList } from '../DataStructure/LinkList';
 import { isTagProps } from './utils';
+import { logger } from '../server';
 export const tagTokenTypesSet = new Set([
 										TokenType.ATTR_NAME,
 										TokenType.ATTR_VALE_END,
@@ -64,8 +65,8 @@ export class TreeBuilder {
 					this.advance();
 				}
 			}
-		}catch{
-
+		}catch(e){
+			logger.debug(e)
 		}
 		this.buildRoot();
 		return {root:this.root,errors:this.errors};
@@ -77,14 +78,19 @@ export class TreeBuilder {
 		if(this.tagInBuld){
 			//TODO: 这里面要加上一个属性关闭的函数。
 			this.closeTagInBuild();
-			this.tagInBuld.linkListPointer = this.getStackpeek().getTagLists()?.content.insertNode(this.tagInBuld);
-			this.tagInBuld = undefined;
+			// this.tagInBuld.linkListPointer = this.getStackpeek().getTagLists()?.content.insertNode(this.tagInBuld);
+			// this.tagInBuld = undefined;
 		}
 		this.tagInBuld = new HTMLTagAST(this.currentSpan);
 		this.tagInBuld.buildLinkedLists();
 		this.advance();
 		if (this.currentToken.getType() === TokenType.TAG_NAME) {
 			this.setNodeName(this.currentSpan,this.currentToken.value);
+			if(this.currentToken.value == "script" || this.currentToken.value== "style"){
+				this.buildStack.push(this.tagInBuld);
+				this.tagInBuld =undefined;
+				return;
+			}
 			this.advance();
 		}
 		while(tagTokenTypesSet.has(this.currentToken.getType())){
@@ -113,7 +119,7 @@ export class TreeBuilder {
 	closeTagContent(){
 		let _contentEnd= this.currentSpan.start-1;
 		this.advance();
-		if(this.currentToken.getType()!==TokenType.TAG_NAME){
+		if(this.currentToken.getType()!==TokenType.TAG_END_NAME){
 			return;
 		}
 		let _closeTagName = this.currentToken.value;
@@ -137,6 +143,7 @@ export class TreeBuilder {
 	setNodeName(span:Span,name?:string){
 		name = name?name:"";
 		this.tagInBuld?.setName(name,span);
+		this.tagInBuld!.getSpan().end = span.end;
 	}
 	/**
 	 * 关闭标签 start content.

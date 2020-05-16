@@ -55,7 +55,7 @@ export interface HTMLInfoNode {
      * 获取Snippet式补全代码
      * @param name 
      */
-    getFullCompltionItems(range?:Range,kind?:CompletionRangeKind):CompletionItem[];
+    getFullCompltionItems(range?:Range,kind?:boolean):CompletionItem[];
 
     /**
      *  提供悬浮提示内容
@@ -83,12 +83,15 @@ export class RootNode implements HTMLInfoNode{
     getNameCompltionItems(range:Range):CompletionItem[]{
         return this.completionItems;
     }
-    getFullCompltionItems(range?:Range){
+    getFullCompltionItems(range?:Range,kind?:boolean){
+        if(kind){
+            this.completionItems.forEach(e=>e.insertText)
+        }
         if(range){
             return this.completionItems.map(_completionItem=>{
                 _completionItem.textEdit = {
                     range: range,
-                    newText:_completionItem.insertText? _completionItem.insertText:""
+                    newText:kind? _completionItem.insertText!.substring(0,_completionItem.insertText!.length-1):_completionItem.insertText!
                 }
                 return _completionItem;
             });

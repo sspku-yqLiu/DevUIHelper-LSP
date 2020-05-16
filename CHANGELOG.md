@@ -1,11 +1,18 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-14 17:21:08
- * @LastEditTime: 2020-05-15 16:48:59
+ * @LastEditTime: 2020-05-16 21:30:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\CHANGELOG.md
  -->
+# 2015/5/16 V4.0.5
+BUG修复：
+1.现在支持sctipt style标签
+2.现在支持''作为引号的标签
+问题遗留
+在大段代码存在的时候导致的树极度偏移问题，但是用户感知不明显。性能优化有待、加强
+
 # 2020/5/15 V4.0.4
 	更新文档
 	修复snippetBUG
