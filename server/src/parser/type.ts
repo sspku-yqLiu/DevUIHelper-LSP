@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-05-18 13:25:18
+ * @LastEditTime: 2020-05-18 22:30:03
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -19,7 +19,12 @@ import { LinkedList } from '../DataStructure/LinkList';
 export enum SupportFrameName{
 	Angular,
 	Vue,
-	React
+	React,
+	Null
+}
+export enum SupportComponentNames{
+	DevUI,
+	Zorro
 }
 export interface ParseOption{
 	/**

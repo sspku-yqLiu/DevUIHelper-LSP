@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-15 12:53:58
- * @LastEditTime: 2020-05-18 21:56:27
+ * @LastEditTime: 2020-05-18 23:26:11
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\DConnection.ts
@@ -29,11 +29,13 @@ import {
 import { textChangeRangeIsUnchanged } from 'typescript/lib/tsserverlibrary';
 import { logger } from './server';
 import { Host } from './Host';
-import { FileType } from './type';
+import { FileType, IgniterResult } from './type';
+import { SupportFrameName } from './parser/type';
 export class DConnection{
 	private connection = createConnection(ProposedFeatures.all);
 	private host:Host;
 	private logger:Logger;
+	private igniteResult:IgniterResult|undefined;
 	constructor(host:Host,logger:Logger){
 		this.addProtocalHandlers();
 		this.host = host;
@@ -48,7 +50,10 @@ export class DConnection{
 	}
 	onInitialze(params:InitializeParams):InitializeResult{
 		let capabilities = params.capabilities;
+		if(params.rootPath){
 		logger.debug(params.rootPath);
+		this.igniteResult = this.host.igniter.ignite(params.rootPath);
+		}
 		return {
 			capabilities: {
 				textDocumentSync: TextDocumentSyncKind.Full,
@@ -86,7 +91,10 @@ export class DConnection{
 	onCompletion(_textDocumentPosition: TextDocumentPositionParams){
 		// logger.debug(`Completion work`);		
 		// logger.debug(`cursorOffset at : ${this.host.documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`);
-		const _textDocument = this.host.documents.get(_textDocumentPosition.textDocument.uri);
+		// this.host.igniter.checkProjectFrameworkAndComponentName('c:\\MyProgram\\angular\\demo1');
+		if(!this.igniteResult||this.igniteResult.Frame===SupportFrameName.Null||this.igniteResult.Components===[]){
+			return [];
+		}
 		return this.host.completionProvider.provideCompletionItes(_textDocumentPosition,FileType.HTML);
 	}
 	onHover(_textDocumentPosition:HoverParams){

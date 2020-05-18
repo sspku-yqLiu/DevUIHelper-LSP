@@ -1,12 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2020-05-12 14:52:22
- * @LastEditTime: 2020-05-18 21:56:13
+ * @LastEditTime: 2020-05-18 23:36:02
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
  */
-import {SearchResult,ParseOption, TreeError, SearchResultType} from './parser/type';
+import {SearchResult,ParseOption, TreeError, SearchResultType, SupportFrameName, SupportComponentNames} from './parser/type';
 import { HTMLAST, HTMLTagAST} from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import {  host, logger } from './server';
@@ -15,12 +15,13 @@ import { YQ_Parser,SearchParser } from './parser/parser';
 import { HoverProvider } from './HoverProvider';
 import { TextDocuments, Logger } from 'vscode-languageserver';
 import { convertStringToName,adjustSpanToAbosulutOffset } from './util';
-import { HoverSearchResult } from './type';
+import { HoverSearchResult, IgniterResult } from './type';
 import { Span } from './DataStructure/type';
 import { CompletionProvider } from './CompletionProvider';
 import * as fs from 'fs';
 import { stringify } from 'querystring';
 import{configure,getLogger} from 'log4js';
+import { uriToFilePath } from 'vscode-languageserver/lib/files';
 
 export class Host{
 	public parser = new YQ_Parser();
@@ -114,6 +115,8 @@ export class Agent{
 	
 }
 export class Igniter{
+	private FrameName:SupportFrameName = SupportFrameName.Null;
+	private componentList:SupportComponentNames[]= [];
 	constructor(){}
 	init(){
 		
@@ -136,6 +139,50 @@ export class Igniter{
 		// logger.debug(process.execPath);
 		// logger.debug(__dirname);
 		// logger.debug(process.cwd());
+	}
+	ignite(path:string):IgniterResult{
+		const _index = path.indexOf('\\src');
+		let _flag = true;
+		let _srcpath = path+'\\src';
+		let _nodeModulePath = path+'\\node_modules';
+		try{
+			this.checkProjectFrameworkAndComponentName(_nodeModulePath);
+			this.parseAllDocument(_srcpath);
+		}catch{}
+		return {Frame:this.FrameName,Components:this.componentList};
+	}
+	parseAllDocument(path:string){
+		let pa = fs.readdirSync(path);
+		pa.forEach(element => {
+			const info = fs.statSync(path+'\\'+element);
+			if(info.isDirectory()){
+				// logger.debug(`dir:${path+'\\'+element}`);
+				this.parseAllDocument(path+'/'+element);
+			}else{
+				// logger.debug(`file:${path+'\\'+element}`);
+			}
+		});
+	}
+	checkProjectFrameworkAndComponentName(nodeModulesPath:string){
+		// let result:IgniterResult ={Frame:SupportFrameName.Null,Components:[]};
+		let pa = fs.readdirSync(nodeModulesPath);
+		pa.forEach(ele=>{
+			let _path = nodeModulesPath+'/'+ele
+			const info = fs.statSync(_path);
+			if(info.isDirectory()){
+				if(_path.endsWith('ng-devui')){
+					this.componentList.push(SupportComponentNames.DevUI);
+					logger.warn(`Find Devui At ${_path}`);
+				}
+				this.checkProjectFrameworkAndComponentName(_path);
+			}else{
+				if(_path.endsWith('@angular/core/core.d.ts')){
+					this.FrameName = SupportFrameName.Angular;
+					logger.warn(`Find Angular At ${_path}`);
+				}
+			}
+		});
+
 	}
 }
 export class SnapShot{

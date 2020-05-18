@@ -1,7 +1,7 @@
 {
-	"name": "UI_Components_Helper_Server",
-	"description": "UI_components_helper_server",
-	"version": "4.0.0",
+	"name": "web-component-helper",
+	"description": "Web_Component_Helper",
+	"version": "4.1.0",
 	"author": "yqLiu",
 	"license": "MIT",
 	"engines": {

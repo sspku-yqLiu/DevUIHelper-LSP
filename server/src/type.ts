@@ -1,11 +1,12 @@
 import { HTMLInfoNode } from './source/html_info';
 import { Span } from './DataStructure/type';
 import { HTMLAST } from './parser/ast';
+import { SupportFrameName,SupportComponentNames } from './parser/type';
 
 /*
  * @Author: your name
  * @Date: 2020-04-15 14:26:49
- * @LastEditTime: 2020-05-15 16:44:35
+ * @LastEditTime: 2020-05-18 22:31:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\type.ts
@@ -36,6 +37,10 @@ export enum CompletionType{
 export enum FileType{
 	HTML,
 	TypeScript
+}
+export interface IgniterResult{
+	Frame:SupportFrameName,
+	Components:SupportComponentNames[]
 }
 // export const ATTRREGX = /^(?:\[\(([^\)]*)\)\]|\[([^\]]*)\]|\(([^\)]*)\))$/;
 // const INPUTREG = /\[([^\)]*)\]/
