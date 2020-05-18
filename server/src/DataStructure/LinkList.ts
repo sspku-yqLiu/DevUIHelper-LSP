@@ -4,7 +4,7 @@ import{Span} from './type';
 /*
  * @Author: your name
  * @Date: 2020-05-03 09:59:29
- * @LastEditTime: 2020-05-15 12:20:03
+ * @LastEditTime: 2020-05-18 08:44:08
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\dataStructor\LinkList.ts
@@ -345,7 +345,7 @@ export class LinkedList<T>implements LinkList<T>{
 		}
 	}
 	toJSON =()=>{
-		return this.toArray();
+		return {info:this.headInfo,array:this.toArray()};
 	}
 
 }

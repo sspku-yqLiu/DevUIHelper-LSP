@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-05-16 18:49:41
+ * @LastEditTime: 2020-05-18 13:25:18
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -123,7 +123,6 @@ export enum HTMLASTNodeType{
 	ATTR_VALUE,
 	DIRECTIVE,
 	TEMPLATE,
-	NAME,
 	COMMENT
 }
 export interface tagSubNodes{
@@ -142,7 +141,7 @@ export interface tagSubNodes{
 	/**
 	 * 内容
 	 */
-	"content":LinkedList<HTMLAST>,
+	// "content":LinkedList<HTMLAST>,
 	/**
 	 * 注释
 	 */
@@ -160,7 +159,7 @@ export enum ParseErrorLevel {
   
 export class TreeError{
 	constructor(
-		public span: Span, public msg: string,
+		public span: Span, public msg: string,public ast:HTMLAST,
       public level: ParseErrorLevel = ParseErrorLevel.ERROR
 	){}
 }

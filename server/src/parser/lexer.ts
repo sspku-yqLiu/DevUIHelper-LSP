@@ -192,10 +192,10 @@ export class Tokenizer{
 			this.result.push(this._tokenInBuild);
 			if(this._tokenInBuild.getType()===TokenType.TAG_NAME){
 				if(this._tokenInBuild.value=="script"){
-					const _relocation = this.content.indexOf("</script>",this.cursor.offset)?this.content.indexOf("</script>",this.cursor.offset):this.end;
+					const _relocation = this.content.indexOf("</script",this.cursor.offset)?this.content.indexOf("</script",this.cursor.offset):this.end;
 					this.cursor.relocate(_relocation);
 				}else if(this._tokenInBuild.value=="style"){
-					const _relocation = this.content.indexOf("</style>",this.cursor.offset)?this.content.indexOf("</style>",this.cursor.offset):this.end;
+					const _relocation = this.content.indexOf("</style",this.cursor.offset)?this.content.indexOf("</style",this.cursor.offset):this.end;
 					this.cursor.relocate(_relocation);
 				}
 			}

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-05-16 22:47:28
+ * @LastEditTime: 2020-05-18 12:31:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
@@ -10,7 +10,7 @@ import{adjustSpanToAbosulutOffset,getRangeFromDocument,getsubstringForSpan, auto
 import { HTMLInfoNode, Component, Attribute, htmlInfo, RootNode } from './source/html_info';
 import{host} from'./server'; 
 import{CompletionItem,Range, HoverParams, TextDocumentPositionParams} from 'vscode-languageserver';
-import { HTMLAST, HTMLTagAST, NULLHTMLAST } from './parser/ast';
+import { HTMLAST, HTMLTagAST, HTMLCommentAST } from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { FileType,CompletionSearchResult, CompletionType, CompletionRangeKind } from './type';
 import { SearchResultType, SupportFrameName } from './parser/type';
@@ -69,7 +69,7 @@ export class CompletionProvider{
 				}
 			case(SearchResultType.Name): {
 				this.tabCompletionFlag = true;
-				let _autoSwitchFlag = (ast.getSpan().end-ast.nameSpan.end>3);
+				let _autoSwitchFlag = (ast.getSpan().end-ast.nameSpan.end)>3;
 				let _span = _autoSwitchFlag?ast.nameSpan:ast.getSpan();
 				if(ast instanceof HTMLTagAST&&!_autoSwitchFlag){
 					_span.start++;
@@ -86,7 +86,7 @@ export class CompletionProvider{
 					return {node:host.hunter.findHTMLInfoNode(ast,textDocument.uri),span:undefined,ast:ast,type:CompletionType.FUll};
 				}	
 			}
-			case(SearchResultType.Null): return {node:undefined,span:undefined,ast:new NULLHTMLAST(),type:CompletionType.FUll};
+			case(SearchResultType.Null): return {node:undefined,span:undefined,ast:new HTMLCommentAST(),type:CompletionType.FUll};
 		}
 
 	}
@@ -117,8 +117,8 @@ export class CompletionProvider{
 		return false;
 	}
 	CompletionItemsFactory(node:Component,ast:HTMLTagAST,type:CompletionType,range?:Range):CompletionItem[]{
-		let _directives = ast.subLists!.directive.getEach(e=>e.getName());
-		let _attrs = ast.subLists!.attr.getEach(e=>e.getName());
+		let _directives = ast.attrList!.directive.getEach(e=>e.getName());
+		let _attrs = ast.attrList!.attr.getEach(e=>e.getName());
 
 		let _directivesNodes = _directives?.map(name=>{
 			return host.htmlSourceTreeRoot.getDirectives(name);	

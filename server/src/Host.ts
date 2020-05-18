@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-12 14:52:22
- * @LastEditTime: 2020-05-16 19:29:24
+ * @LastEditTime: 2020-05-18 14:12:15
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
@@ -52,7 +52,6 @@ export class Host{
 export class Hunter{
 	private searchParser = new SearchParser();
 	constructor(){
-
 	}
 
 	searchTerminalAST(offset:number,uri:string):SearchResult{
@@ -118,6 +117,7 @@ export class Igniter{
 	parseTextDocument(textDocument:TextDocument,parseOption:ParseOption){
 		let {root,errors}=host.parser.parseTextDocument(textDocument,parseOption);
 		host.snapshotMap.set(textDocument.uri,new SnapShot(root,errors,textDocument));
+		//ROOTLogger
 		// logger.debug(JSON.stringify(root));
 		//ALERT:DEBUG用,发行版应该删除
 		// fs.writeFile(__dirname+'\\result.json',JSON.stringify(root),(err)=>{
