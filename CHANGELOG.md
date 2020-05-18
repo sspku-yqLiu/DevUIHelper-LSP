@@ -1,12 +1,17 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-14 17:21:08
- * @LastEditTime: 2020-05-16 21:30:08
+ * @LastEditTime: 2020-05-18 14:56:38
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\CHANGELOG.md
  -->
-# 2015/5/16 V4.0.5
+# 2020/5/18 V4.0.6
+
+对ast进行了小幅的重写，现在它拥有三个span : namespan tagspan 以及 domain，这样的结构使得查找更加迅速。
+修复了嵌套的bug.
+
+# 2020/5/16 V4.0.5
 BUG修复：
 1.现在支持sctipt style标签
 2.现在支持''作为引号的标签

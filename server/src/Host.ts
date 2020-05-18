@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-12 14:52:22
- * @LastEditTime: 2020-05-18 14:12:15
+ * @LastEditTime: 2020-05-18 21:56:13
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
@@ -9,18 +9,18 @@
 import {SearchResult,ParseOption, TreeError, SearchResultType} from './parser/type';
 import { HTMLAST, HTMLTagAST} from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { logger, host } from './server';
+import {  host, logger } from './server';
 import { HTMLInfoNode, Attribute, RootNode, DevUIParamsConstructor } from './source/html_info';
 import { YQ_Parser,SearchParser } from './parser/parser';
 import { HoverProvider } from './HoverProvider';
-import { TextDocuments } from 'vscode-languageserver';
+import { TextDocuments, Logger } from 'vscode-languageserver';
 import { convertStringToName,adjustSpanToAbosulutOffset } from './util';
 import { HoverSearchResult } from './type';
 import { Span } from './DataStructure/type';
 import { CompletionProvider } from './CompletionProvider';
 import * as fs from 'fs';
 import { stringify } from 'querystring';
-
+import{configure,getLogger} from 'log4js';
 
 export class Host{
 	public parser = new YQ_Parser();
@@ -32,7 +32,10 @@ export class Host{
 	public documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 	public htmlSourceTreeRoot = new DevUIParamsConstructor().build();
 	constructor(){
-
+		this.documents.onDidChangeContent(change=>{
+			// logger.debug(`change happed!`);
+			// logger.debug(change.document.uri);
+		})
 	}
 	getDocumentFromURI(uri:string):TextDocument{
 		let _result = this.documents.get(uri)
@@ -48,6 +51,7 @@ export class Host{
 		}
 		return _result;
 	}
+
 }
 export class Hunter{
 	private searchParser = new SearchParser();
