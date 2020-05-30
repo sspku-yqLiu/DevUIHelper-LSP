@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-12 14:52:22
- * @LastEditTime: 2020-05-18 23:36:02
+ * @LastEditTime: 2020-05-21 10:54:52
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
@@ -32,10 +32,11 @@ export class Host{
 	public completionProvider = new CompletionProvider();
 	public documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 	public htmlSourceTreeRoot = new DevUIParamsConstructor().build();
+	private parseOption:ParseOption|undefined;
 	constructor(){
 		this.documents.onDidChangeContent(change=>{
-			// logger.debug(`change happed!`);
-			// logger.debug(change.document.uri);
+			if(this.parseOption)
+				this.igniter.parseTextDocument(change.document,this.parseOption);
 		})
 	}
 	getDocumentFromURI(uri:string):TextDocument{
@@ -51,6 +52,9 @@ export class Host{
 			throw Error(`Cannot get snapShot from uri ${uri}`)
 		}
 		return _result;
+	}
+	setParseOption(parseOption:ParseOption){
+		this.parseOption= parseOption;
 	}
 
 }
@@ -140,7 +144,7 @@ export class Igniter{
 		// logger.debug(__dirname);
 		// logger.debug(process.cwd());
 	}
-	ignite(path:string):IgniterResult{
+	ignite(path:string):ParseOption{
 		const _index = path.indexOf('\\src');
 		let _flag = true;
 		let _srcpath = path+'\\src';
@@ -149,7 +153,7 @@ export class Igniter{
 			this.checkProjectFrameworkAndComponentName(_nodeModulePath);
 			this.parseAllDocument(_srcpath);
 		}catch{}
-		return {Frame:this.FrameName,Components:this.componentList};
+		return {frame:this.FrameName,components:this.componentList};
 	}
 	parseAllDocument(path:string){
 		let pa = fs.readdirSync(path);

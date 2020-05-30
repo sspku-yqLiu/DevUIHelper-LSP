@@ -26,7 +26,7 @@ export class CompletionProvider{
 		let {textDocument,position} = _params;
 		let _textDocument = host.getDocumentFromURI(textDocument.uri);
 		let _offset = _textDocument.offsetAt(position);
-		host.igniter.parseTextDocument(_textDocument,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]})
+		// host.igniter.parseTextDocument(_textDocument,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]})
 		if(type === FileType.HTML){
 			return this.provideCompletionItemsForHTML(_offset,_textDocument);
 		}else{

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-05-18 22:30:03
+ * @LastEditTime: 2020-05-21 10:57:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -30,12 +30,16 @@ export interface ParseOption{
 	/**
 	 * 所使用的的框架名称
 	 */
-	frameName:SupportFrameName,
+	frame:SupportFrameName,
+	/**
+	 * 所使用的的组件库
+	 */
+	components:SupportComponentNames[]
 	/**
 	 * 所使用的UI库的特征
 	 * 例如DevUI -> d- / elementUI -> e- 
 	 */
-	tagMarkedPrefixs:string[]
+	tagMarkedPrefixs?:string[]
 }
 export enum TokenType{
 	TAG_START,//

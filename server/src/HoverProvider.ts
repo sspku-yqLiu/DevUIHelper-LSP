@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-03 09:30:22
- * @LastEditTime: 2020-05-18 22:00:15
+ * @LastEditTime: 2020-05-21 10:58:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\HoverProvider.ts
@@ -21,7 +21,7 @@ export class HoverProvider{
 			return  {contents:"Error!!!"}; 
 		}	
 		let _offset = _document!.offsetAt(params.position);
-		host.igniter.parseTextDocument(_document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
+		// host.igniter.parseTextDocument(_document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
 		let _result = this.searchTerminalASTForHover(_offset,params.textDocument.uri);
 		let {node,span} =  _result;
 		if(!span){

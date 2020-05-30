@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-15 12:53:58
- * @LastEditTime: 2020-05-18 23:26:11
+ * @LastEditTime: 2020-05-31 00:12:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\DConnection.ts
@@ -30,12 +30,12 @@ import { textChangeRangeIsUnchanged } from 'typescript/lib/tsserverlibrary';
 import { logger } from './server';
 import { Host } from './Host';
 import { FileType, IgniterResult } from './type';
-import { SupportFrameName } from './parser/type';
+import { SupportFrameName, ParseOption } from './parser/type';
 export class DConnection{
 	private connection = createConnection(ProposedFeatures.all);
 	private host:Host;
 	private logger:Logger;
-	private igniteResult:IgniterResult|undefined;
+	private igniteResult:ParseOption|undefined;
 	constructor(host:Host,logger:Logger){
 		this.addProtocalHandlers();
 		this.host = host;
@@ -53,6 +53,7 @@ export class DConnection{
 		if(params.rootPath){
 		logger.debug(params.rootPath);
 		this.igniteResult = this.host.igniter.ignite(params.rootPath);
+		this.host.setParseOption(this.igniteResult);
 		}
 		return {
 			capabilities: {
@@ -92,15 +93,16 @@ export class DConnection{
 		// logger.debug(`Completion work`);		
 		// logger.debug(`cursorOffset at : ${this.host.documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`);
 		// this.host.igniter.checkProjectFrameworkAndComponentName('c:\\MyProgram\\angular\\demo1');
-		if(!this.igniteResult||this.igniteResult.Frame===SupportFrameName.Null||this.igniteResult.Components===[]){
+		if(!this.igniteResult||this.igniteResult.frame===SupportFrameName.Null||this.igniteResult.components===[]){
 			return [];
 		}
 		return this.host.completionProvider.provideCompletionItes(_textDocumentPosition,FileType.HTML);
 	}
 	onHover(_textDocumentPosition:HoverParams){
-		logger.debug(`HoverProvider works!`);
-		logger.debug(`cursorOffset at : ${this.host.documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`)
-		return this.host.hoverProvider.provideHoverInfoForHTML(_textDocumentPosition)
+		if(!this.igniteResult||this.igniteResult.frame===SupportFrameName.Null||this.igniteResult.components===[]){
+			return ;
+		}
+		return this.host.hoverProvider.provideHoverInfoForHTML(_textDocumentPosition);
 	}
 	listen(){
 		this.connection.listen();

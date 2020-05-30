@@ -215,7 +215,6 @@ export class Component implements HTMLInfoNode {
         _markUpBuilder.addSpecialContent('typescript',this.attritubes.map(attr=>{
             return attr.getName()+' :'+attr.getSortDescription();
         }));
-
         return {contents:_markUpBuilder.getMarkUpContent()};
     }
     
