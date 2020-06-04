@@ -4,14 +4,16 @@
 		"module": "commonjs",
 		"moduleResolution": "node",
 		"sourceMap": true,
-		"strict": true,
+		// "strict": true,
 		"outDir": "out",
-		"rootDir": "src"
+		"rootDir": "src",
+		"noImplicitAny": false
 	},
 	"lib":[	
 		"dom.iterable",//这里是新增项
 	],
 	"include": ["src"],
 	"exclude": ["node_modules", ".vscode-test"],
-	"suppressImplicitAnyIndexErrors":true
+	"suppressImplicitAnyIndexErrors":true,
+
 }

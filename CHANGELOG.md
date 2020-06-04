@@ -1,11 +1,14 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-14 17:21:08
- * @LastEditTime: 2020-05-18 23:37:48
+ * @LastEditTime: 2020-05-31 00:15:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\CHANGELOG.md
  -->
+
+# 2020/5/31 V4.1.1
+	bugfix hover将不在于angular无关的项目中触发。
 # 2020/5/18 V4.1.0
 	增加了Igniter类
 	现在当你处于非angular项目或没有安装devui的项目中，DevUIHelper将不会打扰您

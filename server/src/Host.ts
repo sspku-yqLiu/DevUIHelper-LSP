@@ -1,133 +1,141 @@
 /*
  * @Author: your name
  * @Date: 2020-05-12 14:52:22
- * @LastEditTime: 2020-05-21 10:54:52
+ * @LastEditTime: 2020-06-04 22:55:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
  */
-import {SearchResult,ParseOption, TreeError, SearchResultType, SupportFrameName, SupportComponentNames} from './parser/type';
-import { HTMLAST, HTMLTagAST} from './parser/ast';
+import { SearchResult, ParseOption, TreeError, SearchResultType, SupportFrameName, SupportComponentNames } from './parser/type';
+import { HTMLAST, HTMLTagAST } from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import {  host, logger } from './server';
-import { HTMLInfoNode, Attribute, RootNode, DevUIParamsConstructor } from './source/html_info';
-import { YQ_Parser,SearchParser } from './parser/parser';
+import { host, logger } from './server';
+import { HTMLInfoNode, Attribute, RootNode } from './source/html_info';
+import { YQ_Parser, SearchParser } from './parser/parser';
 import { HoverProvider } from './HoverProvider';
 import { TextDocuments, Logger } from 'vscode-languageserver';
-import { convertStringToName,adjustSpanToAbosulutOffset } from './util';
+import { convertStringToName, adjustSpanToAbosulutOffset } from './util';
 import { HoverSearchResult, IgniterResult } from './type';
 import { Span } from './DataStructure/type';
 import { CompletionProvider } from './CompletionProvider';
 import * as fs from 'fs';
 import { stringify } from 'querystring';
-import{configure,getLogger} from 'log4js';
+import { configure, getLogger } from 'log4js';
 import { uriToFilePath } from 'vscode-languageserver/lib/files';
+import { Architect } from './source/Architect';
 
-export class Host{
+export class Host {
 	public parser = new YQ_Parser();
 	public hunter = new Hunter();
 	public igniter = new Igniter();
-	public snapshotMap = new Map<string,SnapShot>();
+	public snapshotMap = new Map<string, SnapShot>();
 	public hoverProvider = new HoverProvider();
 	public completionProvider = new CompletionProvider();
 	public documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-	public htmlSourceTreeRoot = new DevUIParamsConstructor().build();
-	private parseOption:ParseOption|undefined;
-	constructor(){
-		this.documents.onDidChangeContent(change=>{
-			if(this.parseOption)
-				this.igniter.parseTextDocument(change.document,this.parseOption);
-		})
+
+	public architect = new Architect();
+	public htmlSourceTreeRoot = new RootNode();
+	private parseOption: ParseOption | undefined;
+	constructor() {
+		this.documents.onDidChangeContent(change => {
+			if (this.parseOption)
+				this.igniter.parseTextDocument(change.document, this.parseOption);
+		});
 	}
-	getDocumentFromURI(uri:string):TextDocument{
-		let _result = this.documents.get(uri)
-		if(!_result){
-			throw Error(`Cannot get file from uri ${uri}`)
+	getDocumentFromURI(uri: string): TextDocument {
+		let _result = this.documents.get(uri);
+		if (!_result) {
+			throw Error(`Cannot get file from uri ${uri}`);
 		}
 		return _result;
 	}
-	getSnapShotFromURI(uri:string):SnapShot{
+	getSnapShotFromURI(uri: string): SnapShot {
 		let _result = this.snapshotMap.get(uri);
-		if(!_result){
-			throw Error(`Cannot get snapShot from uri ${uri}`)
+		if (!_result) {
+			throw Error(`Cannot get snapShot from uri ${uri}`);
 		}
 		return _result;
 	}
-	setParseOption(parseOption:ParseOption){
-		this.parseOption= parseOption;
+	setParseOption(parseOption: ParseOption) {
+		this.parseOption = parseOption;
 	}
 
 }
-export class Hunter{
+export class Hunter {
 	private searchParser = new SearchParser();
-	constructor(){
+	constructor() {
 	}
 
-	searchTerminalAST(offset:number,uri:string):SearchResult{
+	searchTerminalAST(offset: number, uri: string): SearchResult {
 		let _snapShot = host.snapshotMap.get(uri);
-		if(!_snapShot){throw Error(`this uri does not have a snapShot: ${uri}`)}
-		const{ root,textDocument,HTMLAstToHTMLInfoNode } = _snapShot;
-		if(!root){
+		if (!_snapShot) { throw Error(`this uri does not have a snapShot: ${uri}`); }
+		const { root, textDocument, HTMLAstToHTMLInfoNode } = _snapShot;
+		if (!root) {
 			throw Error(`Snap shot does not have this file : ${uri}, please parse it befor use it!`);
 		}
-		let _result = this.searchParser.DFS(offset,root);
+		let _result = this.searchParser.DFS(offset, root);
 		//调整Node位置
-		return _result?_result:{ast:undefined,type:SearchResultType.Null};
+		return _result ? _result : { ast: undefined, type: SearchResultType.Null };
 	}
 
-	findHTMLInfoNode(ast:HTMLAST|undefined,uri:string,map?:Map<HTMLAST,HTMLInfoNode>):HTMLInfoNode|undefined{
-		if(!ast){
-			throw Error(`ast Does not Exits in file: ${uri}`)
+	findHTMLInfoNode(ast: HTMLAST | undefined, uri: string, map?: Map<HTMLAST, HTMLInfoNode>): HTMLInfoNode | undefined {
+		if (!ast) {
+			throw Error(`ast Does not Exits in file: ${uri}`);
 		}
-		if(!map){
+		if (!map) {
 			map = host.getSnapShotFromURI(uri).HTMLAstToHTMLInfoNode;
 		}
 		//表内存在则直接返回
 		let res = map.get(ast);
-		if(res){return res;}
+		if (res) { return res; }
 
-		if(ast.getName()=="$$ROOT$$"){
+		if (ast.getName() == "$$ROOT$$") {
 			let _htmlroot = host.htmlSourceTreeRoot;
-			map.set(ast,_htmlroot);
+			map.set(ast, _htmlroot);
 			return _htmlroot;
 		}
-		let _name =ast.getName();
-		let _parentast =ast.parentPointer;
+		let _name = ast.getName();
+		let _parentast = ast.parentPointer;
 		//没有指针报错
-		if(!_parentast||!_name){ throw Error(`None parent cursor or name of node ${_name}`)}
-		if(ast instanceof HTMLTagAST){
+		if (!_parentast || !_name) {
+			throw Error(`None parent cursor or name of node ${_name}`);
+		}
+		if (ast instanceof HTMLTagAST) {
 			return host.htmlSourceTreeRoot.getSubNode(_name);
 		}
-		else{
+		else {
 			//表内没有则向上递归
 			_name = convertStringToName(_name);
 			let _parentInfoNode = map.get(_parentast);
-			if(!_parentInfoNode){
-				 _parentInfoNode = this.findHTMLInfoNode(_parentast,uri);
+			if (!_parentInfoNode) {
+				_parentInfoNode = this.findHTMLInfoNode(_parentast, uri);
 			}
-			if(_parentInfoNode){
+			if (_parentInfoNode) {
 				let _currentInfoNode = _parentInfoNode?.getSubNode(_name);
-				if(_currentInfoNode){
-					map.set(ast,_currentInfoNode);
+				if (_currentInfoNode) {
+					map.set(ast, _currentInfoNode);
 				}
 				return _currentInfoNode;
 			}
 		}
 	}
 }
-export class Agent{
-	
+export class Agent {
+
 }
-export class Igniter{
-	private FrameName:SupportFrameName = SupportFrameName.Null;
-	private componentList:SupportComponentNames[]= [];
-	constructor(){}
-	init(){
-		
+export class Igniter {
+	private FrameName: SupportFrameName = SupportFrameName.Null;
+	private componentList: SupportComponentNames[] = [];
+	private componentToUrl = new Map<SupportComponentNames, string>();
+	constructor() {
+
 	}
-	parseTextDocument(textDocument:TextDocument,parseOption:ParseOption){
-		let {root,errors}=host.parser.parseTextDocument(textDocument,parseOption);
-		host.snapshotMap.set(textDocument.uri,new SnapShot(root,errors,textDocument));
+	init() {
+
+	}
+	parseTextDocument(textDocument: TextDocument, parseOption: ParseOption) {
+		let { root, errors } = host.parser.parseTextDocument(textDocument, parseOption);
+		host.snapshotMap.set(textDocument.uri, new SnapShot(root, errors, textDocument));
 		//ROOTLogger
 		// logger.debug(JSON.stringify(root));
 		//ALERT:DEBUG用,发行版应该删除
@@ -135,7 +143,7 @@ export class Igniter{
 		// 	if(err){
 		// 		logger.debug("SometionWronbg Happen!! ______________")
 		// 		logger.debug(err.message);
-				
+
 		// 		throw err;
 		// 	}
 		// 	logger.debug("Data Wirte Done !!! ______________")
@@ -144,59 +152,78 @@ export class Igniter{
 		// logger.debug(__dirname);
 		// logger.debug(process.cwd());
 	}
-	ignite(path:string):ParseOption{
+	ignite(path: string): ParseOption {
 		const _index = path.indexOf('\\src');
 		let _flag = true;
-		let _srcpath = path+'\\src';
-		let _nodeModulePath = path+'\\node_modules';
-		try{
+		let _srcpath = path + '\\src';
+		let _nodeModulePath = path + '\\node_modules';
+		try {
 			this.checkProjectFrameworkAndComponentName(_nodeModulePath);
-			this.parseAllDocument(_srcpath);
-		}catch{}
-		return {frame:this.FrameName,components:this.componentList};
+			if (this.FrameName !== SupportFrameName.Null && this.componentList !== [])
+				this.parseAllDocument(_srcpath);
+			this.loadSourceTree();
+		} catch{ }
+		return { frame: this.FrameName, components: this.componentList };
 	}
-	parseAllDocument(path:string){
+	parseAllDocument(path: string): void {
 		let pa = fs.readdirSync(path);
 		pa.forEach(element => {
-			const info = fs.statSync(path+'\\'+element);
-			if(info.isDirectory()){
+			const info = fs.statSync(path + '\\' + element);
+			if (info.isDirectory()) {
 				// logger.debug(`dir:${path+'\\'+element}`);
-				this.parseAllDocument(path+'/'+element);
-			}else{
+				this.parseAllDocument(path + '/' + element);
+			} else {
 				// logger.debug(`file:${path+'\\'+element}`);
 			}
 		});
 	}
-	checkProjectFrameworkAndComponentName(nodeModulesPath:string){
+	checkProjectFrameworkAndComponentName(nodeModulesPath: string): void {
 		// let result:IgniterResult ={Frame:SupportFrameName.Null,Components:[]};
 		let pa = fs.readdirSync(nodeModulesPath);
-		pa.forEach(ele=>{
-			let _path = nodeModulesPath+'/'+ele
+		pa.forEach(ele => {
+			let _path = nodeModulesPath + '/' + ele;
 			const info = fs.statSync(_path);
-			if(info.isDirectory()){
-				if(_path.endsWith('ng-devui')){
+			if (info.isDirectory()) {
+				if (_path.endsWith('ng-devui')) {
 					this.componentList.push(SupportComponentNames.DevUI);
-					logger.warn(`Find Devui At ${_path}`);
+					logger.info(`Find Devui At ${_path}`);
+					this.componentToUrl.set(SupportComponentNames.DevUI, _path);
 				}
-				this.checkProjectFrameworkAndComponentName(_path);
-			}else{
-				if(_path.endsWith('@angular/core/core.d.ts')){
+				// this.checkProjectFrameworkAndComponentName(_path);
+				else if (_path.endsWith("/@angular")) {
 					this.FrameName = SupportFrameName.Angular;
-					logger.warn(`Find Angular At ${_path}`);
+					logger.info(`Find Angular At ${_path}`);
 				}
 			}
 		});
-
+	}
+	loadSourceTree() {
+		for (let com of this.componentToUrl.values()) {
+			this._loadSouceTree(com);
+		}
+	}
+	async _loadSouceTree(comPath: string) {
+		return new Promise((resolve, rejects) => {
+			fs.readFile(comPath + "/wch/info.json", { encoding: 'UTF-8' }, (err, data) => {
+				if (err) {
+					rejects(err.message);
+				} else {
+					const comInfo = JSON.parse(data);
+					// logger.debug(comInfo[0]);
+					host.architect.build(comInfo);
+				}
+			});
+		});
 	}
 }
-export class SnapShot{
-	public HTMLAstToHTMLInfoNode = new Map<HTMLAST,HTMLInfoNode>();
-	public context:string = "";
+export class SnapShot {
+	public HTMLAstToHTMLInfoNode = new Map<HTMLAST, HTMLInfoNode>();
+	public context: string = "";
 	constructor(
-		public root:HTMLAST,
-		public errors:TreeError[],
-		public textDocument:TextDocument,
-		){
-			this.context = this.textDocument.getText();
-		}
+		public root: HTMLAST,
+		public errors: TreeError[],
+		public textDocument: TextDocument,
+	) {
+		this.context = this.textDocument.getText();
+	}
 }
