@@ -1,6 +1,6 @@
 import { CompletionItemKind, CompletionItem, InsertTextFormat, TextEdit, Range, Hover, MarkupContent } from "vscode-languageserver";
 import { HTML_SCHEMA as SCHEMA } from './html_source';
-import { logger } from '../server';
+import { logger, host } from '../server';
 import { MarkUpBuilder, copyCompletionItem, converValueSetToValueString, changeDueToCompletionRangeKind, changeInsertDueToCompletionRangeKind } from '../util';
 import { CompletionRangeKind } from '../type';
 
@@ -68,6 +68,7 @@ export class RootNode implements HTMLInfoNode {
     schema = <{ [elementName: string]: Component }>{};
     private completionItems: CompletionItem[] = [];
     private nameCompletionItems: CompletionItem[] = [];
+    private directWithNameSet={};
     constructor() { }
     buildCompletionItem() { }
     buildNameCompletionItem() { }
@@ -81,7 +82,7 @@ export class RootNode implements HTMLInfoNode {
     }
 
     getNameCompltionItems(): CompletionItem[] {
-        return this.completionItems;
+        return this.nameCompletionItems;
     }
     getFullCompltionItems(range?: Range, kind?: boolean) {
         if (kind) {
@@ -108,13 +109,12 @@ export class RootNode implements HTMLInfoNode {
         return;
     }
     getHoverInfo(): undefined { return undefined; }
-    // getDirectives(name: string): Directive | undefined {
-    //     const _result = this.getSubNode(name);
-    //     if (_result instanceof Directive) {
-    //         return _result;
-    //     }
-    //     return;
-    // }
+    insertDirectiveWithArray(directive:Directive){
+        this.directWithNameSet[directive.getName()]=directive;
+    }
+    getDirectiveWithNameSet(){
+        return this.directWithNameSet;
+    }
 }
 
 export class Component implements HTMLInfoNode {
@@ -230,6 +230,7 @@ export class Component implements HTMLInfoNode {
     }
 }
 export class Directive extends Component {
+    private hasValueFlag = false;
     constructor(name: string,
         description: string = "",
         tmw: string | undefined,
@@ -241,22 +242,21 @@ export class Directive extends Component {
     }
     //Question:为什么返回值不同会报错
     getcompletionKind() { return this.completionItemKind; }
-    buildFullCompletionItems() {
-        let _completionItem = CompletionItem.create(this.name);
-        _completionItem.kind = this.completionItemKind;
-        let _insertText: string = this.name;
-        _completionItem.insertText = this.name;
-        _completionItem.detail = this.description;
-        _completionItem.documentation=this.tmwString;
-        _completionItem.insertTextFormat = InsertTextFormat.PlainText;
-        return _completionItem;
-    }
     buildNameCompletionItem(): CompletionItem {
         let _completionItem = CompletionItem.create(this.name);
         _completionItem.kind = this.completionItemKind;
         _completionItem.detail = this.description;
         _completionItem.documentation = this.tmwString;
+        _completionItem.preselect = false;
+        if(this.hasValueFlag){
+            _completionItem.insertText = `[${this.name}]="$1"`;
+            _completionItem.insertTextFormat=InsertTextFormat.Snippet;
+            host.HTMLDirectiveSource.insertDirectiveWithArray(this);
+        }
         return _completionItem;
+    }
+    setHasValueFlag(){
+        this.hasValueFlag = true;
     }
 }
 export class Attribute implements HTMLInfoNode {

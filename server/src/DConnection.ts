@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-15 12:53:58
- * @LastEditTime: 2020-05-31 00:12:39
+ * @LastEditTime: 2020-06-05 20:59:53
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\DConnection.ts
@@ -28,7 +28,7 @@ import {
 } from 'vscode-languageserver';
 import { textChangeRangeIsUnchanged } from 'typescript/lib/tsserverlibrary';
 import { logger } from './server';
-import { Host } from './Host';
+import { Host } from './Host/Host';
 import { FileType, IgniterResult } from './type';
 import { SupportFrameName, ParseOption } from './parser/type';
 export class DConnection{

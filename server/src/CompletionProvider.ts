@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-06-05 16:33:22
+ * @LastEditTime: 2020-06-05 22:03:17
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
@@ -15,7 +15,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { FileType, CompletionSearchResult, CompletionType, CompletionRangeKind } from './type';
 import { SearchResultType, SupportFrameName } from './parser/type';
 import { Span } from './DataStructure/type';
-import { SnapShot } from './Host';
+import { SnapShot } from './Host/Host';
 import { WhiteChars, Space, WhiteCharsAndGTAndSPLASH, WhiteCharsAndLTAndLTANDSPLASH, newLine } from './parser/chars';
 import { forEachTrailingCommentRange } from 'typescript/lib/tsserverlibrary';
 
@@ -25,6 +25,7 @@ export class CompletionProvider {
 	constructor() { }
 	provideCompletionItes(_params: TextDocumentPositionParams, type: FileType): CompletionItem[] {
 		// host.igniter.loadSourceTree();
+		host.igniter.loadSourceTree();
 		let { textDocument, position } = _params;
 		let _textDocument = host.getDocumentFromURI(textDocument.uri);
 		let _offset = _textDocument.offsetAt(position);
@@ -122,7 +123,7 @@ export class CompletionProvider {
 		let _directives = ast.attrList!.directive.getEach(e => e.getName());
 		let _attrs = ast.attrList!.attr.getEach(e => e.getName());
 		//alert: 测试用
-		let test =host;
+		let _directiveWithName:string[] = [];
 		let _directivesNodes = _directives?.map(name => {
 			return host.HTMLDirectiveSource.getSubNode(name);
 		});
@@ -133,9 +134,16 @@ export class CompletionProvider {
 				_result.push(...node.getFullCompltionItems(range));
 			}
 		);
+		_attrs?.forEach(node => {
+			let attrName = node.replace(/\[|\(|\)|\]/g,"");
+			if (host.HTMLDirectiveSource.getDirectiveWithNameSet()[attrName]){
+				_directiveWithName.push(attrName);
+				_result.push(...host.HTMLDirectiveSource.getSubNode(attrName).getFullCompltionItems(range));
+			}
+		});
 		//加载directive自身
 		_result.push(...host.HTMLDirectiveSource.getNameCompltionItems().filter(e=>{
-			for (let name of _directives!) {
+			for (let name of [..._directiveWithName,..._directives!]) {
 				if (name.includes(e.label))
 					return false;
 			}

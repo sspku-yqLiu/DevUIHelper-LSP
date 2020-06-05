@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-05 20:30:54
- * @LastEditTime: 2020-05-21 10:57:12
+ * @LastEditTime: 2020-06-05 20:53:25
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\server\src\type.ts
@@ -30,16 +30,16 @@ export interface ParseOption{
 	/**
 	 * 所使用的的框架名称
 	 */
-	frame:SupportFrameName,
+	frame:SupportFrameName;
 	/**
 	 * 所使用的的组件库
 	 */
-	components:SupportComponentNames[]
+	components:SupportComponentNames[];
 	/**
 	 * 所使用的UI库的特征
 	 * 例如DevUI -> d- / elementUI -> e- 
 	 */
-	tagMarkedPrefixs?:string[]
+	tagMarkedPrefixs?:string[];
 }
 export enum TokenType{
 	TAG_START,//
@@ -138,15 +138,15 @@ export interface tagSubNodes{
 	/**
 	 * 指令
 	 */
-	"directive":LinkedList<HTMLAST>,
+	"directive":LinkedList<HTMLAST>;
 	/**
 	 * 模板
 	 */
-	"template":LinkedList<HTMLAST>,
+	"template":LinkedList<HTMLAST>;
 	/**
 	 * 属性
 	 */
-	"attr":LinkedList<HTMLAST>,
+	"attr":LinkedList<HTMLAST>;
 	/**
 	 * 内容
 	 */
@@ -154,11 +154,11 @@ export interface tagSubNodes{
 	/**
 	 * 注释
 	 */
-	"comment":LinkedList<HTMLAST>,
+	"comment":LinkedList<HTMLAST>;
 	/**
 	 * 说明：所有的索引都是string
 	 */
-	[listName:string]:LinkedList<HTMLAST>,
+	[listName:string]:LinkedList<HTMLAST>;
 
 }
 export enum ParseErrorLevel {
@@ -173,8 +173,8 @@ export class TreeError{
 	){}
 }
 export interface ParseResult{
-	root:HTMLAST,
-	errors:TreeError[]
+	root:HTMLAST;
+	errors:TreeError[];
 } 
 
 export enum SearchResultType{
@@ -185,7 +185,7 @@ export enum SearchResultType{
 }
 
 export interface SearchResult{
-	ast:HTMLAST|undefined,
-	type:SearchResultType
+	ast:HTMLAST|undefined;
+	type:SearchResultType;
 }
 

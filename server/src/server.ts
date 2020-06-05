@@ -12,7 +12,7 @@
  * ------------------------------------------------------------------------------------------ */
 import{configure,getLogger} from 'log4js'
 
-import { Host } from './Host';
+import { Host } from './Host/Host';
 import { DConnection } from './DConnection';
 configure({
     appenders: {

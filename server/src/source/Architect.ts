@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-06-04 19:26:34
- * @LastEditTime: 2020-06-05 16:30:34
+ * @LastEditTime: 2020-06-05 22:04:05
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\source\Architect.ts
@@ -27,16 +27,21 @@ export class Architect {
 				this.nodeInbuild = this.componentSchema[name];
 			}
 			attrList.forEach(ele => {
-				this.nodeInbuild.addAttritube(new Attribute(
-					ele['name'],
-					ele['type'], 
-					ele['default'], 
-					ele['description'], 
-					ele['isNecessary'], 
-					ele['isEvent'], 
-					ele['valueSet']
-				));
-			});
+				if (ele['name']==this.nodeInbuild.getName()&&this.nodeInbuild instanceof Directive){
+					this.nodeInbuild.setHasValueFlag();
+				}
+				else if(!this.nodeInbuild.getSubNode(ele['name'])){
+					this.nodeInbuild.addAttritube(new Attribute(
+						ele['name'],
+						ele['type'], 
+						ele['default'], 
+						ele['description'], 
+						ele['isNecessary'], 
+						ele['isEvent'], 
+						ele['valueSet']
+					));
+				}
+			});	
 		}
 		this.buildCompletionItems();
 		return [this.componentRootNode,this.directiveRootNode];
