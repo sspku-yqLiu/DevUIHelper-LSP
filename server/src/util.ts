@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-03-29 11:52:31
- * @LastEditTime: 2020-05-15 16:48:11
+ * @LastEditTime: 2020-06-04 22:56:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper\src\util.ts
@@ -59,7 +59,7 @@ export function autoIcon(type:CompletionItemKind):string{
     }
 }
 export function convertStringToName(name:string):string{
-    let bananaset = ['[',']','(',')']
+    let bananaset = ['[',']','(',')'];
     for(let banana of bananaset){
         name = name.replace(banana,"");
     }
@@ -85,7 +85,7 @@ export function converValueSetToValueString(valueSet:string[]){
     for(let value of valueSet){
         let _value = value.replace(" ","");
         if(_value !== "")
-            res+=`\'${_value}\',`
+            res+=`\'${_value}\',`;
     }
     return res==""?"":`|${res.substring(0,res.length-1)}|`;
 }
@@ -181,7 +181,7 @@ export function changeInsertDueToCompletionRangeKind(kind:CompletionRangeKind,te
 export class MarkUpBuilder{
     private markUpContent:MarkupContent;
     constructor(content?:string){
-        this.markUpContent=  {kind:MarkupKind.Markdown,value:content?content:""}
+        this.markUpContent=  {kind:MarkupKind.Markdown,value:content?content:""};
     }
     
     getMarkUpContent():MarkupContent{
@@ -205,8 +205,8 @@ export function convertSpanToRange(textDocument:TextDocument,span?:Span):Range|u
     if(!span){
         return;
     }
-    let _start = textDocument.positionAt(span.start)
-    let _end = textDocument.positionAt(span.end)
+    let _start = textDocument.positionAt(span.start);
+    let _end = textDocument.positionAt(span.end);
     return {start:_start,end:_end};
 }
 export function adjustSpanToAbosulutOffset(node:HTMLAST,span:Span):void{

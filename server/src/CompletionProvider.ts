@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-06-04 16:14:50
+ * @LastEditTime: 2020-06-05 16:33:22
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
@@ -24,6 +24,7 @@ export class CompletionProvider {
 
 	constructor() { }
 	provideCompletionItes(_params: TextDocumentPositionParams, type: FileType): CompletionItem[] {
+		// host.igniter.loadSourceTree();
 		let { textDocument, position } = _params;
 		let _textDocument = host.getDocumentFromURI(textDocument.uri);
 		let _offset = _textDocument.offsetAt(position);
@@ -48,7 +49,7 @@ export class CompletionProvider {
 		}
 		//TODO : 会不会出现没有name的情况呢？
 		if (type === CompletionType.FUll) {
-			if (node === host.htmlSourceTreeRoot) {
+			if (node === host.HTMLComoponentSource) {
 				let _endflag = ast.getSpan() === ast.nameSpan;
 				if (_endflag) {
 					return node.getFullCompltionItems(_range, _endflag);
@@ -66,7 +67,7 @@ export class CompletionProvider {
 		switch (type) {
 			case (SearchResultType.Content):
 				if (ast instanceof HTMLTagAST) {
-					return ({ node: host.htmlSourceTreeRoot, span: undefined, ast: ast, type: CompletionType.NONE });
+					return ({ node: host.HTMLComoponentSource, span: undefined, ast: ast, type: CompletionType.NONE });
 				}
 			case (SearchResultType.Name): {
 				this.tabCompletionFlag = true;
@@ -78,7 +79,7 @@ export class CompletionProvider {
 				let _type = _autoSwitchFlag ? CompletionType.Name : CompletionType.FUll;
 				adjustSpanToAbosulutOffset(ast, _span);
 				if (ast instanceof HTMLTagAST) {
-					return ({ node: host.htmlSourceTreeRoot, span: _span, ast: ast, type: _type });
+					return ({ node: host.HTMLComoponentSource, span: _span, ast: ast, type: _type });
 				}
 				return { node: host.hunter.findHTMLInfoNode(ast.parentPointer, textDocument.uri), span: _span, ast: ast.parentPointer!, type: _type };
 			}
@@ -120,18 +121,30 @@ export class CompletionProvider {
 	CompletionItemsFactory(node: Component, ast: HTMLTagAST, type: CompletionType, range?: Range): CompletionItem[] {
 		let _directives = ast.attrList!.directive.getEach(e => e.getName());
 		let _attrs = ast.attrList!.attr.getEach(e => e.getName());
-
+		//alert: 测试用
+		let test =host;
 		let _directivesNodes = _directives?.map(name => {
-			return host.htmlSourceTreeRoot.getDirectives(name);
+			return host.HTMLDirectiveSource.getSubNode(name);
 		});
 		let _result: CompletionItem[] = [];
-		if (type === CompletionType.FUll && range) {
-			_result.push(...node.getFullCompltionItems(range));
-			_directivesNodes?.forEach(node => {
-				if (node)
-					_result.push(...node.getFullCompltionItems(range));
+		//寻找directive的info
+		_directivesNodes?.forEach(node => {
+			if (node)
+				_result.push(...node.getFullCompltionItems(range));
 			}
-			);
+		);
+		//加载directive自身
+		_result.push(...host.HTMLDirectiveSource.getNameCompltionItems().filter(e=>{
+			for (let name of _directives!) {
+				if (name.includes(e.label))
+					return false;
+			}
+			return true;
+		}));
+		if (type === CompletionType.FUll && range) {
+			//加载component的info
+			_result.push(...node.getFullCompltionItems(range));
+
 			_result = _result.filter((e) => {
 				for (let name of _attrs!) {
 					if (name.includes(e.label))

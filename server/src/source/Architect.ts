@@ -1,50 +1,49 @@
 /*
  * @Author: your name
  * @Date: 2020-06-04 19:26:34
- * @LastEditTime: 2020-06-04 22:24:03
+ * @LastEditTime: 2020-06-05 16:30:34
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\source\Architect.ts
  */
 import { RootNode, Component, Directive, Attribute,HTMLInfoNode } from './html_info';
-const info = require('D:\\MyProgram\\Extension_Universe\\WCH-Creater\\info.js');
+// const info = require('D:\\MyProgram\\Extension_Universe\\WCH-Creater\\info.js');
 export class Architect {
-	private readonly rootNode = new RootNode();
-	private schema = this.rootNode.schema;
-	private prefix = "";
+	private readonly componentRootNode = new RootNode();
+	private readonly directiveRootNode = new RootNode();
+	private componentSchema = this.componentRootNode.schema;
+	private directiveSchema = this.directiveRootNode.schema;
+	private nodeInbuild:Component|Directive|undefined;
 	constructor() { }
-	build(info: Array<any>): RootNode {
+	build(info: Array<any>): RootNode[] {
 		for (let component of info) {
-			let comName = component['name'];
-			let description = component['description'];
-			let tmw = component['tmw'];
-			let cnName = component['cnName'];
-			let _attrList = component['attrList'];
-			let directiveFlag= component['directiveFlag'];
-			let attrList = [];
-			if(!directiveFlag){
-				this.schema[comName] = new Component(comName, description, tmw, cnName, _attrList);
+			this.nodeInbuild = undefined;
+			let{name,description,tmw,cnName,attrList,directiveFlag} = component;
+			if(directiveFlag){
+				this.directiveSchema[name] = new Directive(name, description, tmw, cnName);
+				this.nodeInbuild = this.directiveSchema[name];
 			}else{
-				this.schema[comName] = new Directive(comName, description, tmw, cnName, _attrList);
+				this.componentSchema[name] = new Component(name, description, tmw, cnName);
+				this.nodeInbuild = this.componentSchema[name];
 			}
-			let _com = this.schema[comName];
-			_attrList.forEach(ele => {
-				_com.addAttritube(new Attribute(ele['name'],
+			attrList.forEach(ele => {
+				this.nodeInbuild.addAttritube(new Attribute(
+					ele['name'],
 					ele['type'], 
 					ele['default'], 
 					ele['description'], 
 					ele['isNecessary'], 
 					ele['isEvent'], 
-					ele['valueSet']));
+					ele['valueSet']
+				));
 			});
-
 		}
 		this.buildCompletionItems();
-		return this.rootNode;
+		return [this.componentRootNode,this.directiveRootNode];
 	}
 	buildCompletionItems() {
-		this.rootNode.buildCompletionItems();
-		this._buildCompletionItems(this.rootNode);
+		this.componentRootNode.buildCompletionItems();
+		this.directiveRootNode.buildCompletionItems();
 	}
 	_buildCompletionItems(node: HTMLInfoNode) {
 		node.buildNameCompletionItem();
@@ -58,6 +57,6 @@ export class Architect {
 
 	}
 	getRoot(): HTMLInfoNode {
-		return this.rootNode;
+		return this.componentRootNode;
 	}
 }

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-03 09:30:22
- * @LastEditTime: 2020-05-21 10:58:05
+ * @LastEditTime: 2020-06-05 14:59:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\HoverProvider.ts
@@ -27,7 +27,7 @@ export class HoverProvider{
 		if(!span){
 			return;  
 		}else if(!node||!(node.getHoverInfo())){
-			return {contents:"Error!!!",range:convertSpanToRange(_document,span)};
+			return ;
 		}
 		return {contents: node.getHoverInfo()!.contents,range:convertSpanToRange(_document,span)};
 	}

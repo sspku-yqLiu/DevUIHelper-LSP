@@ -1,4 +1,4 @@
-import { CompletionItemKind, CompletionItem, InsertTextFormat, TextEdit, Range, Hover } from "vscode-languageserver";
+import { CompletionItemKind, CompletionItem, InsertTextFormat, TextEdit, Range, Hover, MarkupContent } from "vscode-languageserver";
 import { HTML_SCHEMA as SCHEMA } from './html_source';
 import { logger } from '../server';
 import { MarkUpBuilder, copyCompletionItem, converValueSetToValueString, changeDueToCompletionRangeKind, changeInsertDueToCompletionRangeKind } from '../util';
@@ -49,7 +49,7 @@ export interface HTMLInfoNode {
      * 获取补全代码(仅名字)
      * @param name 
      */
-    getNameCompltionItems(range: Range): CompletionItem[];
+    getNameCompltionItems(range?: Range): CompletionItem[];
 
     /**
      * 获取Snippet式补全代码
@@ -80,19 +80,19 @@ export class RootNode implements HTMLInfoNode {
         });
     }
 
-    getNameCompltionItems(range: Range): CompletionItem[] {
+    getNameCompltionItems(): CompletionItem[] {
         return this.completionItems;
     }
     getFullCompltionItems(range?: Range, kind?: boolean) {
         if (kind) {
-            this.completionItems.forEach(e => e.insertText)
+            this.completionItems.forEach(e => e.insertText);
         }
         if (range) {
             return this.completionItems.map(_completionItem => {
                 _completionItem.textEdit = {
                     range: range,
                     newText: kind ? _completionItem.insertText!.substring(0, _completionItem.insertText!.length - 1) : _completionItem.insertText!
-                }
+                };
                 return _completionItem;
             });
         }
@@ -108,27 +108,32 @@ export class RootNode implements HTMLInfoNode {
         return;
     }
     getHoverInfo(): undefined { return undefined; }
-    getDirectives(name: string): Directive | undefined {
-        const _result = this.getSubNode(name);
-        if (_result instanceof Directive) {
-            return _result;
-        }
-        return;
-    }
+    // getDirectives(name: string): Directive | undefined {
+    //     const _result = this.getSubNode(name);
+    //     if (_result instanceof Directive) {
+    //         return _result;
+    //     }
+    //     return;
+    // }
 }
 
 export class Component implements HTMLInfoNode {
-    protected attributeMap = <{ [attrName: string]: Attribute }>{}
+    protected attributeMap = <{[attrName: string]: Attribute }>{};
     protected nameCompletionItems: CompletionItem[] = [];
     protected completionItems: CompletionItem[] = [];
     protected completionItemKind: CompletionItemKind = CompletionItemKind.Class;
-
+    protected tmwString:MarkupContent|string;
     constructor(protected name: string,
         protected description: string = "",
         protected tmw: string | undefined,
         protected cnName: string | undefined,
         protected attritubes: Attribute[] = [],
-    ) { };
+    ) { 
+        this.tmwString =this.tmw?new MarkUpBuilder().addSpecialContent('typescript',[
+            `何时使用：${this.tmw}`,
+        ]).getMarkUpContent():"";
+        this.completionItemKind = CompletionItemKind.Class;
+    }
     getElement(s: string): Component | undefined {
         if (s === this.name) {
             return this;
@@ -149,18 +154,17 @@ export class Component implements HTMLInfoNode {
 
     buildCompletionItems() {
         this.attritubes.forEach(attr => {
+            let temp = attr.buildCompletionItem();
             this.completionItems.push(...attr.buildCompletionItem());
         });
         this.nameCompletionItems = this.attritubes.map(attr => {
             return attr.buildNameCompletionItem();
         });
     }
-
-
     buildCompletionItem(): CompletionItem {
         this.buildCompletionItems();
-        let completionItem = CompletionItem.create(this.name);
-        completionItem.kind = CompletionItemKind.Class;
+        let _completionItem = CompletionItem.create(this.name);
+        _completionItem.kind = this.completionItemKind;
         let _insertText: string = this.name;
         let _snippetNum = 1;
         for (let attr of Object.values(this.attributeMap)) {
@@ -170,23 +174,26 @@ export class Component implements HTMLInfoNode {
             }
         }
         if (_snippetNum === 1) {
-            _insertText += ">${1:}" + `</${this.name}>`
+            _insertText += ">${1:}" + `</${this.name}>`;
         }
         else {
-            _insertText += `\n>$${_snippetNum}</${this.name}>`
+            _insertText += `\n>$${_snippetNum}</${this.name}>`;
         }
-        completionItem.insertText = _insertText;
-        completionItem.detail = `这是一个${this.name}组件`;
-        completionItem.insertTextFormat = InsertTextFormat.Snippet;
-        return completionItem;
+        _completionItem.insertText = _insertText;
+        _completionItem.documentation=this.tmwString,
+        _completionItem.detail = this.description;
+        _completionItem.insertTextFormat = InsertTextFormat.Snippet;
+        return _completionItem;
     }
     buildNameCompletionItem(): CompletionItem {
-        let _result = CompletionItem.create(this.name);
-        _result.detail = `这是一个${this.name}组件`
-        return _result;
+        let _completionItem = CompletionItem.create(this.name);
+        _completionItem.detail = this.description;
+        _completionItem.documentation=this.tmwString;
+        _completionItem.kind= this.completionItemKind;
+        return _completionItem;
     }
     getNameCompltionItems() {
-        return this.completionItems;
+        return this.nameCompletionItems;
     }
     getFullCompltionItems(currentRange: Range) {
         if (!currentRange) {
@@ -197,7 +204,7 @@ export class Component implements HTMLInfoNode {
                 range: currentRange,
                 newText: _completionItem.insertText ? _completionItem.insertText : "",
                 // newText :changeInsertDueToCompletionRangeKind(kind,_newText),
-            }
+            };
             return _completionItem;
         });
 
@@ -214,12 +221,13 @@ export class Component implements HTMLInfoNode {
     getHoverInfo(): Hover {
         let _markUpBuilder = new MarkUpBuilder(this.description + "\n");
         const properties = this.attritubes;
-        _markUpBuilder.addSpecialContent('typescript', this.attritubes.map(attr => {
+        _markUpBuilder.addSpecialContent('typescript', [
+            this.tmw?`何时使用：${this.tmw}`:"",
+            ...this.attritubes.map(attr => {
             return attr.getName() + ' :' + attr.getSortDescription();
-        }));
+        })]);
         return { contents: _markUpBuilder.getMarkUpContent() };
     }
-
 }
 export class Directive extends Component {
     constructor(name: string,
@@ -229,22 +237,26 @@ export class Directive extends Component {
         attritubes: Attribute[] = [],
     ) {
         super(name, description, tmw, cnName, attritubes);
+        this.completionItemKind = CompletionItemKind.Unit;
     }
     //Question:为什么返回值不同会报错
-    getcompletionKind() { return CompletionItemKind.Module; }
-    buildAddCompletionItems() {
-        let completionItem = CompletionItem.create(this.name);
-        completionItem.kind = CompletionItemKind.Class;
+    getcompletionKind() { return this.completionItemKind; }
+    buildFullCompletionItems() {
+        let _completionItem = CompletionItem.create(this.name);
+        _completionItem.kind = this.completionItemKind;
         let _insertText: string = this.name;
-        completionItem.insertText = this.name;
-        completionItem.detail = `这是一个${this.name}指令`;
-        completionItem.insertTextFormat = InsertTextFormat.PlainText;
-        return completionItem;
+        _completionItem.insertText = this.name;
+        _completionItem.detail = this.description;
+        _completionItem.documentation=this.tmwString;
+        _completionItem.insertTextFormat = InsertTextFormat.PlainText;
+        return _completionItem;
     }
     buildNameCompletionItem(): CompletionItem {
-        let _result = CompletionItem.create(this.name);
-        _result.detail = `这是一个${name}指令`
-        return _result;
+        let _completionItem = CompletionItem.create(this.name);
+        _completionItem.kind = this.completionItemKind;
+        _completionItem.detail = this.description;
+        _completionItem.documentation = this.tmwString;
+        return _completionItem;
     }
 }
 export class Attribute implements HTMLInfoNode {
@@ -260,11 +272,9 @@ export class Attribute implements HTMLInfoNode {
         public readonly isNecessary: boolean,
         private readonly isEvent: boolean,
         private readonly valueSet: string[] = [],
-
         private readonly sortDescription?: string) {
-        this.completionKind = isEvent ? CompletionItemKind.Event : CompletionItemKind.Variable
+        this.completionKind = isEvent ? CompletionItemKind.Event : CompletionItemKind.Variable;
     }
-
 
     buildCompletionItems() {
         this.valueSet.forEach(value => {
@@ -322,13 +332,14 @@ export class Attribute implements HTMLInfoNode {
         return _result;
     }
     buildNameCompletionItem(): CompletionItem {
-        let _result = CompletionItem.create(this.name);
-        _result.detail = this.sortDescription;
-        _result.documentation = new MarkUpBuilder().addSpecialContent('typescript', [
+        let _completionItem = CompletionItem.create(this.name);
+        _completionItem.detail = this.sortDescription;
+        _completionItem.kind= this.completionKind;
+        _completionItem.documentation = new MarkUpBuilder().addSpecialContent('typescript', [
             `type:${this.type}`,
             "DefaultValue:" + this.getDefaultValue(),
             "Description:" + this.getDescription()]).getMarkUpContent();
-        return _result;
+        return _completionItem;
     }
 
     getNameCompltionItems(): CompletionItem[] {
@@ -345,7 +356,7 @@ export class Attribute implements HTMLInfoNode {
             _completionAddItem.textEdit = {
                 range: range,
                 newText: _completionItem.insertText ? _completionItem.insertText : ""
-            }
+            };
             return _completionAddItem;
         });
     }
@@ -355,7 +366,7 @@ export class Attribute implements HTMLInfoNode {
         "Type:" + this.getValueType(),
         "DefaultValue:" + this.getDefaultValue(),
         "ValueSet:" + this.valueSet]);
-        return { contents: _markUpBuilder.getMarkUpContent() }
+        return { contents: _markUpBuilder.getMarkUpContent() };
 
     }
 

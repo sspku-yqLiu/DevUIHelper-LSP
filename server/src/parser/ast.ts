@@ -1,13 +1,12 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-05-18 14:53:29
+ * @LastEditTime: 2020-06-04 22:56:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
  */
 import * as lsp from 'vscode-languageserver';
-import { htmlInfo } from '../source/html_info';
 import {Span} from '../DataStructure/type';
 import {  TokenType, NodeStatus,HTMLASTNodeType, tagSubNodes, TreeError, ParseErrorLevel, SearchResult, ParseResult, SearchResultType } from './type';
 import { Token, Cursor } from './lexer';
@@ -63,13 +62,13 @@ export class TreeBuilder {
 					this.closeTagContent();
 				}
 				else if(this.currentToken.getType()===TokenType.COMMENT){
-					this.buildComment()
+					this.buildComment();
 				}else{
 					this.advance();
 				}
 			}
 		}catch(e){
-			logger.debug(e)
+			logger.debug(e);
 		}
 		this.buildRoot();
 		return {root:this.root,errors:this.errors};
@@ -295,7 +294,7 @@ export class TreeBuilder {
 		if(this.index<this.tokens.length)
 			this.currentToken = this.tokens[++this.index];
 		else{
-			throw Error(`this is the last!!!`)
+			throw Error(`this is the last!!!`);
 		}
 		this.currentSpan = this.currentToken.getSpan();
 		this.adjustSpan();
@@ -344,7 +343,7 @@ export class HTMLAST  {
 	toJSON =()=>{
 		return{
 			nameSpan:`name:${this.name} namespan:${this.nameSpan.toJSON()}`,
-		}
+		};
 	}
 	getSearchResultKind(){
 		// switch(this.type){
@@ -389,7 +388,7 @@ export class HTMLTagAST extends HTMLAST{
 		   template:_template,
 		   attr:_attr,
 		   comment:_comment
-	   }
+	   };
 
    	}
 	findATTREnd():number{
@@ -427,7 +426,7 @@ export class HTMLTagAST extends HTMLAST{
 			content: this.content,
 			lists:this.attrList,
 			tagOffset:this.tagOffset
-		}
+		};
 	}
 	search(offset:number):SearchResult{
 		// offset -= this.tagOffset;
@@ -487,7 +486,7 @@ export class HTMLATTRAST extends HTMLAST{
 			nameSpan:`name:${this.name} namespan:${this.nameSpan.toJSON()}`,
 			valueNode:this.valueNode,
 			span:this.nodeSpan,
-		}
+		};
 	}
 	search(offset:number):SearchResult{	
 		if(this.nameSpan.inSpan(offset)){
@@ -496,11 +495,11 @@ export class HTMLATTRAST extends HTMLAST{
 		if(this.valueNode?.getSpan().inSpan(offset)){
 			return{ast:this.valueNode,type:SearchResultType.Null};
 		}
-		return{ast:undefined,type:SearchResultType.Null}
+		return{ast:undefined,type:SearchResultType.Null};
 	}
 }
 export class HTMLCommentAST extends HTMLAST{
 	constructor(span?:Span){
-		super(HTMLASTNodeType.COMMENT,span?span:new Span(-1,-1))
+		super(HTMLASTNodeType.COMMENT,span?span:new Span(-1,-1));
 	}
 }

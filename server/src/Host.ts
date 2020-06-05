@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-12 14:52:22
- * @LastEditTime: 2020-06-04 22:55:44
+ * @LastEditTime: 2020-06-05 14:57:39
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
@@ -15,13 +15,8 @@ import { YQ_Parser, SearchParser } from './parser/parser';
 import { HoverProvider } from './HoverProvider';
 import { TextDocuments, Logger } from 'vscode-languageserver';
 import { convertStringToName, adjustSpanToAbosulutOffset } from './util';
-import { HoverSearchResult, IgniterResult } from './type';
-import { Span } from './DataStructure/type';
 import { CompletionProvider } from './CompletionProvider';
 import * as fs from 'fs';
-import { stringify } from 'querystring';
-import { configure, getLogger } from 'log4js';
-import { uriToFilePath } from 'vscode-languageserver/lib/files';
 import { Architect } from './source/Architect';
 
 export class Host {
@@ -34,7 +29,8 @@ export class Host {
 	public documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
 
 	public architect = new Architect();
-	public htmlSourceTreeRoot = new RootNode();
+	public HTMLComoponentSource = new RootNode();
+	public HTMLDirectiveSource = new RootNode();
 	private parseOption: ParseOption | undefined;
 	constructor() {
 		this.documents.onDidChangeContent(change => {
@@ -90,7 +86,7 @@ export class Hunter {
 		if (res) { return res; }
 
 		if (ast.getName() == "$$ROOT$$") {
-			let _htmlroot = host.htmlSourceTreeRoot;
+			let _htmlroot = host.HTMLComoponentSource;
 			map.set(ast, _htmlroot);
 			return _htmlroot;
 		}
@@ -101,7 +97,7 @@ export class Hunter {
 			throw Error(`None parent cursor or name of node ${_name}`);
 		}
 		if (ast instanceof HTMLTagAST) {
-			return host.htmlSourceTreeRoot.getSubNode(_name);
+			return host.HTMLComoponentSource.getSubNode(_name);
 		}
 		else {
 			//表内没有则向上递归
@@ -199,10 +195,13 @@ export class Igniter {
 	}
 	loadSourceTree() {
 		for (let com of this.componentToUrl.values()) {
-			this._loadSouceTree(com);
+			this._loadSouceTree(com).then(value=>{
+				host.HTMLComoponentSource =value[0];
+				host.HTMLDirectiveSource =value[1];
+			});
 		}
 	}
-	async _loadSouceTree(comPath: string) {
+	async _loadSouceTree(comPath: string):Promise<RootNode[]> {
 		return new Promise((resolve, rejects) => {
 			fs.readFile(comPath + "/wch/info.json", { encoding: 'UTF-8' }, (err, data) => {
 				if (err) {
@@ -210,7 +209,7 @@ export class Igniter {
 				} else {
 					const comInfo = JSON.parse(data);
 					// logger.debug(comInfo[0]);
-					host.architect.build(comInfo);
+					resolve(host.architect.build(comInfo));
 				}
 			});
 		});
