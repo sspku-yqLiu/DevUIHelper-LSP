@@ -6,20 +6,18 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
  */
-import { SearchResult, ParseOption, TreeError, SearchResultType, SupportFrameName, SupportComponentNames } from '../parser/type';
-import { HTMLAST, HTMLTagAST } from '../parser/ast';
+import { ParseOption, TreeError } from '../parser/type';
+import { HTMLAST } from '../parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { host, logger } from '../server';
-import { HTMLInfoNode, Attribute, RootNode } from '../source/html_info';
-import { YQ_Parser, SearchParser } from '../parser/parser';
+import { HTMLInfoNode, RootNode } from '../source/html_info';
+import { YQ_Parser } from '../parser/parser';
 import { HoverProvider } from '../HoverProvider';
 import { TextDocuments, Logger } from 'vscode-languageserver';
-import { convertStringToName, adjustSpanToAbosulutOffset } from '../util';
 import { CompletionProvider } from '../CompletionProvider';
-import * as fs from 'fs';
 import { Architect } from '../source/Architect';
 import { Hunter } from './Hunter';
 import { Igniter } from './Igniter';
+import { ExpressionAdm } from '../Expression/ExpressionAdm';
 
 export class Host {
 	public parser = new YQ_Parser();
@@ -29,7 +27,7 @@ export class Host {
 	public hoverProvider = new HoverProvider();
 	public completionProvider = new CompletionProvider();
 	public documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-
+	public expressionAdm:ExpressionAdm = new ExpressionAdm();
 	public architect = new Architect();
 	public HTMLComoponentSource = new RootNode();
 	public HTMLDirectiveSource = new RootNode();

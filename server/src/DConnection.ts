@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-15 12:53:58
- * @LastEditTime: 2020-06-05 20:59:53
+ * @LastEditTime: 2020-06-06 08:19:47
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\DConnection.ts
@@ -39,7 +39,7 @@ export class DConnection{
 	constructor(host:Host,logger:Logger){
 		this.addProtocalHandlers();
 		this.host = host;
-		this.logger = logger
+		this.logger = logger;
 	}
 	addProtocalHandlers(){
 		this.connection.onInitialize(e=>this.onInitialze(e));
@@ -61,14 +61,16 @@ export class DConnection{
 				// Tell the client that the server supports code completion
 				completionProvider: {
 					resolveProvider: false,
-					triggerCharacters: ['<', '-', '+', '[', '(','\"',' ','\n']
+					triggerCharacters: ['<', '-', '+', '[', '(','\"',' ','\n','\@','\.','a',
+				'b','c','d','e','f','g','h','i','j','k','l','m','n','o','p','q','r','s','t',
+			'u','v','w','x','y','z']
 				},
 				hoverProvider:true,
 			}
 		};
 	}
 	onInitialized(){
-		logger.debug(`Welcome to DevUI Helper!`)
+		logger.debug(`Welcome to DevUI Helper!`);
 		// if (hasConfigurationCapability) {
 		// 	// Register for all configuration changes.
 		// 	connection.client.register(DidChangeConfigurationNotification.type, undefined);
@@ -90,7 +92,7 @@ export class DConnection{
 		// }
 	}
 	onCompletion(_textDocumentPosition: TextDocumentPositionParams){
-		// logger.debug(`Completion work`);		
+		logger.debug(`Completion work`);		
 		// logger.debug(`cursorOffset at : ${this.host.documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`);
 		// this.host.igniter.checkProjectFrameworkAndComponentName('c:\\MyProgram\\angular\\demo1');
 		if(!this.igniteResult||this.igniteResult.frame===SupportFrameName.Null||this.igniteResult.components===[]){

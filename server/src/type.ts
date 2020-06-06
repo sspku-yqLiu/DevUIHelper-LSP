@@ -2,11 +2,12 @@ import { HTMLInfoNode } from './source/html_info';
 import { Span } from './DataStructure/type';
 import { HTMLAST } from './parser/ast';
 import { SupportFrameName,SupportComponentNames } from './parser/type';
+import { TextDocument } from 'vscode-languageserver-textdocument';
 
 /*
  * @Author: your name
  * @Date: 2020-04-15 14:26:49
- * @LastEditTime: 2020-05-18 22:31:33
+ * @LastEditTime: 2020-06-05 23:37:46
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\type.ts
@@ -28,19 +29,30 @@ export interface CompletionSearchResult{
 	span:Span|undefined;
 	ast:HTMLAST;
 	type:CompletionType;
+	expressionParams?:ExpressionParams;
 }
 export enum CompletionType{
 	Name,
 	FUll,
-	NONE
+	NONE,
+	Expression
 }
 export enum FileType{
 	HTML,
 	TypeScript
 }
 export interface IgniterResult{
-	Frame:SupportFrameName,
-	Components:SupportComponentNames[]
+	Frame:SupportFrameName;
+	Components:SupportComponentNames[];
+}
+export interface ExpressionParams{
+	expression:string;
+	span:Span;
+	textDocument:TextDocument;
+}
+export interface ExpressionResult{
+	res:string;
+	span:Span;
 }
 // export const ATTRREGX = /^(?:\[\(([^\)]*)\)\]|\[([^\]]*)\]|\(([^\)]*)\))$/;
 // const INPUTREG = /\[([^\)]*)\]/

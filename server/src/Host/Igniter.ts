@@ -4,7 +4,7 @@ import { host, logger } from '../server';
 import { SnapShot } from './Host';
 import * as fs from 'fs';
 import { RootNode } from '../source/html_info';
-const info = require('../source/info.js')
+const info = require('../source/info.js');
 /*
  * @Author: your name
  * @Date: 2020-06-05 20:55:45

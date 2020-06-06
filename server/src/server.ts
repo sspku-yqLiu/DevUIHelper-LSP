@@ -10,7 +10,7 @@
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  * ------------------------------------------------------------------------------------------ */
-import{configure,getLogger} from 'log4js'
+import{configure,getLogger} from 'log4js';
 
 import { Host } from './Host/Host';
 import { DConnection } from './DConnection';

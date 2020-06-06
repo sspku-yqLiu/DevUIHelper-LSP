@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-06-05 22:03:17
+ * @LastEditTime: 2020-06-06 19:15:49
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
@@ -25,7 +25,8 @@ export class CompletionProvider {
 	constructor() { }
 	provideCompletionItes(_params: TextDocumentPositionParams, type: FileType): CompletionItem[] {
 		// host.igniter.loadSourceTree();
-		host.igniter.loadSourceTree();
+		// host.igniter.loadSourceTree();
+		logger.debug(`completionWorks!`);
 		let { textDocument, position } = _params;
 		let _textDocument = host.getDocumentFromURI(textDocument.uri);
 		let _offset = _textDocument.offsetAt(position);
@@ -37,8 +38,12 @@ export class CompletionProvider {
 		}
 	}
 	provideCompletionItemsForHTML(_offset: number, _textDocument: TextDocument): CompletionItem[] {
-		let { node, span, ast, type } = this.searchTerminalASTForCompletion(_offset, _textDocument);
+		let { node, span, ast, type,expressionParams } = this.searchTerminalASTForCompletion(_offset, _textDocument);
 		if (!node || type === CompletionType.NONE) {
+			return [];
+		}
+		if(type===CompletionType.Expression){
+			// return host.expressionAdm.createCompletion(expressionParams);
 			return [];
 		}
 		let _range = convertSpanToRange(_textDocument, span);
@@ -51,9 +56,9 @@ export class CompletionProvider {
 		//TODO : 会不会出现没有name的情况呢？
 		if (type === CompletionType.FUll) {
 			if (node === host.HTMLComoponentSource) {
-				let _endflag = ast.getSpan() === ast.nameSpan;
-				if (_endflag) {
-					return node.getFullCompltionItems(_range, _endflag);
+				let _fullCompletionFlag = ast.getSpan() !== ast.nameSpan;
+				if (_fullCompletionFlag) {
+					return node.getFullCompltionItems(_range, _fullCompletionFlag);
 				}
 			}
 			return node.getFullCompltionItems(_range);
@@ -68,7 +73,10 @@ export class CompletionProvider {
 		switch (type) {
 			case (SearchResultType.Content):
 				if (ast instanceof HTMLTagAST) {
-					return ({ node: host.HTMLComoponentSource, span: undefined, ast: ast, type: CompletionType.NONE });
+					let result = host.expressionAdm.getExpression(offset-1,textDocument.getText());
+					return ({ node: host.HTMLComoponentSource, 
+						span: undefined, ast: ast, type: CompletionType.Expression,
+						expressionParams:{expression:result.res,span:result.span,textDocument:textDocument}});
 				}
 			case (SearchResultType.Name): {
 				this.tabCompletionFlag = true;
@@ -109,7 +117,6 @@ export class CompletionProvider {
 						this.tabCompletionFlag = false;
 						return true;
 					}
-
 				}
 				return false;
 			}
@@ -120,61 +127,78 @@ export class CompletionProvider {
 		return false;
 	}
 	CompletionItemsFactory(node: Component, ast: HTMLTagAST, type: CompletionType, range?: Range): CompletionItem[] {
-		let _directives = ast.attrList!.directive.getEach(e => e.getName());
-		let _attrs = ast.attrList!.attr.getEach(e => e.getName());
-		//alert: 测试用
+		let _attrsCompletion: CompletionItem[] = [];
+		let _directiveCompletion:CompletionItem[] = [];
 		let _directiveWithName:string[] = [];
-		let _directivesNodes = _directives?.map(name => {
+		// let _comAttrs:CompletionItem[]=[];
+		let _directives:any = ast.attrList!.directive.getEach(e => e.getName());
+		let _attrs:any = ast.attrList!.attr.getEach(e => e.getName());
+
+		//_attrs清洗
+		_attrs = _attrs.map(e=>(e.replace(/\[|\(|\)|\]/g,"")));
+
+		//找到指令节点
+		let _directiveNodes = _directives?.map(name => {
 			return host.HTMLDirectiveSource.getSubNode(name);
 		});
-		let _result: CompletionItem[] = [];
-		//寻找directive的info
-		_directivesNodes?.forEach(node => {
-			if (node)
-				_result.push(...node.getFullCompltionItems(range));
-			}
-		);
-		_attrs?.forEach(node => {
-			let attrName = node.replace(/\[|\(|\)|\]/g,"");
-			if (host.HTMLDirectiveSource.getDirectiveWithNameSet()[attrName]){
-				_directiveWithName.push(attrName);
-				_result.push(...host.HTMLDirectiveSource.getSubNode(attrName).getFullCompltionItems(range));
+		//加载伪装成attr的directive
+		_attrs?.forEach(attrName => {
+			let _tempdirective = host.HTMLDirectiveSource.getDirectiveWithNameSet()[attrName];
+			if (_tempdirective){
+				_directiveNodes.push(_tempdirective);
 			}
 		});
+
 		//加载directive自身
-		_result.push(...host.HTMLDirectiveSource.getNameCompltionItems().filter(e=>{
-			for (let name of [..._directiveWithName,..._directives!]) {
-				if (name.includes(e.label))
+		_directiveCompletion.push(...host.HTMLDirectiveSource.getNameCompltionItems().filter(e=>{
+			for (let directive of [_directiveNodes]) {
+				if (e===directive)
 					return false;
 			}
 			return true;
 		}));
-		if (type === CompletionType.FUll && range) {
-			//加载component的info
-			_result.push(...node.getFullCompltionItems(range));
 
-			_result = _result.filter((e) => {
-				for (let name of _attrs!) {
-					if (name.includes(e.label))
-						return false;
-				}
-				return true;
-			});
-			return _result;
-		} else {
-			_result.push(...node.getNameCompltionItems());
-			_directivesNodes?.forEach(node => {
-				if (node)
-					_result.push(...node.getNameCompltionItems());
-			});
-			_result = _result.filter((e) => {
-				for (let name of _attrs) {
-					if (e.label.includes(name))
-						return false;
-				}
-				return true;
-			});
-			return _result;
+		// 属性加载
+		_directiveNodes?.forEach(directiveNode => {
+			if (directiveNode)
+				_attrsCompletion.push(...directiveNode.getFullCompltionItems(range));
+			}
+		);
+		_attrsCompletion.push(...node.getFullCompltionItems(range));
+
+		//属性清洗
+		_attrsCompletion = _attrsCompletion.filter((e) => {
+			for (let name of _attrs) {
+				if (e.label.indexOf(name)!==-1)
+					return false;
+			}
+			return true;
+		});
+		// //带range的加载
+		// if (type === CompletionType.FUll && range) {
+
+		// 	_attrsCompletion = _attrsCompletion.filter((e) => {
+		// 		for (let name of _attrs!) {
+		// 			if (name.includes(e.label))
+		// 				return false;
+		// 		}
+		// 		return true;
+		// 	});
+		// 	return _attrsCompletion;
+		// } 
+		// //不带range的加载
+		// else {
+		// 	let _attrResult = [];
+		// 	_attrResult.push(...node.getFullCompltionItems());
+		// 	// _directivesNodes?.forEach(node => {
+		// 	// 	if (node)
+		// 	// 	_attrResult.push(...node.getFullCompltionItems());
+		// 	// });
+
+		if(!range&&_attrsCompletion.length>30){
+			return _attrsCompletion;
 		}
+		return [..._attrsCompletion,..._directiveCompletion];
+		
 	}
 }

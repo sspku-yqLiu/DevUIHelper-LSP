@@ -92,7 +92,7 @@ export class RootNode implements HTMLInfoNode {
             return this.completionItems.map(_completionItem => {
                 _completionItem.textEdit = {
                     range: range,
-                    newText: kind ? _completionItem.insertText!.substring(0, _completionItem.insertText!.length - 1) : _completionItem.insertText!
+                    newText: kind ? _completionItem.insertText!.substring(0, _completionItem.insertText!.length) : _completionItem.insertText!
                 };
                 return _completionItem;
             });
@@ -174,7 +174,7 @@ export class Component implements HTMLInfoNode {
             }
         }
         if (_snippetNum === 1) {
-            _insertText += ">${1:}" + `</${this.name}>`;
+            _insertText += ">${1}" + `</${this.name}>`;
         }
         else {
             _insertText += `\n>$${_snippetNum}</${this.name}>`;
@@ -183,6 +183,7 @@ export class Component implements HTMLInfoNode {
         _completionItem.documentation=this.tmwString,
         _completionItem.detail = this.description;
         _completionItem.insertTextFormat = InsertTextFormat.Snippet;
+        _completionItem.preselect = false;
         return _completionItem;
     }
     buildNameCompletionItem(): CompletionItem {
@@ -190,12 +191,13 @@ export class Component implements HTMLInfoNode {
         _completionItem.detail = this.description;
         _completionItem.documentation=this.tmwString;
         _completionItem.kind= this.completionItemKind;
+        _completionItem.preselect = false;
         return _completionItem;
     }
     getNameCompltionItems() {
         return this.nameCompletionItems;
     }
-    getFullCompltionItems(currentRange: Range) {
+    getFullCompltionItems(currentRange?: Range) {
         if (!currentRange) {
             return this.completionItems;
         }
@@ -283,7 +285,7 @@ export class Attribute implements HTMLInfoNode {
             completionItem.insertText = value;
             completionItem.detail = `这是${value}类型`;
             completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();
-            completionItem.preselect = true;
+            completionItem.preselect = false;
             this.completionItems.push(completionItem);
         });
         this.nameCompletionItems = this.completionItems;
@@ -353,10 +355,12 @@ export class Attribute implements HTMLInfoNode {
         return this.completionItems.map(_completionItem => {
             let _completionAddItem = _completionItem;
             copyCompletionItem(_completionItem, _completionAddItem);
-            _completionAddItem.textEdit = {
-                range: range,
-                newText: _completionItem.insertText ? _completionItem.insertText : ""
-            };
+            if(range){
+                _completionAddItem.textEdit = {
+                    range: range,
+                    newText: _completionItem.insertText ? _completionItem.insertText : ""
+                };
+            }
             return _completionAddItem;
         });
     }
@@ -382,99 +386,3 @@ export class Attribute implements HTMLInfoNode {
     // getParent():HTMLInfoNode{return this.parent;}
     getCompletionItem() { return this.completionItem; }
 }
-// export class valueNode implements HTMLInfoNode{
-//     constructor(){
-
-//     }
-//     getSubNodes(){
-//         return [];
-//     }
-//     getHoverInfo(){
-
-//     }
-//     getSubNode():undefined{
-//         return undefined;
-//     }
-//     getFullCompltionItems():{
-
-//     }
-// }
-
-// export class DevUIParamsConstructor {
-//     private readonly rootNode = new RootNode();
-//     private schema = this.rootNode.schema;
-//     private prefix = "";
-//     constructor() { }
-//     build(): RootNode {
-//         let _elementName: string;
-//         SCHEMA.forEach(elementInfo => {
-//             const parts = elementInfo.split("||");
-//             if (parts.length === 2) {
-//                 _elementName = this.prefix + parts[0].toLocaleLowerCase();
-//                 this.schema[_elementName] = new Component(_elementName, parts[1]);
-//             }
-//             else if (parts.length === 3) {
-//                 this.prefix = parts[1];
-//                 // console.log(_elementName);
-//             }
-//             else {
-//                 // console.log(_elementName);
-//                 const _element = this.schema[_elementName];
-//                 if (_element.getAttribute(parts[0])) {
-//                     // console.log(_element.getName()); 
-//                 }
-//                 if (_element) {
-//                     _element.addAttritube(new Attribute(
-//                         parts[0],
-//                         parts[1],
-//                         parts[2],
-//                         parts[3],
-//                         parts[4],
-//                         parts[5] === "true" ? true : false,
-//                         parts[6] === "true" ? true : false,
-//                         parts[7] === "[]" ? [] : parts[7].substring(1, parts[7].length - 1).replace(" ", "").split(","),
-//                         // JSON.parse(parts[7]),
-//                         this.changeToCompletionKind(parts[1], parts[6]),
-//                         _element
-//                     ));
-//                     // console.log(_element.getAttributes()); 
-//                 } else {
-//                     throw Error(`Something wrong with ${_elementName}`);
-//                 }
-//             }
-//         });
-//         this.buildCompletionItems();
-//         return this.rootNode;
-//     }
-//     buildCompletionItems() {
-//         this.rootNode.buildCompletionItems();
-//         this._buildCompletionItems(this.rootNode);
-//     }
-//     _buildCompletionItems(node: HTMLInfoNode) {
-//         node.buildNameCompletionItem();
-//         let subnodes = node.getSubNodes();
-//         if (subnodes) {
-//             for (let subnode of subnodes) {
-//                 this._buildCompletionItems(subnode);
-//             }
-//         }
-//         return;
-
-//     }
-
-//     changeToCompletionKind(type: string, isEvent: string): CompletionItemKind {
-//         type = type.toLowerCase();
-//         if (isEvent === "true") {
-//             return CompletionItemKind.Event;
-//         }
-//         if (type.includes("arrray") || type.includes("[]")) {
-//             return CompletionItemKind.Enum;
-//         }
-//         return CompletionItemKind.Variable;
-
-//     }
-//     getRoot(): HTMLInfoNode {
-//         return this.rootNode;
-//     }
-// }
-// export const htmlInfo = new DevUIParamsConstructor();

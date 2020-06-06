@@ -34,7 +34,7 @@ export class HoverProvider{
 
 	searchTerminalASTForHover(offset:number,uri:string):HoverSearchResult{
 		let{ast,type}= host.hunter.searchTerminalAST(offset,uri);
-		if(!ast) {throw Error(`this offset does not in any Node :${offset}`)}
+		if(!ast) {throw Error(`this offset does not in any Node :${offset}`);}
 		let _span = ast.nameSpan.clone();
 		adjustSpanToAbosulutOffset(ast,_span);
 		if(!_span){
