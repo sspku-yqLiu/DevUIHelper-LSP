@@ -4,7 +4,7 @@ import{Span} from './type';
 /*
  * @Author: your name
  * @Date: 2020-05-03 09:59:29
- * @LastEditTime: 2020-05-18 08:44:08
+ * @LastEditTime: 2020-06-06 19:21:51
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \UI_Components_Helper\server\src\dataStructor\LinkList.ts
@@ -64,7 +64,7 @@ export interface LinkList<T>{
 	/**
 	 * 转化为数组
 	 */
-	toArray():T[]
+	toArray():T[];
 
 
 }
@@ -89,7 +89,7 @@ export interface HeadNodeData{
 	/**
 	 * 其余一些你想添加的东西
 	 */
-	details?:any
+	details?:any;
 }
 export class LinkNode<N> implements Node{
 
@@ -99,7 +99,7 @@ export class LinkNode<N> implements Node{
 
 	pre:Node|undefined ;
 
-	constructor(element:N){ this.data = element}
+	constructor(element:N){ this.data = element;}
 }
 /**
  * 这是一个带头结点的链表
@@ -156,7 +156,7 @@ export class LinkedList<T>implements LinkList<T>{
 			this.end = _newnode;
 		}
 		//调整控制域
-		this.head.data.span
+		this.head.data.span;
 		this.length++;
 		//Question 为什么不可以添加属性？
 		// newElement['linkListNode'] = _newnode;
@@ -260,7 +260,8 @@ export class LinkedList<T>implements LinkList<T>{
 	changeNodeWithAction(action:(node:T)=>void,node?:LinkNode<T>):void{
 		
 		let _node = this.head.next;
-		if(node){ _node = node}
+		if(node)
+		 _node = node;
 
 		while(_node!=null){
 			action(_node.data);
@@ -286,7 +287,9 @@ export class LinkedList<T>implements LinkList<T>{
 			_node = _node.next;
 		}
 		if(action){
-			if(!action(_node.data)){ return false;}
+			if(!action(_node.data)){ 
+				return false;
+			}
 		}
 		node.pre!.next=undefined;
 		_node.pre=this.head;
@@ -326,10 +329,10 @@ export class LinkedList<T>implements LinkList<T>{
                     }
                 }
             }
-            return true
+            return true;
         }
         else {
-            return obj1 == obj2
+            return obj1 == obj2;
         }
 	}
 	unshift():T|undefined{

@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-07 18:42:40
- * @LastEditTime: 2020-06-04 22:56:33
+ * @LastEditTime: 2020-06-08 14:57:29
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
@@ -84,7 +84,7 @@ export class TreeBuilder {
 			// this.tagInBuld = undefined;
 		}
 		this.tagInBuld = new HTMLTagAST(this.currentSpan);
-		this.tagInBuld.buildLinkedLists();
+		// this.tagInBuld.buildLinkedLists();
 		this.advance();
 		if (this.currentToken.getType() === TokenType.TAG_NAME) {
 			this.setNodeName(this.currentSpan,this.currentToken.value);
@@ -286,9 +286,10 @@ export class TreeBuilder {
 		}
 	}
 	init(){
+		this.currentToken = this.tokens[0];
 		this.currentSpan= this.currentToken!.getSpan();
 		let _tokentype:TokenType = this.currentToken.getType();
-		this.currentToken = this.tokens[0];
+
 	}
 	advance(){
 		if(this.index<this.tokens.length)

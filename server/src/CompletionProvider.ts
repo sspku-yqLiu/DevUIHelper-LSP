@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-06-06 19:15:49
+ * @LastEditTime: 2020-06-06 19:27:12
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
@@ -174,26 +174,6 @@ export class CompletionProvider {
 			}
 			return true;
 		});
-		// //带range的加载
-		// if (type === CompletionType.FUll && range) {
-
-		// 	_attrsCompletion = _attrsCompletion.filter((e) => {
-		// 		for (let name of _attrs!) {
-		// 			if (name.includes(e.label))
-		// 				return false;
-		// 		}
-		// 		return true;
-		// 	});
-		// 	return _attrsCompletion;
-		// } 
-		// //不带range的加载
-		// else {
-		// 	let _attrResult = [];
-		// 	_attrResult.push(...node.getFullCompltionItems());
-		// 	// _directivesNodes?.forEach(node => {
-		// 	// 	if (node)
-		// 	// 	_attrResult.push(...node.getFullCompltionItems());
-		// 	// });
 
 		if(!range&&_attrsCompletion.length>30){
 			return _attrsCompletion;

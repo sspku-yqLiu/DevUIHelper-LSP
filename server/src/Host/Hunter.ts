@@ -1,15 +1,15 @@
 /*
  * @Author: your name
  * @Date: 2020-06-05 20:55:33
- * @LastEditTime: 2020-06-05 20:57:48
- * @LastEditors: your name
+ * @LastEditTime: 2020-06-08 14:37:01
+ * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\Host\Hunter.ts
  */ 
 import { SearchParser } from '../parser/parser';
 import { SearchResult, SearchResultType } from '../parser/type';
-import { HTMLAST, HTMLTagAST } from '../parser/ast';
-import { HTMLInfoNode } from '../source/html_info';
+import { HTMLAST, HTMLTagAST, HTMLATTRAST } from '../parser/ast';
+import { HTMLInfoNode, Directive } from '../source/html_info';
 import { host } from '../server';
 import { convertStringToName } from '../util';
 
@@ -36,6 +36,14 @@ export class Hunter {
 		}
 		if (!map) {
 			map = host.getSnapShotFromURI(uri).HTMLAstToHTMLInfoNode;
+		}
+		if(ast instanceof HTMLATTRAST){
+			let attrname = ast.getName().replace(/\[|\(|\)|\]/g,"");
+			let hostcopy = host;
+			let directive = host.HTMLDirectiveSource.schema[attrname];
+			if(directive){
+				return directive;
+			}
 		}
 		//表内存在则直接返回
 		let res = map.get(ast);

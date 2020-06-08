@@ -85,9 +85,9 @@ export class RootNode implements HTMLInfoNode {
         return this.nameCompletionItems;
     }
     getFullCompltionItems(range?: Range, kind?: boolean) {
-        if (kind) {
-            this.completionItems.forEach(e => e.insertText);
-        }
+        // if (kind) {
+        //     this.completionItems.forEach(e => e.insertText);
+        // }
         if (range) {
             return this.completionItems.map(_completionItem => {
                 _completionItem.textEdit = {
@@ -174,7 +174,7 @@ export class Component implements HTMLInfoNode {
             }
         }
         if (_snippetNum === 1) {
-            _insertText += ">${1}" + `</${this.name}>`;
+            _insertText +=">${1}" + `</${this.name}>`;
         }
         else {
             _insertText += `\n>$${_snippetNum}</${this.name}>`;

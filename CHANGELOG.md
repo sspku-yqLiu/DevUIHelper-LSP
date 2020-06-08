@@ -1,11 +1,18 @@
 <!--
  * @Author: your name
  * @Date: 2020-03-14 17:21:08
- * @LastEditTime: 2020-06-06 19:17:54
+ * @LastEditTime: 2020-06-08 14:59:50
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\CHANGELOG.md
  -->
+# 2020/6/8 V4.2.5
+- 现在可以对指令进行悬浮提示了
+- 修复了在文件开始不能提供补全的BUG
+
+# 2020/6/7 V4.2.4
+- 更新README.md
+
 # 2020/6/6 V4.2.1-V4.2.2 
 BUGFix: 
 - 添加了由于将资源树迁移至建筑师类导致的一系列bug

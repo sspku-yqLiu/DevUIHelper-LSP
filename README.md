@@ -1,23 +1,31 @@
-<!--
- * @Author: your name
- * @Date: 2020-03-08 19:29:37
- * @LastEditTime: 2020-05-15 12:59:28
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit 
- * @FilePath: \DevUI-Language-Support\README.md
- -->
-# 一个基于LSP的DevUI语言组件
+
+# 一个基于LSP的DevUI组件库插件
 
 欢迎使用DevUIHelper!
-您可以在vscode上享受到比webstome还要优秀的的组件库提示！
+您可以享受到丝滑的代码补全体验！
+
+![demo](https://s1.ax1x.com/2020/06/07/tRruQS.gif)
+
+
 
 #### 说明
 
 这个组件面向DevUI组件库的开发者，将提供有关于DevUI开源组件库的一系列帮助，包括:
-- 代码提示
-- 代码纠错
-- 悬浮提醒
-- 跳转帮助
+#####  代码提示
+
+- 提供组件、指令及他们的属性的补全代码，采用了webstorm的提示样式，更易上手。
+- 为devui团队提供定制化脚本，能够对组件意义进行提示。
+- 提供智能生成的snippet 在进行组件补全的时候会自动补全'必选'的属性。
+  
+#####  悬浮提醒
+- 为devui团队提供定制化脚本，能够对组件意义进行提示。
+- 在悬浮到组件时，提示组件能够提供的所有属性。
+
+##### 代码纠错
+Comming Soon..
+
+#####  跳转帮助
+Comming Soon..
 
 #### 下载方式
 
@@ -27,7 +35,7 @@
 
 #### 帮助我们进行改进
 
-- 非常欢迎您提交bug及改良的建议，您可以<a herf="https://github.com/sspku-yqLiu/DevUIHelper-LSP">点此提交</a>。
+- 这个组件面向DevUI组件库的开发者，将提供有关于DevUI开源组件库的一系列帮助，包括:
 
 - 您也可以直接进入到<a herf="https://github.com/sspku-yqLiu/DevUIHelper-LSP">我们的仓库</a>，提交一份属于您的代码！
 
