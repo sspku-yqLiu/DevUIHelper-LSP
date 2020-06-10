@@ -1,8 +1,9 @@
 import { CompletionItemKind, CompletionItem, InsertTextFormat, TextEdit, Range, Hover, MarkupContent } from "vscode-languageserver";
-import { HTML_SCHEMA as SCHEMA } from './html_source';
-import { logger, host } from '../server';
-import { MarkUpBuilder, copyCompletionItem, converValueSetToValueString, changeDueToCompletionRangeKind, changeInsertDueToCompletionRangeKind } from '../util';
-import { CompletionRangeKind } from '../type';
+import { HTML_SCHEMA as SCHEMA } from '../../source/html_source';
+import { logger, host } from '../../server';
+import { MarkUpBuilder, copyCompletionItem, converValueSetToValueString, changeDueToCompletionRangeKind, changeInsertDueToCompletionRangeKind } from '../../util';
+import { CompletionRangeKind } from '../../type';
+import { SupportComponentName } from '../type';
 
 const EVENT = "event";
 const BOOLEAN = "boolean";
@@ -18,7 +19,10 @@ export interface HTMLInfoNode {
     //  * 获得当前节点的父节点
     //  */
     // getParent():HTMLInfoNode|undefined;
-
+    /**
+     * 获取名称
+     */
+    getName():string;
     /**
      * 获取资源树下方节点
      * @param name 下方节点的string类型的名称
@@ -33,7 +37,7 @@ export interface HTMLInfoNode {
     /**
      * 生成本元素的CompletionItem.这样可以响应父节点的调用。
      */
-    buildCompletionItem(): void;
+    buildFullCompletionItem(): void;
 
     /**
      * 生成只含有名字的CompletionItem。
@@ -62,25 +66,47 @@ export interface HTMLInfoNode {
      * 
      */
     getHoverInfo(): Hover | undefined;
+    /**
+     *  获得自身的补全代码
+     */
+    getCompletionItem():CompletionItem|undefined;
 
 }
 export class RootNode implements HTMLInfoNode {
-    schema = <{ [elementName: string]: Component }>{};
+    private schema = <{ [elementName: string]: Component }>{};
+    public prefixSchema= <{[comName:number]:Component[]}>{};
     private completionItems: CompletionItem[] = [];
     private nameCompletionItems: CompletionItem[] = [];
     private directWithNameSet={};
+    public prefixCut = <{[comName:number]:{[prefix:string]:Component}}>{};
     constructor() { }
-    buildCompletionItem() { }
+    getSchema(){
+		return this.schema;
+	}
+    buildFullCompletionItem() { }
     buildNameCompletionItem() { }
     buildCompletionItems() {
         this.completionItems = Object.values(this.schema).map(element => {
-            return element.buildCompletionItem();
+            return element.buildFullCompletionItem();
         });
         this.nameCompletionItems = Object.values(this.schema).map(element => {
             return element.buildNameCompletionItem();
         });
     }
-
+    addComponentOrDirectives(node:Component,prefix:string,comName:SupportComponentName){
+        //schema
+        this.schema[node.getName()]=node;
+        //prefixSchema
+        let nodes:Component[] = this.prefixSchema[comName];
+        if(!nodes){
+            this.prefixSchema[comName]=[];
+            nodes = this.prefixSchema[comName];
+        }
+        nodes.push(node);
+        //prefixCut
+        this.prefixCut[comName] = this.prefixCut[comName]?this.prefixCut[comName]:{};
+        this.prefixCut[comName][prefix] = node;
+    }
     getNameCompltionItems(): CompletionItem[] {
         return this.nameCompletionItems;
     }
@@ -115,75 +141,83 @@ export class RootNode implements HTMLInfoNode {
     getDirectiveWithNameSet(){
         return this.directWithNameSet;
     }
+    getName(){
+        return "$$INFOROOT$$";
+    }
+    getCompletionItem(){
+        return undefined;
+    }
 }
 
 export class Component implements HTMLInfoNode {
     protected attributeMap = <{[attrName: string]: Attribute }>{};
+    protected attritubes: Attribute[] = [];
     protected nameCompletionItems: CompletionItem[] = [];
+    protected completionItem:CompletionItem;
     protected completionItems: CompletionItem[] = [];
     protected completionItemKind: CompletionItemKind = CompletionItemKind.Class;
     protected tmwString:MarkupContent|string;
+    protected prefixToValue=<{[prefix:string]:Attribute}>{};
     constructor(protected name: string,
-        protected description: string = "",
-        protected tmw: string | undefined,
-        protected cnName: string | undefined,
-        protected attritubes: Attribute[] = [],
+        public comName?:SupportComponentName|undefined,
+        protected description: string ="",
+        protected tmw?: string | undefined,
+        protected cnName?: string | undefined,
+        public prefixName:string=""
     ) { 
         this.tmwString =this.tmw?new MarkUpBuilder().addSpecialContent('typescript',[
             `何时使用：${this.tmw}`,
         ]).getMarkUpContent():"";
         this.completionItemKind = CompletionItemKind.Class;
     }
-    getElement(s: string): Component | undefined {
-        if (s === this.name) {
-            return this;
-        }
-    }
+
     addAttritube(attribute: Attribute) {
         this.attritubes.push(attribute);
         this.attributeMap[attribute.getName()] = attribute;
+        if(attribute.getValueSet()!==[]){
+            attribute.getValueSet().forEach(element => {
+                this.prefixToValue[element]=attribute;
+            });
+        }
     }
-    setDescription(description: string) {
-        this.description = description;
+    getPrefixToValue(){
+        return this.prefixToValue;
     }
     getName() { return this.name; }
-    getAttributes() { return this.attritubes; }
     getDescription() { return this.description; }
-    getAttribute(attrname: string): Attribute { return this.attributeMap[attrname]; }
     getcompletionKind() { return this.completionItemKind; }
 
     buildCompletionItems() {
         this.attritubes.forEach(attr => {
-            let temp = attr.buildCompletionItem();
-            this.completionItems.push(...attr.buildCompletionItem());
+            let temp = attr.buildFullCompletionItem();
+            this.completionItems.push(...attr.buildFullCompletionItem());
         });
         this.nameCompletionItems = this.attritubes.map(attr => {
             return attr.buildNameCompletionItem();
         });
     }
-    buildCompletionItem(): CompletionItem {
+    
+    buildFullCompletionItem(): CompletionItem {
         this.buildCompletionItems();
         let _completionItem = CompletionItem.create(this.name);
         _completionItem.kind = this.completionItemKind;
         let _insertText: string = this.name;
         let _snippetNum = 1;
         for (let attr of Object.values(this.attributeMap)) {
-            if (attr.isNecessary) {
+            if (attr.isNecessary || attr.getName() === this.name) {
+                if(attr.getName() === this.name){
+                    _insertText.replace(this.name,"");
+                }
                 _insertText += `\n\t${attr.getCompletionItem()?.insertText}`.replace("$1", "$" + _snippetNum + "");
                 _snippetNum++;
             }
-        }
-        if (_snippetNum === 1) {
-            _insertText +=">${1}" + `</${this.name}>`;
-        }
-        else {
-            _insertText += `\n>$${_snippetNum}</${this.name}>`;
         }
         _completionItem.insertText = _insertText;
         _completionItem.documentation=this.tmwString,
         _completionItem.detail = this.description;
         _completionItem.insertTextFormat = InsertTextFormat.Snippet;
         _completionItem.preselect = false;
+        this.completionItem = _completionItem;
         return _completionItem;
     }
     buildNameCompletionItem(): CompletionItem {
@@ -230,16 +264,47 @@ export class Component implements HTMLInfoNode {
         })]);
         return { contents: _markUpBuilder.getMarkUpContent() };
     }
+    getCompletionItem(){
+        return this.completionItem;
+    }
+}
+export class TagComponent extends Component{
+    constructor(name: string,
+        comName?:SupportComponentName|undefined,
+        description: string = "",
+        tmw?: string | undefined,
+        cnName?: string | undefined,
+        prefixName:string=""
+    ) {
+        super(name, comName, description, tmw, cnName,prefixName);
+        this.completionItemKind = CompletionItemKind.Class;
+        this.attritubes = [];
+    }
+      
+    buildFullCompletionItem(): CompletionItem {
+        this.buildCompletionItems();
+        let _completionItem = super.buildFullCompletionItem();
+        if (_completionItem.insertText.indexOf('${1')===-1) {
+            _completionItem.insertText +=">$0" + `</${this.name}>`;
+        }
+        else{
+            _completionItem.insertText += `\n>$0</${this.name}>`;
+        }
+        this.completionItem = _completionItem;
+        return _completionItem;
+    }
+
 }
 export class Directive extends Component {
     private hasValueFlag = false;
     constructor(name: string,
+        comName:SupportComponentName|undefined,
         description: string = "",
         tmw: string | undefined,
         cnName: string | undefined,
-        attritubes: Attribute[] = [],
+        prefixName:string=""
     ) {
-        super(name, description, tmw, cnName, attritubes);
+        super(name, comName, description, tmw, cnName,prefixName);
         this.completionItemKind = CompletionItemKind.Unit;
     }
     //Question:为什么返回值不同会报错
@@ -255,6 +320,13 @@ export class Directive extends Component {
             _completionItem.insertTextFormat=InsertTextFormat.Snippet;
             host.HTMLDirectiveSource.insertDirectiveWithArray(this);
         }
+        return _completionItem;
+    }
+        
+    buildFullCompletionItem(): CompletionItem {
+        this.buildCompletionItems();
+        let _completionItem = super.buildFullCompletionItem();
+        this.completionItem = _completionItem;
         return _completionItem;
     }
     setHasValueFlag(){
@@ -279,19 +351,19 @@ export class Attribute implements HTMLInfoNode {
     }
 
     buildCompletionItems() {
-        this.valueSet.forEach(value => {
-            let completionItem = CompletionItem.create(value);
-            completionItem.kind = CompletionItemKind.EnumMember;
-            completionItem.insertText = value;
-            completionItem.detail = `这是${value}类型`;
-            completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();
-            completionItem.preselect = false;
-            this.completionItems.push(completionItem);
+        this.completionItems = this.valueSet.map(value => {
+            let _completionItem = CompletionItem.create(value);
+            _completionItem.kind = CompletionItemKind.EnumMember;
+            _completionItem.insertText = value;
+            _completionItem.detail = `这是${value}类型`;
+            _completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();
+            _completionItem.preselect = false;
+            return _completionItem;
         });
         this.nameCompletionItems = this.completionItems;
     }
 
-    buildCompletionItem(): CompletionItem[] {
+    buildFullCompletionItem(): CompletionItem[] {
         this.buildCompletionItems();
         let _result = [];
         // let _completionItem:CompletionItem; 

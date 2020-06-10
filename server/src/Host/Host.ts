@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-05-12 14:52:22
- * @LastEditTime: 2020-06-05 21:00:03
+ * @LastEditTime: 2020-06-08 15:51:33
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
@@ -9,15 +9,15 @@
 import { ParseOption, TreeError } from '../parser/type';
 import { HTMLAST } from '../parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { HTMLInfoNode, RootNode } from '../source/html_info';
+import { HTMLInfoNode, RootNode } from '../parser/WareHouse/Storage';
 import { YQ_Parser } from '../parser/parser';
 import { HoverProvider } from '../HoverProvider';
 import { TextDocuments, Logger } from 'vscode-languageserver';
 import { CompletionProvider } from '../CompletionProvider';
-import { Architect } from '../source/Architect';
+import { Architect } from '../parser/WareHouse/Architect';
 import { Hunter } from './Hunter';
 import { Igniter } from './Igniter';
-import { ExpressionAdm } from '../Expression/ExpressionAdm';
+import { ExpressionAdm } from '../parser/Expression/ExpressionAdm';
 
 export class Host {
 	public parser = new YQ_Parser();
@@ -27,7 +27,7 @@ export class Host {
 	public hoverProvider = new HoverProvider();
 	public completionProvider = new CompletionProvider();
 	public documents: TextDocuments<TextDocument> = new TextDocuments(TextDocument);
-	public expressionAdm:ExpressionAdm = new ExpressionAdm();
+	public expressionAdm:ExpressionAdm = new ExpressionAdm(['d']);
 	public architect = new Architect();
 	public HTMLComoponentSource = new RootNode();
 	public HTMLDirectiveSource = new RootNode();
@@ -38,6 +38,7 @@ export class Host {
 				this.igniter.parseTextDocument(change.document, this.parseOption);
 		});
 	}
+
 	getDocumentFromURI(uri: string): TextDocument {
 		let _result = this.documents.get(uri);
 		if (!_result) {

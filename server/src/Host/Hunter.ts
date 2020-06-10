@@ -9,7 +9,7 @@
 import { SearchParser } from '../parser/parser';
 import { SearchResult, SearchResultType } from '../parser/type';
 import { HTMLAST, HTMLTagAST, HTMLATTRAST } from '../parser/ast';
-import { HTMLInfoNode, Directive } from '../source/html_info';
+import { HTMLInfoNode, Directive } from '../parser/WareHouse/Storage';
 import { host } from '../server';
 import { convertStringToName } from '../util';
 
@@ -40,7 +40,7 @@ export class Hunter {
 		if(ast instanceof HTMLATTRAST){
 			let attrname = ast.getName().replace(/\[|\(|\)|\]/g,"");
 			let hostcopy = host;
-			let directive = host.HTMLDirectiveSource.schema[attrname];
+			let directive = host.HTMLDirectiveSource.getSchema()[attrname];
 			if(directive){
 				return directive;
 			}

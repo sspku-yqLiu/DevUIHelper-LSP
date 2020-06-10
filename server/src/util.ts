@@ -7,12 +7,12 @@
  * @FilePath: \DevUIHelper\src\util.ts
  */
 import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem,Range} from 'vscode-languageserver';
-import { Span } from './DataStructure/type';
+import { Span } from './parser/DataStructure/type';
 import { logger } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { HTMLAST, HTMLTagAST } from './parser/ast';
 import {CompletionRangeKind} from './type';
-import { HTMLInfoNode } from './source/html_info';
+import { HTMLInfoNode } from './parser/WareHouse/Storage';
 export function getName(text: string,componentRegex: RegExp){
     text.match(componentRegex);
     const n = RegExp.$1.substring(2);

@@ -1,13 +1,13 @@
-import { HTMLInfoNode } from './source/html_info';
-import { Span } from './DataStructure/type';
+import { HTMLInfoNode } from './parser/WareHouse/Storage';
+import { Span } from './parser/DataStructure/type';
 import { HTMLAST } from './parser/ast';
-import { SupportFrameName,SupportComponentNames } from './parser/type';
+import { SupportFrameName,SupportComponentName } from './parser/type';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 /*
  * @Author: your name
  * @Date: 2020-04-15 14:26:49
- * @LastEditTime: 2020-06-05 23:37:46
+ * @LastEditTime: 2020-06-08 16:51:19
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\type.ts
@@ -43,7 +43,7 @@ export enum FileType{
 }
 export interface IgniterResult{
 	Frame:SupportFrameName;
-	Components:SupportComponentNames[];
+	Components:SupportComponentName[];
 }
 export interface ExpressionParams{
 	expression:string;

@@ -1,20 +1,20 @@
 /*
  * @Author: your name
  * @Date: 2020-04-08 20:38:08
- * @LastEditTime: 2020-06-06 19:27:12
+ * @LastEditTime: 2020-06-08 16:51:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
 import { adjustSpanToAbosulutOffset, getRangeFromDocument, getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan, convertSpanToRange } from './util';
-import {   Component,} from './source/html_info';
+import {   Component,} from './parser/WareHouse/Storage';
 import { host, logger } from './server';
 import { CompletionItem, Range, HoverParams, TextDocumentPositionParams } from 'vscode-languageserver';
 import { HTMLAST, HTMLTagAST, HTMLCommentAST } from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { FileType, CompletionSearchResult, CompletionType, CompletionRangeKind } from './type';
 import { SearchResultType, SupportFrameName } from './parser/type';
-import { Span } from './DataStructure/type';
+import { Span } from './parser/DataStructure/type';
 import { SnapShot } from './Host/Host';
 import { WhiteChars, Space, WhiteCharsAndGTAndSPLASH, WhiteCharsAndLTAndLTANDSPLASH, newLine } from './parser/chars';
 import { forEachTrailingCommentRange } from 'typescript/lib/tsserverlibrary';
@@ -24,6 +24,8 @@ export class CompletionProvider {
 
 	constructor() { }
 	provideCompletionItes(_params: TextDocumentPositionParams, type: FileType): CompletionItem[] {
+		//Alert:测试用
+		// host.architect.buildCompletionItems();
 		// host.igniter.loadSourceTree();
 		// host.igniter.loadSourceTree();
 		logger.debug(`completionWorks!`);
@@ -43,7 +45,7 @@ export class CompletionProvider {
 			return [];
 		}
 		if(type===CompletionType.Expression){
-			// return host.expressionAdm.createCompletion(expressionParams);
+			return host.expressionAdm.createCompletion(expressionParams);
 			return [];
 		}
 		let _range = convertSpanToRange(_textDocument, span);
@@ -56,10 +58,7 @@ export class CompletionProvider {
 		//TODO : 会不会出现没有name的情况呢？
 		if (type === CompletionType.FUll) {
 			if (node === host.HTMLComoponentSource) {
-				let _fullCompletionFlag = ast.getSpan() !== ast.nameSpan;
-				if (_fullCompletionFlag) {
-					return node.getFullCompltionItems(_range, _fullCompletionFlag);
-				}
+					return node.getFullCompltionItems(_range);
 			}
 			return node.getFullCompltionItems(_range);
 		} else {
@@ -77,15 +76,16 @@ export class CompletionProvider {
 					return ({ node: host.HTMLComoponentSource, 
 						span: undefined, ast: ast, type: CompletionType.Expression,
 						expressionParams:{expression:result.res,span:result.span,textDocument:textDocument}});
+					return { node: undefined, span: undefined, ast: new HTMLCommentAST(), type: CompletionType.FUll };
 				}
 			case (SearchResultType.Name): {
 				this.tabCompletionFlag = true;
-				let _autoSwitchFlag = (ast.getSpan().end - ast.nameSpan.end) > 3;
-				let _span = _autoSwitchFlag ? ast.nameSpan : ast.getSpan();
-				if (ast instanceof HTMLTagAST && !_autoSwitchFlag) {
+				let _fullCompletionFlag = (ast.getSpan().end - ast.nameSpan.end) < 10;
+				let _span = _fullCompletionFlag ? ast.getSpan() : ast.nameSpan;
+				if (ast instanceof HTMLTagAST && _fullCompletionFlag) {
 					_span.start++;
 				}
-				let _type = _autoSwitchFlag ? CompletionType.Name : CompletionType.FUll;
+				let _type = _fullCompletionFlag ? CompletionType.FUll : CompletionType.Name;
 				adjustSpanToAbosulutOffset(ast, _span);
 				if (ast instanceof HTMLTagAST) {
 					return ({ node: host.HTMLComoponentSource, span: _span, ast: ast, type: _type });

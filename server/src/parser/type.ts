@@ -10,10 +10,10 @@
  * Token 相关
  */
 import {HTMLAST, HTMLATTRAST, HTMLTagAST} from './ast';
-import {Span} from '../DataStructure/type';
+import {Span} from './DataStructure/type';
 import * as lsp from 'vscode-languageserver';
-import { HTMLInfoNode } from '../source/html_info';
-import { LinkedList } from '../DataStructure/LinkList';
+import { HTMLInfoNode, Component } from './WareHouse/Storage';
+import { LinkedList } from './DataStructure/LinkList';
 
 
 export enum SupportFrameName{
@@ -22,9 +22,9 @@ export enum SupportFrameName{
 	React,
 	Null
 }
-export enum SupportComponentNames{
-	DevUI,
-	Zorro
+export enum SupportComponentName{
+	DevUI=1,
+	Zorro=2
 }
 export interface ParseOption{
 	/**
@@ -34,7 +34,7 @@ export interface ParseOption{
 	/**
 	 * 所使用的的组件库
 	 */
-	components:SupportComponentNames[];
+	components:SupportComponentName[];
 	/**
 	 * 所使用的UI库的特征
 	 * 例如DevUI -> d- / elementUI -> e- 
@@ -189,3 +189,4 @@ export interface SearchResult{
 	type:SearchResultType;
 }
 
+// =<[prefix:string]:Component>{}

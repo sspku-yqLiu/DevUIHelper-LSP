@@ -316,81 +316,6 @@ let devuiInfo =
         "description": "（dAnchorBox辅助指令）"
     },
     {
-        "name": "d-alert",
-        "attrList": [
-            {
-                "name": "type",
-                "type": "string",
-                "default": "info",
-                "description": "必选，指定警告提示的样式",
-                "attrType": "ATTR",
-                "isNecessary": true,
-                "valueSet": [
-                    "success",
-                    "danger",
-                    "warning",
-                    "info"
-                ],
-                "isEvent": false
-            },
-            {
-                "name": "cssClass",
-                "type": "string",
-                "default": "--",
-                "description": "可选，自定义class名",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "closeable",
-                "type": "boolean",
-                "default": "true",
-                "description": "可选，默认显示关闭按钮",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "dismissTime",
-                "type": "number",
-                "default": "--",
-                "description": "可选，自动关闭alert的延迟时间(单位：ms)",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "showIcon",
-                "type": "boolean",
-                "default": "true",
-                "description": "可选，是否使用默认的类型图标",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "closeEvent",
-                "type": [
-                    "EventEmitter<any>"
-                ],
-                "description": "可选，关闭时触发的回调函数",
-                "attrType": "Event",
-                "isNecessary": false,
-                "hasvalueSet": true,
-                "isEvent": true
-            }
-        ],
-        "directiveFlag": false,
-        "description": "用于向用户显示警告的信息。",
-        "tmw": "当页面需要向用户发出警告信息时。",
-        "cnName": "警告"
-    },
-    {
         "name": "d-auto-complete",
         "attrList": [
             {
@@ -980,32 +905,46 @@ let devuiInfo =
             },
             {
                 "name": "type",
-                "type": "IButtonType",
+                "type": "string",
                 "default": "button",
-                "description": "可选，类型button!!!submit!!!reset",
+                "description": "可选，按钮类型",
                 "attrType": "ATTR",
                 "isNecessary": false,
-                "valueSet": [],
+                "valueSet": [
+                    "button",
+                    "submit",
+                    "reset"
+                ],
                 "isEvent": false
             },
             {
                 "name": "bsStyle",
-                "type": "IButtonStyle",
+                "type": "string",
                 "default": "primary",
-                "description": "可选，风格primary!!!common!!!text!!!text-dark",
+                "description": "可选，按钮风格",
                 "attrType": "ATTR",
                 "isNecessary": false,
-                "valueSet": [],
+                "valueSet": [
+                    "primary",
+                    "common",
+                    "text",
+                    "text-dark"
+                ],
                 "isEvent": false
             },
             {
                 "name": "bsSize",
-                "type": "IButtonSize",
+                "type": "string",
                 "default": "md",
-                "description": "可选，大小lg!!!md!!!sm!!!xs",
+                "description": "可选，按钮大小",
                 "attrType": "ATTR",
                 "isNecessary": false,
-                "valueSet": [],
+                "valueSet": [
+                    "lg",
+                    "md",
+                    "sm",
+                    "xs"
+                ],
                 "isEvent": false
             },
             {
@@ -2848,6 +2787,211 @@ let devuiInfo =
         "cnName": "开关"
     },
     {
+        "name": "d-alert",
+        "attrList": [
+            {
+                "name": "type",
+                "type": "string",
+                "default": "info",
+                "description": "必选，指定警告提示的样式",
+                "attrType": "ATTR",
+                "isNecessary": true,
+                "valueSet": [
+                    "success",
+                    "danger",
+                    "warning",
+                    "info"
+                ],
+                "isEvent": false
+            },
+            {
+                "name": "cssClass",
+                "type": "string",
+                "default": "--",
+                "description": "可选，自定义class名",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "closeable",
+                "type": "boolean",
+                "default": "true",
+                "description": "可选，默认显示关闭按钮",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "dismissTime",
+                "type": "number",
+                "default": "--",
+                "description": "可选，自动关闭alert的延迟时间(单位：ms)",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "showIcon",
+                "type": "boolean",
+                "default": "true",
+                "description": "可选，是否使用默认的类型图标",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "closeEvent",
+                "type": [
+                    "EventEmitter<any>"
+                ],
+                "description": "可选，关闭时触发的回调函数",
+                "attrType": "Event",
+                "isNecessary": false,
+                "hasvalueSet": true,
+                "isEvent": true
+            }
+        ],
+        "directiveFlag": false,
+        "description": "用于向用户显示警告的信息。",
+        "tmw": "当页面需要向用户发出警告信息时。",
+        "cnName": "警告"
+    },
+    {
+        "name": "d-editable-select",
+        "attrList": [
+            {
+                "name": "ngModel",
+                "type": "any",
+                "default": "--",
+                "description": "可选，绑定选中对象，可双向绑定",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "ngModelChange",
+                "type": "EventEmitter",
+                "default": "--",
+                "description": "可选，仅支持事件绑定，用于处理选中对象发生变化",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "source",
+                "type": "any[]",
+                "default": "--",
+                "description": "必选，菜单的条目",
+                "attrType": "ATTR",
+                "isNecessary": true,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "disabled",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，值为true禁用下拉框",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "disabledKey",
+                "type": "string",
+                "default": "--",
+                "description": "可选，设置禁用选项的Key值",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "placeholder",
+                "type": "string",
+                "default": "",
+                "description": "可选，没有选中项的时候提示文字",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "itemTemplate",
+                "type": "TemplateRef",
+                "default": "--",
+                "description": "可选，下拉菜单条目的模板",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "noResultItemTemplate",
+                "type": "TemplateRef",
+                "default": "--",
+                "description": "可选，下拉菜单条目搜索后没有结果的模板",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "maxHeight",
+                "type": "number",
+                "default": "--",
+                "description": "可选，下拉菜单的最大高度",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "searchFn",
+                "type": "Function",
+                "default": "(term:string)=>Observable<any[]>",
+                "description": "可选，自定义搜索函数",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "enableLazyLoad",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，是否允许懒加载",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "loadMore",
+                "type": [
+                    "EventEmitter<any>"
+                ],
+                "description": "懒加载触发事件，配合enableLazyLoad使用,使用$event.loadFinish()关闭loading状态，其中$event为AutoCompletePopupComponent的实例",
+                "attrType": "Event",
+                "isNecessary": false,
+                "hasvalueSet": true,
+                "isEvent": true
+            }
+        ],
+        "directiveFlag": false,
+        "description": "下拉选择框。",
+        "tmw": "用户可以从多个选项中选择一项或几项；仅支持用户在下拉选项中选择和搜索系统提供的选项，不支持输入。",
+        "cnName": "下拉选择框"
+    },
+    {
         "name": "dForm",
         "attrList": [
             {
@@ -2921,6 +3065,38 @@ let devuiInfo =
         "directiveFlag": false
     },
     {
+        "name": "d-form-control",
+        "attrList": [],
+        "directiveFlag": false
+    },
+    {
+        "name": "dImagePreview",
+        "attrList": [
+            {
+                "name": "customSub",
+                "type": "Subject<HTMLElement>",
+                "default": "--",
+                "description": "可选，customsub触发next时，打开预览",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "disableDefault",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，关闭默认点击触发图片预览方式",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            }
+        ],
+        "directiveFlag": true,
+        "description": "Image容器元素上使用`dImagePreview`指令"
+    },
+    {
         "name": "d-fullscreen",
         "attrList": [
             {
@@ -2982,112 +3158,6 @@ let devuiInfo =
         "description": "全屏组件。",
         "tmw": "当用户需要将某一区域进行全屏展示时。",
         "cnName": "全屏"
-    },
-    {
-        "name": "dImagePreview",
-        "attrList": [
-            {
-                "name": "customSub",
-                "type": "Subject<HTMLElement>",
-                "default": "--",
-                "description": "可选，customsub触发next时，打开预览",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "disableDefault",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，关闭默认点击触发图片预览方式",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            }
-        ],
-        "directiveFlag": true,
-        "description": "Image容器元素上使用`dImagePreview`指令"
-    },
-    {
-        "name": "dLoading",
-        "attrList": [
-            {
-                "name": "loading",
-                "type": "LoadingType",
-                "default": "--",
-                "description": "可选，控制loading状态",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "message",
-                "type": "string",
-                "default": "--",
-                "description": "可选，loading时的提示信息",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "loadingTemplateRef",
-                "type": "TemplateRef<any>",
-                "default": "--",
-                "description": "可选，自定义loading模板",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "backdrop",
-                "type": "boolean",
-                "default": "--",
-                "description": "可选，loading时是否显示遮罩",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "showLoading",
-                "type": "boolean",
-                "default": "--",
-                "description": "可选，手动启动和关闭loading状态,与loading参数不能同时使用",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "positionType",
-                "type": "string",
-                "default": "relative",
-                "description": "可选，指定dLoading宿主元素的定位类型,取值与cssposition属性一致",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "view",
-                "type": "{top?:string,left?:string}",
-                "default": "{top:50%,left:50%}",
-                "description": "可选，调整loading的显示位置，相对于宿主元素的顶部距离与左侧距离",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            }
-        ],
-        "directiveFlag": true,
-        "description": "提示用户页面正在执行指令，需要等待。",
-        "tmw": "当执行指令时间较长（需要数秒以上）时，向用户展示正在执行的状态。",
-        "cnName": "加载提示"
     },
     {
         "name": "d-input-number",
@@ -3246,6 +3316,121 @@ let devuiInfo =
         "description": "通过鼠标或键盘，输入范围内的数值",
         "tmw": "当需要获取标准数值时。",
         "cnName": "数字输入框"
+    },
+    {
+        "name": "dLoading",
+        "attrList": [
+            {
+                "name": "loading",
+                "type": "LoadingType",
+                "default": "--",
+                "description": "可选，控制loading状态",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "message",
+                "type": "string",
+                "default": "--",
+                "description": "可选，loading时的提示信息",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "loadingTemplateRef",
+                "type": "TemplateRef<any>",
+                "default": "--",
+                "description": "可选，自定义loading模板",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "backdrop",
+                "type": "boolean",
+                "default": "--",
+                "description": "可选，loading时是否显示遮罩",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "showLoading",
+                "type": "boolean",
+                "default": "--",
+                "description": "可选，手动启动和关闭loading状态,与loading参数不能同时使用",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "positionType",
+                "type": "string",
+                "default": "relative",
+                "description": "可选，指定dLoading宿主元素的定位类型,取值与cssposition属性一致",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "view",
+                "type": "{top?:string,left?:string}",
+                "default": "{top:50%,left:50%}",
+                "description": "可选，调整loading的显示位置，相对于宿主元素的顶部距离与左侧距离",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            }
+        ],
+        "directiveFlag": true,
+        "description": "提示用户页面正在执行指令，需要等待。",
+        "tmw": "当执行指令时间较长（需要数秒以上）时，向用户展示正在执行的状态。",
+        "cnName": "加载提示"
+    },
+    {
+        "name": "dMoveable",
+        "attrList": [
+            {
+                "name": "dMoveable",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，是否启用拖动移动功能",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "handle",
+                "type": "HTMLElement",
+                "default": "--",
+                "description": "可选，可以拖动的元素",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "moveEl",
+                "type": "HTMLElement",
+                "default": "--",
+                "description": "可选，被拖动的区块，默认为使用dMoveable指令的元素",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            }
+        ],
+        "directiveFlag": true
     },
     {
         "name": "d-pagination",
@@ -3478,7 +3663,14 @@ let devuiInfo =
                 "description": "可选，面板的类型",
                 "attrType": "ATTR",
                 "isNecessary": false,
-                "valueSet": [],
+                "valueSet": [
+                    "default",
+                    "primary",
+                    "success",
+                    "danger",
+                    "warning",
+                    "info"
+                ],
                 "isEvent": false
             },
             {
@@ -3527,136 +3719,6 @@ let devuiInfo =
         "description": "内容面板，用于内容分组。",
         "tmw": "当页面内容需要进行分组显示时使用，一般包含头部、内容区域、底部是哪个部分。",
         "cnName": "面板"
-    },
-    {
-        "name": "d-editable-select",
-        "attrList": [
-            {
-                "name": "ngModel",
-                "type": "any",
-                "default": "--",
-                "description": "可选，绑定选中对象，可双向绑定",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "ngModelChange",
-                "type": "EventEmitter",
-                "default": "--",
-                "description": "可选，仅支持事件绑定，用于处理选中对象发生变化",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "source",
-                "type": "any[]",
-                "default": "--",
-                "description": "必选，菜单的条目",
-                "attrType": "ATTR",
-                "isNecessary": true,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "disabled",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，值为true禁用下拉框",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "disabledKey",
-                "type": "string",
-                "default": "--",
-                "description": "可选，设置禁用选项的Key值",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "placeholder",
-                "type": "string",
-                "default": "",
-                "description": "可选，没有选中项的时候提示文字",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "itemTemplate",
-                "type": "TemplateRef",
-                "default": "--",
-                "description": "可选，下拉菜单条目的模板",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "noResultItemTemplate",
-                "type": "TemplateRef",
-                "default": "--",
-                "description": "可选，下拉菜单条目搜索后没有结果的模板",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "maxHeight",
-                "type": "number",
-                "default": "--",
-                "description": "可选，下拉菜单的最大高度",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "searchFn",
-                "type": "Function",
-                "default": "(term:string)=>Observable<any[]>",
-                "description": "可选，自定义搜索函数",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "enableLazyLoad",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，是否允许懒加载",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "loadMore",
-                "type": [
-                    "EventEmitter<any>"
-                ],
-                "description": "懒加载触发事件，配合enableLazyLoad使用,使用$event.loadFinish()关闭loading状态，其中$event为AutoCompletePopupComponent的实例",
-                "attrType": "Event",
-                "isNecessary": false,
-                "hasvalueSet": true,
-                "isEvent": true
-            }
-        ],
-        "directiveFlag": false,
-        "description": "下拉选择框。",
-        "tmw": "用户可以从多个选项中选择一项或几项；仅支持用户在下拉选项中选择和搜索系统提供的选项，不支持输入。",
-        "cnName": "下拉选择框"
     },
     {
         "name": "d-popover",
@@ -3794,75 +3856,6 @@ let devuiInfo =
         "description": "简单的文字提示气泡框。popover用来通知用户非关键性问题或提示某控件处于某特殊情况。",
         "tmw": "单击控件则显示提示，单击空白处提示消失，气泡浮层不承载复杂文本和操作。",
         "cnName": "悬浮提示"
-    },
-    {
-        "name": "d-progress",
-        "attrList": [
-            {
-                "name": "percentage",
-                "type": "number",
-                "default": "0",
-                "description": "可选，进度条的值最大为100",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "percentageText",
-                "type": "string",
-                "default": "--",
-                "description": "可选，进度条当前值的文字说明比如：30%!!!4/5",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "barbgcolor",
-                "type": "string",
-                "default": "#5170ff",
-                "description": "可选，进度条的颜色显示，默认为天蓝色",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "height",
-                "type": "string",
-                "default": "20px",
-                "description": "可选，进度条的高度值，默认值为20px",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "isCircle",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，显示进度条是否为圈形",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "strokeWidth",
-                "type": "number",
-                "default": "6",
-                "description": "可选，设置圈形进度条宽度，单位是进度条与画布宽度的百分比",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            }
-        ],
-        "directiveFlag": false,
-        "description": "进度条，用来展示操作的当前进度。",
-        "tmw": "1、当操作需要较长的时间时，向用户展示操作进度。              2、当操作需要打断现有界面或后台运行，需要较长时间时。              3、当需要显示一个操作完成的百分比或已完成的步骤/总步骤时。",
-        "cnName": "进度条"
     },
     {
         "name": "d-quadrant-diagram",
@@ -4028,67 +4021,63 @@ let devuiInfo =
         "cnName": "象限图"
     },
     {
-        "name": "d-rate",
+        "name": "d-progress",
         "attrList": [
             {
-                "name": "read",
+                "name": "percentage",
+                "type": "number",
+                "default": "0",
+                "description": "可选，进度条的值最大为100",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "percentageText",
+                "type": "string",
+                "default": "--",
+                "description": "可选，进度条当前值的文字说明比如：30%!!!4/5",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "barbgcolor",
+                "type": "string",
+                "default": "#5170ff",
+                "description": "可选，进度条的颜色显示，默认为天蓝色",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "height",
+                "type": "string",
+                "default": "20px",
+                "description": "可选，进度条的高度值，默认值为20px",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "isCircle",
                 "type": "boolean",
                 "default": "false",
-                "description": "可选，设置是否为只读模式，只读模式无法交互",
+                "description": "可选，显示进度条是否为圈形",
                 "attrType": "ATTR",
                 "isNecessary": false,
                 "valueSet": [],
                 "isEvent": false
             },
             {
-                "name": "count",
+                "name": "strokeWidth",
                 "type": "number",
-                "default": "5",
-                "description": "可选，设置总等级数",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "type",
-                "type": "string",
-                "default": "--",
-                "description": "可选，设置当前评分的类型，不同类型对应不同颜色",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [
-                    "success",
-                    "warning",
-                    "error"
-                ],
-                "isEvent": false
-            },
-            {
-                "name": "color",
-                "type": "string",
-                "default": "--",
-                "description": "可选，星星颜色",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "icon",
-                "type": "string",
-                "default": "--",
-                "description": "可选，评分图标的样式，只支持devUI图标库中所有图标",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "character",
-                "type": "string",
-                "default": "--",
-                "description": "可选，评分图标的样式，icon与character只能设置其中一个",
+                "default": "6",
+                "description": "可选，设置圈形进度条宽度，单位是进度条与画布宽度的百分比",
                 "attrType": "ATTR",
                 "isNecessary": false,
                 "valueSet": [],
@@ -4096,9 +4085,9 @@ let devuiInfo =
             }
         ],
         "directiveFlag": false,
-        "description": "等级评估",
-        "tmw": "用户对一个产品进行评分时可以使用，有两种模式，只读模式和动态评分模式",
-        "cnName": "等级评估"
+        "description": "进度条，用来展示操作的当前进度。",
+        "tmw": "1、当操作需要较长的时间时，向用户展示操作进度。              2、当操作需要打断现有界面或后台运行，需要较长时间时。              3、当需要显示一个操作完成的百分比或已完成的步骤/总步骤时。",
+        "cnName": "进度条"
     },
     {
         "name": "d-radio-group",
@@ -4258,6 +4247,303 @@ let devuiInfo =
         "description": "滑动输入条可以更直观地展示当前值和可选范围。",
         "tmw": "当用户需要在数值区间内进行选择时使用。",
         "cnName": "滑动输入条"
+    },
+    {
+        "name": "d-rate",
+        "attrList": [
+            {
+                "name": "read",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，设置是否为只读模式，只读模式无法交互",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "count",
+                "type": "number",
+                "default": "5",
+                "description": "可选，设置总等级数",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "type",
+                "type": "string",
+                "default": "--",
+                "description": "可选，设置当前评分的类型，不同类型对应不同颜色",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [
+                    "success",
+                    "warning",
+                    "error"
+                ],
+                "isEvent": false
+            },
+            {
+                "name": "color",
+                "type": "string",
+                "default": "--",
+                "description": "可选，星星颜色",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "icon",
+                "type": "string",
+                "default": "--",
+                "description": "可选，评分图标的样式，只支持devUI图标库中所有图标",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "character",
+                "type": "string",
+                "default": "--",
+                "description": "可选，评分图标的样式，icon与character只能设置其中一个",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            }
+        ],
+        "directiveFlag": false,
+        "description": "等级评估",
+        "tmw": "用户对一个产品进行评分时可以使用，有两种模式，只读模式和动态评分模式",
+        "cnName": "等级评估"
+    },
+    {
+        "name": "d-search",
+        "attrList": [
+            {
+                "name": "size",
+                "type": "string",
+                "default": "",
+                "description": "可选，搜索框尺寸，有三种选择lg、、sm",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "placeholder",
+                "type": "string",
+                "default": "PleaseInputkeywords",
+                "description": "可选，输入框的placeholder",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "maxLength",
+                "type": "number",
+                "default": "Number.MAX_SAFE_INTEGER",
+                "description": "可选，输入框的max-length",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "delay",
+                "type": "number",
+                "default": "300",
+                "description": "可选，debounceTime的延迟",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "disabled",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，输入框是否可用",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "isKeyupSearch",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，是否支持输入值立即出发searchFn",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "searchFn",
+                "type": [
+                    "string"
+                ],
+                "description": "回车或点击搜索按钮触发的回调函数，返回文本框输入的值",
+                "attrType": "Event",
+                "isNecessary": false,
+                "hasvalueSet": true,
+                "isEvent": true
+            }
+        ],
+        "directiveFlag": false,
+        "description": "搜索框。",
+        "tmw": "当用户需要在数据集中搜索所需数据时，输入所需数据的内容（或部分内容），返回所有匹配内容的搜索结果。",
+        "cnName": "搜索框"
+    },
+    {
+        "name": "d-splitter",
+        "attrList": [
+            {
+                "name": "orientation",
+                "type": "string",
+                "default": "horizontal",
+                "description": "可选，指定Splitter分割方向,可选值vertical!!!horizontal",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [
+                    "vertical",
+                    "horizontal"
+                ],
+                "isEvent": false
+            },
+            {
+                "name": "splitBarSize",
+                "type": "string",
+                "default": "2px",
+                "description": "可选，分隔条大小，默认2px",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "disabledBarSize",
+                "type": "string",
+                "default": "1px",
+                "description": "可选，pane设置不可调整宽度时生效",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            }
+        ],
+        "directiveFlag": false,
+        "description": "Splitter将页面拆分为多个部分，并允许用户控制页面布局。",
+        "tmw": "需要动态调整不同页面布局区域大小的时候选择使用。",
+        "cnName": "分割器"
+    },
+    {
+        "name": "d-splitter-pane",
+        "attrList": [
+            {
+                "name": "size",
+                "type": "string",
+                "default": "--",
+                "description": "可选，指定pane宽度，设置像素值或者百分比",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "minSize",
+                "type": "string",
+                "default": "--",
+                "description": "可选，指定pane最小宽度，设置像素值或者百分比",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "maxSize",
+                "type": "string",
+                "default": "--",
+                "description": "可选，指定pane最大宽度，设置像素值或者百分比",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "resizable",
+                "type": "boolean",
+                "default": "true",
+                "description": "可选，指定pane是否可调整大小，会影响相邻pane",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "collapsible",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，指定pane是否可折叠收起",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "collapsed",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，指定pane初始化是否收起，配合collapsible使用",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "collapseDirection",
+                "type": "string",
+                "default": "both",
+                "description": "可选，指定非边缘pane收起方向，配合collapsible使用",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [
+                    "before",
+                    "after",
+                    "both"
+                ],
+                "isEvent": false
+            },
+            {
+                "name": "sizeChange",
+                "type": [
+                    "EventEmitter<string>"
+                ],
+                "description": "大小变动时，返回改变后的值,像素值或者百分比",
+                "attrType": "Event",
+                "isNecessary": false,
+                "hasvalueSet": true,
+                "isEvent": true
+            },
+            {
+                "name": "collapsedChange",
+                "type": [
+                    "EventEmitter<boolean>"
+                ],
+                "description": "折叠和展开时，返回当前pane是否折叠",
+                "attrType": "Event",
+                "isNecessary": false,
+                "hasvalueSet": true,
+                "isEvent": true
+            }
+        ],
+        "directiveFlag": false
     },
     {
         "name": "d-select",
@@ -4683,176 +4969,6 @@ let devuiInfo =
         "cnName": "下拉选择框"
     },
     {
-        "name": "d-splitter",
-        "attrList": [
-            {
-                "name": "orientation",
-                "type": "string",
-                "default": "horizontal",
-                "description": "可选，指定Splitter分割方向,可选值vertical!!!horizontal",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [
-                    "vertical",
-                    "horizontal"
-                ],
-                "isEvent": false
-            },
-            {
-                "name": "splitBarSize",
-                "type": "string",
-                "default": "2px",
-                "description": "可选，分隔条大小，默认2px",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "disabledBarSize",
-                "type": "string",
-                "default": "1px",
-                "description": "可选，pane设置不可调整宽度时生效",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            }
-        ],
-        "directiveFlag": false,
-        "description": "Splitter将页面拆分为多个部分，并允许用户控制页面布局。",
-        "tmw": "需要动态调整不同页面布局区域大小的时候选择使用。",
-        "cnName": "分割器"
-    },
-    {
-        "name": "d-splitter-pane",
-        "attrList": [
-            {
-                "name": "size",
-                "type": "string",
-                "default": "--",
-                "description": "可选，指定pane宽度，设置像素值或者百分比",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "minSize",
-                "type": "string",
-                "default": "--",
-                "description": "可选，指定pane最小宽度，设置像素值或者百分比",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "maxSize",
-                "type": "string",
-                "default": "--",
-                "description": "可选，指定pane最大宽度，设置像素值或者百分比",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "resizable",
-                "type": "boolean",
-                "default": "true",
-                "description": "可选，指定pane是否可调整大小，会影响相邻pane",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "collapsible",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，指定pane是否可折叠收起",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "collapsed",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，指定pane初始化是否收起，配合collapsible使用",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "collapseDirection",
-                "type": "string",
-                "default": "both",
-                "description": "可选，指定非边缘pane收起方向，配合collapsible使用",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [
-                    "before",
-                    "after",
-                    "both"
-                ],
-                "isEvent": false
-            },
-            {
-                "name": "sizeChange",
-                "type": [
-                    "EventEmitter<string>"
-                ],
-                "description": "大小变动时，返回改变后的值,像素值或者百分比",
-                "attrType": "Event",
-                "isNecessary": false,
-                "hasvalueSet": true,
-                "isEvent": true
-            },
-            {
-                "name": "collapsedChange",
-                "type": [
-                    "EventEmitter<boolean>"
-                ],
-                "description": "折叠和展开时，返回当前pane是否折叠",
-                "attrType": "Event",
-                "isNecessary": false,
-                "hasvalueSet": true,
-                "isEvent": true
-            }
-        ],
-        "directiveFlag": false
-    },
-    {
-        "name": "d-status",
-        "attrList": [
-            {
-                "name": "type",
-                "type": "string",
-                "default": "invalid",
-                "description": "必选，表示类型",
-                "attrType": "ATTR",
-                "isNecessary": true,
-                "valueSet": [
-                    "invalid",
-                    "running",
-                    "waiting",
-                    "important",
-                    "less-important",
-                    "error"
-                ],
-                "isEvent": false
-            }
-        ],
-        "directiveFlag": false,
-        "description": "状态传达了组件或者页面可互动元素交互的结果。",
-        "tmw": "表示一个任务的执行结果时使用。",
-        "cnName": "状态"
-    },
-    {
         "name": "d-sticky",
         "attrList": [
             {
@@ -4911,86 +5027,6 @@ let devuiInfo =
         "description": "页面内容固定在可视区域。",
         "tmw": "当用户在滚动屏幕时，需要某个区域内容在段落或者浏览器可视区域可见时。",
         "cnName": "便贴"
-    },
-    {
-        "name": "d-search",
-        "attrList": [
-            {
-                "name": "size",
-                "type": "string",
-                "default": "",
-                "description": "可选，搜索框尺寸，有三种选择lg、、sm",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "placeholder",
-                "type": "string",
-                "default": "PleaseInputkeywords",
-                "description": "可选，输入框的placeholder",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "maxLength",
-                "type": "number",
-                "default": "Number.MAX_SAFE_INTEGER",
-                "description": "可选，输入框的max-length",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "delay",
-                "type": "number",
-                "default": "300",
-                "description": "可选，debounceTime的延迟",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "disabled",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，输入框是否可用",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "isKeyupSearch",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，是否支持输入值立即出发searchFn",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "searchFn",
-                "type": [
-                    "string"
-                ],
-                "description": "回车或点击搜索按钮触发的回调函数，返回文本框输入的值",
-                "attrType": "Event",
-                "isNecessary": false,
-                "hasvalueSet": true,
-                "isEvent": true
-            }
-        ],
-        "directiveFlag": false,
-        "description": "搜索框。",
-        "tmw": "当用户需要在数据集中搜索所需数据时，输入所需数据的内容（或部分内容），返回所有匹配内容的搜索结果。",
-        "cnName": "搜索框"
     },
     {
         "name": "d-tabs",
@@ -5271,108 +5307,6 @@ let devuiInfo =
         "cnName": "标签"
     },
     {
-        "name": "dText",
-        "attrList": [
-            {
-                "name": "id",
-                "type": "string",
-                "default": "--",
-                "description": "可选，文本框id",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "placeholder",
-                "type": "string",
-                "default": "--",
-                "description": "可选，文本框placeholder",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "disabled",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，文本框是否被禁用",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "error",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，文本框是否出现输入错误",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "resize",
-                "type": "string",
-                "default": "none",
-                "description": "可选，文本框是否可调整大小，可选项：不可调整，水平调整，垂直调整，自由调整，默认继承",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [
-                    "none",
-                    "vertical",
-                    "horizontal",
-                    "both",
-                    "inherit"
-                ],
-                "isEvent": false
-            },
-            {
-                "name": "id",
-                "type": "string",
-                "default": "--",
-                "description": "可选，文本框id",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "placeholder",
-                "type": "string",
-                "default": "--",
-                "description": "可选，文本框placeholder",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "disabled",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，文本框是否被禁用",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "error",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，文本框是否出现输入错误",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            }
-        ],
-        "directiveFlag": true
-    },
-    {
         "name": "d-tags-input",
         "attrList": [
             {
@@ -5517,6 +5451,108 @@ let devuiInfo =
         "cnName": "标签输入"
     },
     {
+        "name": "dText",
+        "attrList": [
+            {
+                "name": "id",
+                "type": "string",
+                "default": "--",
+                "description": "可选，文本框id",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "placeholder",
+                "type": "string",
+                "default": "--",
+                "description": "可选，文本框placeholder",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "disabled",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，文本框是否被禁用",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "error",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，文本框是否出现输入错误",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "id",
+                "type": "string",
+                "default": "--",
+                "description": "可选，文本框id",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "placeholder",
+                "type": "string",
+                "default": "--",
+                "description": "可选，文本框placeholder",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "disabled",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，文本框是否被禁用",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "error",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，文本框是否出现输入错误",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "resize",
+                "type": "string",
+                "default": "none",
+                "description": "可选，文本框是否可调整大小，可选项：不可调整，水平调整，垂直调整，自由调整，默认继承",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [
+                    "none",
+                    "vertical",
+                    "horizontal",
+                    "both",
+                    "inherit"
+                ],
+                "isEvent": false
+            }
+        ],
+        "directiveFlag": true
+    },
+    {
         "name": "d-toast",
         "attrList": [
             {
@@ -5546,50 +5582,6 @@ let devuiInfo =
         "description": "全局信息提示组件。",
         "tmw": "当需要向用户全局展示提示信息时使用，显示数秒后消失。",
         "cnName": "全局通知"
-    },
-    {
-        "name": "dTooltip",
-        "attrList": [
-            {
-                "name": "content",
-                "type": "string",
-                "default": "--",
-                "description": "必选，tooltip显示内容",
-                "attrType": "ATTR",
-                "isNecessary": true,
-                "valueSet": [],
-                "isEvent": false
-            },
-            {
-                "name": "position",
-                "type": "string",
-                "default": "bottom",
-                "description": "可选，tooltip显示位置",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [
-                    "left",
-                    "right",
-                    "top",
-                    "bottom"
-                ],
-                "isEvent": false
-            },
-            {
-                "name": "showAnimate",
-                "type": "boolean",
-                "default": "false",
-                "description": "可选，是否显示划出动画",
-                "attrType": "ATTR",
-                "isNecessary": false,
-                "valueSet": [],
-                "isEvent": false
-            }
-        ],
-        "directiveFlag": true,
-        "description": "文字提示组件",
-        "tmw": "用户鼠标移动到文字上，需要进一步的提示时使用。",
-        "cnName": "提示"
     },
     {
         "name": "d-toggle",
@@ -5678,6 +5670,50 @@ let devuiInfo =
         "description": "开/关切换组件",
         "tmw": "当两种状态需要来回切换控制时，比如启用/禁用。",
         "cnName": "开关"
+    },
+    {
+        "name": "dTooltip",
+        "attrList": [
+            {
+                "name": "content",
+                "type": "string",
+                "default": "--",
+                "description": "必选，tooltip显示内容",
+                "attrType": "ATTR",
+                "isNecessary": true,
+                "valueSet": [],
+                "isEvent": false
+            },
+            {
+                "name": "position",
+                "type": "string",
+                "default": "bottom",
+                "description": "可选，tooltip显示位置",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [
+                    "left",
+                    "right",
+                    "top",
+                    "bottom"
+                ],
+                "isEvent": false
+            },
+            {
+                "name": "showAnimate",
+                "type": "boolean",
+                "default": "false",
+                "description": "可选，是否显示划出动画",
+                "attrType": "ATTR",
+                "isNecessary": false,
+                "valueSet": [],
+                "isEvent": false
+            }
+        ],
+        "directiveFlag": true,
+        "description": "文字提示组件",
+        "tmw": "用户鼠标移动到文字上，需要进一步的提示时使用。",
+        "cnName": "提示"
     },
     {
         "name": "d-transfer",
@@ -6397,5 +6433,15 @@ let devuiInfo =
                 ],
                 "description": "删除上传文件的回调函数，返回删除文件的路径信息",
                 "attrType": "Event",
-                "isNecessary":false,"hasvalueSet":true,"isEvent":true}],"directiveFlag":false,"description":"文件上传组件","tmw":"当需要将文件上传到后端服务器时。","cnName":"上传"}];
-module.exports.devuiInfo = devuiInfo;
+                "isNecessary": false,
+                "hasvalueSet": true,
+                "isEvent": true
+            }
+        ],
+        "directiveFlag": false,
+        "description": "文件上传组件",
+        "tmw": "当需要将文件上传到后端服务器时。",
+        "cnName": "上传"
+    }
+];
+                module.exports.devuiInfo = devuiInfo;

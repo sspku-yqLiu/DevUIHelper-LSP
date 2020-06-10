@@ -1,9 +1,9 @@
-import { SupportFrameName, SupportComponentNames, ParseOption } from '../parser/type';
+import { SupportFrameName, SupportComponentName, ParseOption } from '../parser/type';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { host, logger } from '../server';
 import { SnapShot } from './Host';
 import * as fs from 'fs';
-import { RootNode } from '../source/html_info';
+import { RootNode } from '../parser/WareHouse/Storage';
 const info = require('../source/info.js');
 /*
  * @Author: your name
@@ -15,8 +15,8 @@ const info = require('../source/info.js');
  */ 
 export class Igniter {
 	private FrameName: SupportFrameName = SupportFrameName.Null;
-	private componentList:SupportComponentNames[] = [];
-	private componentToUrl = new Map<SupportComponentNames, string>();
+	private componentList:SupportComponentName[] = [];
+	private componentToUrl = new Map<SupportComponentName, string>();
 	constructor() {
 	}
 	init() {
@@ -74,9 +74,9 @@ export class Igniter {
 			const info = fs.statSync(_path);
 			if (info.isDirectory()) {
 				if (_path.endsWith('ng-devui')) {
-					this.componentList.push(SupportComponentNames.DevUI);
+					this.componentList.push(SupportComponentName.DevUI);
 					logger.info(`Find Devui At ${_path}`);
-					this.componentToUrl.set(SupportComponentNames.DevUI, _path);
+					this.componentToUrl.set(SupportComponentName.DevUI, _path);
 				}
 				// this.checkProjectFrameworkAndComponentName(_path);
 				else if (_path.endsWith("/@angular")) {
@@ -105,7 +105,7 @@ export class Igniter {
 			// 		resolve(host.architect.build(comInfo));
 			// 	}
 			// });
-			resolve(host.architect.build(info.devuiInfo));
+			resolve(host.architect.build(info.devuiInfo,SupportComponentName.DevUI));
 		});
 	}
 }
