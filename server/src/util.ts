@@ -200,6 +200,10 @@ export class MarkUpBuilder{
             ].join('\n');
         return this;
     }
+    setSpecialContent(type:string,content:string){
+        this.markUpContent.value='```'+type+'\n'+content+'\n```';
+        return this;
+    }
 }
 export function convertSpanToRange(textDocument:TextDocument,span?:Span):Range|undefined{
     if(!span){

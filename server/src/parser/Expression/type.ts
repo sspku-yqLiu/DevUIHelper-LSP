@@ -13,12 +13,37 @@ export class ExpressionTreeNode{
 	constructor(
 		public infoNode:HTMLInfoNode,
 		public type:ExpressionNodeType,
-		public subNodes:ExpressionTreeNode[]=[],
+		public insertText?:string,
+		public attrs:ExpressionTreeNode[][]=[],
+		public subTag:ExpressionTreeNode[]=[],
 		public times:number=1,
 		public id?:string|undefined
 	){}
-	addSubNode(info:ExpressionTreeNode){
-		this.subNodes.push(info);
+	addAttr(attr:ExpressionTreeNode|undefined){
+		if(attr)
+			this.attrs.push([attr]);
+	}
+	addAttrs(attrs:ExpressionTreeNode[]){
+		this.times = this.times>attrs.length?this.times:attrs.length;
+		this.attrs.push(attrs);
+	}
+	addSubTag(subTag:ExpressionTreeNode){
+		this.subTag.push(subTag);
+	}
+	setInsertText(insertText:string):ExpressionTreeNode{
+		this.insertText = insertText;
+		return this;
+	}
+	getAttrOfIndex(index:number):ExpressionTreeNode[]{
+		let result : ExpressionTreeNode[] = [];
+		this.attrs.forEach(e=>{
+			if(index>e.length-1){
+				result.push(e[e.length-1]);
+			}else{
+				result.push(e[index]);
+			}
+		});
+		return result;
 	}
 
 }

@@ -7,7 +7,7 @@
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
 import { adjustSpanToAbosulutOffset, getRangeFromDocument, getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan, convertSpanToRange } from './util';
-import {   Component,} from './parser/WareHouse/Storage';
+import {   Component, TagComponent,} from './parser/WareHouse/Storage';
 import { host, logger } from './server';
 import { CompletionItem, Range, HoverParams, TextDocumentPositionParams } from 'vscode-languageserver';
 import { HTMLAST, HTMLTagAST, HTMLCommentAST } from './parser/ast';
@@ -25,6 +25,7 @@ export class CompletionProvider {
 	constructor() { }
 	provideCompletionItes(_params: TextDocumentPositionParams, type: FileType): CompletionItem[] {
 		//Alert:测试用
+		let temp = host;
 		// host.architect.buildCompletionItems();
 		// host.igniter.loadSourceTree();
 		// host.igniter.loadSourceTree();
@@ -90,7 +91,12 @@ export class CompletionProvider {
 				if (ast instanceof HTMLTagAST) {
 					return ({ node: host.HTMLComoponentSource, span: _span, ast: ast, type: _type });
 				}
-				return { node: host.hunter.findHTMLInfoNode(ast.parentPointer, textDocument.uri), span: _span, ast: ast.parentPointer!, type: _type };
+				let _parentNode = ast.parentPointer;
+				let _infonode = host.hunter.findHTMLInfoNode(ast.parentPointer, textDocument.uri)
+				if(_parentNode instanceof HTMLTagAST&&!_infonode){
+					_infonode = new TagComponent(_parentNode.getName());
+				}
+				return { node: _infonode, span: _span, ast: ast.parentPointer!, type: _type };
 			}
 			case (SearchResultType.Value): {
 				if (this.getCompletionFlag(textDocument.getText(), offset)) {
@@ -141,6 +147,7 @@ export class CompletionProvider {
 		let _directiveNodes = _directives?.map(name => {
 			return host.HTMLDirectiveSource.getSubNode(name);
 		});
+
 		//加载伪装成attr的directive
 		_attrs?.forEach(attrName => {
 			let _tempdirective = host.HTMLDirectiveSource.getDirectiveWithNameSet()[attrName];

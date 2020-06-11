@@ -79,6 +79,7 @@ export class RootNode implements HTMLInfoNode {
     private nameCompletionItems: CompletionItem[] = [];
     private directWithNameSet={};
     public prefixCut = <{[comName:number]:{[prefix:string]:Component}}>{};
+    public directivePrefixCut = <{[directivePrefix: string]: Component }>{}
     constructor() { }
     getSchema(){
 		return this.schema;
@@ -104,8 +105,14 @@ export class RootNode implements HTMLInfoNode {
         }
         nodes.push(node);
         //prefixCut
-        this.prefixCut[comName] = this.prefixCut[comName]?this.prefixCut[comName]:{};
-        this.prefixCut[comName][prefix] = node;
+        if(node instanceof TagComponent){
+            this.prefixCut[comName] = this.prefixCut[comName]?this.prefixCut[comName]:{};
+            this.prefixCut[comName][prefix] = node;
+        }
+        if(node instanceof Directive){
+            this.directivePrefixCut[prefix] = node;
+        }
+
     }
     getNameCompltionItems(): CompletionItem[] {
         return this.nameCompletionItems;
@@ -282,7 +289,6 @@ export class TagComponent extends Component{
     }
       
     buildFullCompletionItem(): CompletionItem {
-        this.buildCompletionItems();
         let _completionItem = super.buildFullCompletionItem();
         if (_completionItem.insertText.indexOf('${1')===-1) {
             _completionItem.insertText +=">$0" + `</${this.name}>`;
@@ -340,11 +346,11 @@ export class Attribute implements HTMLInfoNode {
     private readonly completionKind: CompletionItemKind;
     constructor(
         private readonly name: string,
-        private readonly type: string,
-        private readonly defaultValue: string,
-        private readonly description: string,
-        public readonly isNecessary: boolean,
-        private readonly isEvent: boolean,
+        private readonly type: string='string',
+        private readonly defaultValue: string='null',
+        private readonly description: string='',
+        public readonly isNecessary: boolean=false,
+        private readonly isEvent: boolean=false,
         private readonly valueSet: string[] = [],
         private readonly sortDescription?: string) {
         this.completionKind = isEvent ? CompletionItemKind.Event : CompletionItemKind.Variable;
