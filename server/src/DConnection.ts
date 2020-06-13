@@ -92,7 +92,7 @@ export class DConnection{
 		// }
 	}
 	onCompletion(_textDocumentPosition: TextDocumentPositionParams){
-		logger.debug(`Completion work`);		
+		// logger.debug(`Completion work`);		
 		// logger.debug(`cursorOffset at : ${this.host.documents.get(_textDocumentPosition.textDocument.uri)?.offsetAt(_textDocumentPosition.position) }`);
 		// this.host.igniter.checkProjectFrameworkAndComponentName('c:\\MyProgram\\angular\\demo1');
 		if(!this.igniteResult||this.igniteResult.frame===SupportFrameName.Null||this.igniteResult.components===[]){

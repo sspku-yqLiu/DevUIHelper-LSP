@@ -9,7 +9,7 @@
 import { SearchParser } from '../parser/parser';
 import { SearchResult, SearchResultType } from '../parser/type';
 import { HTMLAST, HTMLTagAST, HTMLATTRAST } from '../parser/ast';
-import { HTMLInfoNode, Directive } from '../parser/WareHouse/Storage';
+import { HTMLInfoNode, Directive, TagComponent } from '../parser/WareHouse/Storage';
 import { host } from '../server';
 import { convertStringToName } from '../util';
 
@@ -61,7 +61,8 @@ export class Hunter {
 			throw Error(`None parent cursor or name of node ${_name}`);
 		}
 		if (ast instanceof HTMLTagAST) {
-			return host.HTMLComoponentSource.getSubNode(_name);
+			let infoNode = host.HTMLComoponentSource.getSubNode(_name);
+			return infoNode?infoNode:new TagComponent(ast.getName());
 		}
 		else {
 			//表内没有则向上递归

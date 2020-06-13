@@ -330,7 +330,7 @@ export class Directive extends Component {
     }
         
     buildFullCompletionItem(): CompletionItem {
-        this.buildCompletionItems();
+        // this.buildCompletionItems();
         let _completionItem = super.buildFullCompletionItem();
         this.completionItem = _completionItem;
         return _completionItem;

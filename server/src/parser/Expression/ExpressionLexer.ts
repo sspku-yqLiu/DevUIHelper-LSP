@@ -14,14 +14,17 @@ export class ExpresssionLexer{
 		this.rootNode=undefined;
 	}
 	parse(expression:string,prefixSet?:string[]):string|undefined{
-		if(!expression.match(/\.|\[|\#|\*|\<|\{/)){
+		if(!expression.match(/\.|\[|\#|\*|\>|\{/)){
 			return undefined;
 		}
-		if(expression.indexOf('.')===-1){
-			return undefined;
-		}
+		// if(expression.indexOf('.')===-1){
+		// 	return undefined;
+		// }
 		let startIndex = expression.indexOf('.')+1;
 		const prefixName = expression.substring(0,startIndex-1);
+		if(this.checkMails(prefixName)){
+			return undefined;
+		}
 		this.comName = getcomNameFromPrefix(prefixName);
 		const RealExpression = this.comName?expression.substring(startIndex):expression;
 		let subExp:string[] = RealExpression.split('>');
@@ -102,7 +105,7 @@ export class ExpresssionLexer{
 			}
 			if(!tagNode){
 				let nodes = host.HTMLComoponentSource.prefixSchema[this.comName];
-				if(tagName.length>2)
+				if(tagName.length>1)
 				tagNode =nodes.find(e=>{return e.prefixName.startsWith(tagName);});
 			}
 		}
@@ -335,6 +338,13 @@ export class ExpresssionLexer{
 	}
 	isHTMLInfoNode(node:any):node is HTMLInfoNode{
 		if(node.getCompletionItem()!==undefined){
+			return true;
+		}
+		return false;
+	}
+	checkMails(s:string){
+		let Mails= ['qq','163','foxmail','outlook','126',''];
+		if(Mails.includes(s)){
 			return true;
 		}
 		return false;

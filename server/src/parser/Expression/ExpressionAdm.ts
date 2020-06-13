@@ -34,7 +34,7 @@ export class ExpressionAdm{
 		while(!(WhiteCharsAndLTAndLTANDSPLASH.includes(text.charCodeAt(end)))&&end<text.length){
 			end++;
 		}
-		logger.debug(`get:${text.substring(start+1,end)}`);
+		// logger.debug(`get:${text.substring(start+1,end)}`);
 		return {res:text.substring(start+1,end),span: new Span(start+1,end)};
 	}
 	createCompletion(params:ExpressionParams):CompletionItem[]{
@@ -44,6 +44,9 @@ export class ExpressionAdm{
 			return [];
 		}
 		let expressionResult = this.expLexer.parse(expression.substring(1),['d']);
+		if(!expressionResult){
+			return [];
+		}
 		//completionItem制作。
 		let _completionItem = CompletionItem.create(expression);
 		_completionItem.kind =CompletionItemKind.Function;
@@ -51,7 +54,7 @@ export class ExpressionAdm{
 		// _completionItem.documentation= this.mkbuilder.setSpecialContent('html',`${expressionResult.replace(/(\$[0-9])|(\$\{(\s|\S)*\})/g,"")}`).getMarkUpContent();
 		_completionItem.documentation= this.mkbuilder.setSpecialContent('html',`${expressionResult}`).getMarkUpContent();
 		_completionItem.insertTextFormat=InsertTextFormat.Snippet;
-		logger.debug(`create:${expressionResult}`);
+		// logger.debug(`create:${expressionResult}`);
 		return [_completionItem];
 	}
 }

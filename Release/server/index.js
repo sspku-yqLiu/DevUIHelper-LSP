@@ -2631,8 +2631,8 @@ define(['exports', 'log4js', 'vscode-languageserver', 'vscode-languageserver-tex
     // This handler provides the initial list of the completion items.
     connection.onCompletion((_textDocumentPosition) => {
         var _a;
-        logger.debug(`Completion work`);
-        logger.debug(`cursorOffset at : ${(_a = documents.get(_textDocumentPosition.textDocument.uri)) === null || _a === void 0 ? void 0 : _a.offsetAt(_textDocumentPosition.position)}`);
+        // logger.debug(`Completion work`);
+        // logger.debug(`cursorOffset at : ${(_a = documents.get(_textDocumentPosition.textDocument.uri)) === null || _a === void 0 ? void 0 : _a.offsetAt(_textDocumentPosition.position)}`);
         const _textDocument = documents.get(_textDocumentPosition.textDocument.uri);
         return host.completionProvider.provideCompletionItes(_textDocumentPosition, FileType.HTML);
         // if(_textDocument){
@@ -2649,14 +2649,14 @@ define(['exports', 'log4js', 'vscode-languageserver', 'vscode-languageserver-tex
     });
     connection.onHover((_textDocumentPosition) => {
         var _a;
-        logger.debug(`HoverProvider works!`);
-        logger.debug(`cursorOffset at : ${(_a = documents.get(_textDocumentPosition.textDocument.uri)) === null || _a === void 0 ? void 0 : _a.offsetAt(_textDocumentPosition.position)}`);
+        // logger.debug(`HoverProvider works!`);
+        // logger.debug(`cursorOffset at : ${(_a = documents.get(_textDocumentPosition.textDocument.uri)) === null || _a === void 0 ? void 0 : _a.offsetAt(_textDocumentPosition.position)}`);
         return host.hoverProvider.provideHoverInfoForHTML(_textDocumentPosition);
     });
     documents.onDidChangeContent(change => {
         validateTextDocument(change.document);
-        logger.debug(`changeHappened!`);
-        logger.debug(change.document.uri);
+        // logger.debug(`changeHappened!`);
+        // logger.debug(change.document.uri);
     });
     function validateTextDocument(textDocument) {
         return __awaiter(this, void 0, void 0, function* () {

@@ -7,7 +7,7 @@
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
 import { adjustSpanToAbosulutOffset, getRangeFromDocument, getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan, convertSpanToRange } from './util';
-import {   Component, TagComponent,} from './parser/WareHouse/Storage';
+import {   Component, TagComponent, Directive,} from './parser/WareHouse/Storage';
 import { host, logger } from './server';
 import { CompletionItem, Range, HoverParams, TextDocumentPositionParams } from 'vscode-languageserver';
 import { HTMLAST, HTMLTagAST, HTMLCommentAST } from './parser/ast';
@@ -29,7 +29,7 @@ export class CompletionProvider {
 		// host.architect.buildCompletionItems();
 		// host.igniter.loadSourceTree();
 		// host.igniter.loadSourceTree();
-		logger.debug(`completionWorks!`);
+		// logger.debug(`completionWorks!`);
 		let { textDocument, position } = _params;
 		let _textDocument = host.getDocumentFromURI(textDocument.uri);
 		let _offset = _textDocument.offsetAt(position);
@@ -47,7 +47,7 @@ export class CompletionProvider {
 		}
 		if(type===CompletionType.Expression){
 			return host.expressionAdm.createCompletion(expressionParams);
-			return [];
+			// return [];
 		}
 		let _range = convertSpanToRange(_textDocument, span);
 		if (node instanceof Component && ast instanceof HTMLTagAST) {
@@ -92,7 +92,7 @@ export class CompletionProvider {
 					return ({ node: host.HTMLComoponentSource, span: _span, ast: ast, type: _type });
 				}
 				let _parentNode = ast.parentPointer;
-				let _infonode = host.hunter.findHTMLInfoNode(ast.parentPointer, textDocument.uri)
+				let _infonode = host.hunter.findHTMLInfoNode(ast.parentPointer, textDocument.uri);
 				if(_parentNode instanceof HTMLTagAST&&!_infonode){
 					_infonode = new TagComponent(_parentNode.getName());
 				}
@@ -137,15 +137,20 @@ export class CompletionProvider {
 		let _directiveCompletion:CompletionItem[] = [];
 		let _directiveWithName:string[] = [];
 		// let _comAttrs:CompletionItem[]=[];
-		let _directives:any = ast.attrList!.directive.getEach(e => e.getName());
-		let _attrs:any = ast.attrList!.attr.getEach(e => e.getName());
+		let _directives:string[] = ast.attrList!.directive.getEach(e => e.getName());
+		let _attrs:string[] = ast.attrList!.attr.getEach(e => e.getName());
 
 		//_attrs清洗
 		_attrs = _attrs.map(e=>(e.replace(/\[|\(|\)|\]/g,"")));
 
 		//找到指令节点
-		let _directiveNodes = _directives?.map(name => {
-			return host.HTMLDirectiveSource.getSubNode(name);
+		let _directiveNodes = [];
+		_directives?.forEach(name => {
+			let tempNode = host.HTMLDirectiveSource.getSubNode(name);
+			if(tempNode){
+				_directiveNodes.push(tempNode);
+			}
+
 		});
 
 		//加载伪装成attr的directive
@@ -158,8 +163,8 @@ export class CompletionProvider {
 
 		//加载directive自身
 		_directiveCompletion.push(...host.HTMLDirectiveSource.getNameCompltionItems().filter(e=>{
-			for (let directive of [_directiveNodes]) {
-				if (e===directive)
+			for (let directive of _directiveNodes) {
+				if (e.label==directive.getName())
 					return false;
 			}
 			return true;
