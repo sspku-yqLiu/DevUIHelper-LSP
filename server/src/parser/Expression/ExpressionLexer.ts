@@ -74,7 +74,7 @@ export class ExpresssionLexer{
 				}
 				if(expression.charCodeAt(i) ===$LBRACKET){
 					start = i;
-					i = expression.indexOf(']',start);
+					i = expression.indexOf(']',start)===-1?expression.length:expression.indexOf(']',start);
 				}else{
 					start = i+1;
 				}

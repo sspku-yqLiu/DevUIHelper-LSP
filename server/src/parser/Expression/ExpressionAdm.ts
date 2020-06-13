@@ -6,7 +6,7 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\Expression\ExpressionAdm.ts
  */ 
-import { WhiteCharsAndLTAndLTANDSPLASH, WhiteCharsAndLT, $AT } from '../chars';
+import { WhiteCharsAndLTAndGTANDSPLASH, WhiteCharsAndLT, $AT,WhiteCharsAndLTAndSLASH } from '../chars';
 import { CompletionItem, CompletionItemKind, InsertTextFormat } from 'vscode-languageserver';
 import { ExpressionParams, ExpressionResult } from '../../type';
 import { Span } from '../DataStructure/type';
@@ -25,13 +25,13 @@ export class ExpressionAdm{
 	}
 	getExpression(offset:number,text:string):ExpressionResult{
 		let start = offset,end = offset;
-		while(!([$AT,...WhiteCharsAndLT].includes(text.charCodeAt(start)))&&start>0){
+		while(!(WhiteCharsAndLTAndSLASH.includes(text.charCodeAt(start)))&&start>0){
 			start--;
 		}
-		if(text.charCodeAt(start)===$AT){
-			start--;
-		}
-		while(!(WhiteCharsAndLTAndLTANDSPLASH.includes(text.charCodeAt(end)))&&end<text.length){
+		// if(text.charCodeAt(start)===$AT){
+		// 	start--;
+		// }
+		while(!(WhiteCharsAndLTAndGTANDSPLASH.includes(text.charCodeAt(end)))&&end<text.length){
 			end++;
 		}
 		// logger.debug(`get:${text.substring(start+1,end)}`);

@@ -16,7 +16,7 @@ import { FileType, CompletionSearchResult, CompletionType, CompletionRangeKind }
 import { SearchResultType, SupportFrameName } from './parser/type';
 import { Span } from './parser/DataStructure/type';
 import { SnapShot } from './Host/Host';
-import { WhiteChars, Space, WhiteCharsAndGTAndSPLASH, WhiteCharsAndLTAndLTANDSPLASH, newLine } from './parser/chars';
+import { WhiteChars, Space, WhiteCharsAndGTAndSPLASH, WhiteCharsAndLTAndGTANDSPLASH, newLine } from './parser/chars';
 import { forEachTrailingCommentRange } from 'typescript/lib/tsserverlibrary';
 
 export class CompletionProvider {
@@ -126,7 +126,7 @@ export class CompletionProvider {
 				}
 				return false;
 			}
-			else if (offset === text.length || WhiteCharsAndLTAndLTANDSPLASH.indexOf(text.charCodeAt(offset + 1)) !== -1) {
+			else if (offset === text.length || WhiteCharsAndLTAndGTANDSPLASH.indexOf(text.charCodeAt(offset + 1)) !== -1) {
 				return true;
 			}
 		}
