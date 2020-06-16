@@ -1,5 +1,4 @@
 import { CompletionItemKind, CompletionItem, InsertTextFormat, TextEdit, Range, Hover, MarkupContent } from "vscode-languageserver";
-import { HTML_SCHEMA as SCHEMA } from '../../source/html_source';
 import { logger, host } from '../../server';
 import { MarkUpBuilder, copyCompletionItem, converValueSetToValueString, changeDueToCompletionRangeKind, changeInsertDueToCompletionRangeKind } from '../../util';
 import { CompletionRangeKind } from '../../type';
@@ -14,7 +13,6 @@ const FUNCTION = "function";
 const TEMPLATE = "templateref";
 
 export interface HTMLInfoNode {
-
     // /**
     //  * 获得当前节点的父节点
     //  */
@@ -79,7 +77,7 @@ export class RootNode implements HTMLInfoNode {
     private nameCompletionItems: CompletionItem[] = [];
     private directWithNameSet={};
     public prefixCut = <{[comName:number]:{[prefix:string]:Component}}>{};
-    public directivePrefixCut = <{[directivePrefix: string]: Component }>{}
+    public directivePrefixCut = <{[directivePrefix: string]: Component }>{};
     constructor() { }
     getSchema(){
 		return this.schema;
@@ -299,8 +297,8 @@ export class TagComponent extends Component{
         this.completionItem = _completionItem;
         return _completionItem;
     }
-
 }
+
 export class Directive extends Component {
     private hasValueFlag = false;
     constructor(name: string,
@@ -442,6 +440,7 @@ export class Attribute implements HTMLInfoNode {
             return _completionAddItem;
         });
     }
+
     getHoverInfo(): Hover {
         let _markUpBuilder = new MarkUpBuilder(this.getName() + "\n");
         _markUpBuilder.addSpecialContent('typescript', ["Description:" + this.description,

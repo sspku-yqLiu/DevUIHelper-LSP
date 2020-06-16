@@ -100,7 +100,7 @@ export class Tokenizer{
 							this.buildDocumentTag();
 						}
 					}else if(this.tryGet(chars.$SLASH)){
-						this.buildClosedTag()
+						this.buildClosedTag();
 					}
 					else{
 						this.buildOpenTag();
@@ -134,7 +134,7 @@ export class Tokenizer{
 			this.cursor.advance();
 			return true;
 		}
-		return false
+		return false;
 	}
 	tryAdvanceThrogh(chars:number[]){
 		while(chars.includes(this.cursor.peek())){
@@ -281,7 +281,7 @@ export class Tokenizer{
 			this.startToken(TokenType.TAG_SELF_END);
 			this.cursor.advance();
 			if(!this.tryGet(chars.$GT)){
-				throw Error(`this / does not have a > follw!`)
+				throw Error(`this / does not have a > follw!`);
 			}
 		}
 		this.buildToken();
@@ -349,9 +349,11 @@ export class Cursor{
 		private text:string,
 		public offset:number,
 		private EOF:number
-	){}
-	getoffset(){return this.offset}
-	advance(){
+	){
+		this.peekvalue = text.charCodeAt(offset);
+	}
+	getoffset(){return this.offset;}
+	advance():void{
 		let peek = this.peek();
 		if(peek===chars.$BACKSLASH){
 			this.offset++;
@@ -360,7 +362,7 @@ export class Cursor{
 		if(this.offset >=this.EOF){
 			throw Error(`Char At EOF At ${this.offset}`);
 		}
-		this.peekvalue = this.text.charCodeAt(this.offset)
+		this.peekvalue = this.text.charCodeAt(this.offset);
 	}  
 	relocate(offset:number){
 		this.offset = offset;
@@ -382,5 +384,80 @@ export class Cursor{
 	}
 	getEOF(){
 		return this.EOF;
+	}
+
+
+	/**
+	 * TODO:Try家族 将会被移动到指针类中
+	 * 这样可以方便表达式与解析器复用，并且为react进行进一步的帮助
+	 */
+	 //注意这里有指针移动
+	tryGet(char:number){
+		if(this.peek() === char){
+			this.advance();
+			return true;
+		}
+		return false;
+	}
+	tryAdvanceThrogh(chars:number[]):number{
+		while(chars.includes(this.peek())){
+			this.advance();
+		}
+		return this.peekvalue;
+	}
+
+	tryStopAt(chars:number[]):number{
+
+		// if(this._tokenInBuild){
+		// 	if([TokenType.ATTR_NAME,TokenType.ATTR_VALUE])
+		// }
+		while(!chars.includes(this.peek())){
+			this.advance();
+		}
+		return this.peekvalue;
+	}
+
+	//将返回一个数值，数值是被截断处的peekvalue
+	//如果是favor，将返回peekvalue，如果是disgust，将返回peekvalue*-1
+	tryStopbyFilter(favor:number[],disgust:number[]):number{
+		while(!disgust.includes(this.peek())&&!favor.includes(this.peek())){
+			this.advance();
+		}
+		//如果是被喜欢的字符截断
+		if(favor.includes(this.peek())){
+			return this.peekvalue;
+		}
+		//如果是被不应该出现的字符截断
+		else if(disgust.includes(this.peek())){
+			return this.peekvalue*-1;
+		}
+	}
+
+	//这个地方可能有点绕
+	//返回的是是否有截断代码，如果是0的话就是没有截断代码
+	//注意传入的点必须是left,否则会陷入死循环。
+	tryStopByPairs(left:number,right:number,breakOperators:number[] = []):number{
+		let stackLength = 1;
+		while(!breakOperators.includes(this.peekvalue)){
+			if(this.peekvalue===left){
+				stackLength++;
+			}else if(this.peekvalue === right){
+				stackLength--;
+			}
+			if(stackLength ===0){
+				return 0;
+			}
+			this.advance();
+		}
+		return stackLength===0?0:this.peekvalue;
+	}
+	tryAdvanceThroughBrackets(){
+		let brackets = {};
+	}
+	/**
+	 * 双指针协同
+	 */
+	getContentEndOf(endCursor:Cursor){
+		return this.text.substring(this.offset,endCursor.offset);
 	}
 }

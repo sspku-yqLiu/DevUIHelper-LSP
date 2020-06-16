@@ -24,9 +24,9 @@ configure({
 });
 export const logger = getLogger("devuihelper");
 export const host = new Host();
-export const dconection =new DConnection(host,logger);
-dconection.info(`hello DevUIHelper`);
-dconection.info(`Thanks To Zoujie Linruihong Wangyihui and Zhangke`);
-dconection.info(`Thanks To PKU_Huawei class`);
-dconection.info(`This extsion was built by yqLiu, enjoy it!`);
-dconection.listen();
+export const dconnection =new DConnection(host,logger);
+dconnection.info(`hello DevUIHelper`);
+dconnection.info(`Thanks To Zoujie Linruihong Wangyihui and Zhangke`);
+dconnection.info(`Thanks To PKU_Huawei class`);
+dconnection.info(`This extension was built by yqLiu, enjoy it!`);
+dconnection.listen();

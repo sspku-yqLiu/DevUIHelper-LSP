@@ -14,6 +14,7 @@ import { convertSpanToRange, MarkUpBuilder } from '../../util';
 import { logger } from '../../server';
 import { ExpresssionLexer } from './ExpressionLexer';
 import { JsxEmit } from 'typescript/lib/tsserverlibrary';
+import { testCode } from './type';
 
 export class ExpressionAdm{
 	private componentPrefix:string[]=[];
@@ -43,7 +44,13 @@ export class ExpressionAdm{
 		if(!expression.startsWith('@')){
 			return [];
 		}
-		let expressionResult = this.expLexer.parse(expression.substring(1),['d']);
+		if(expression=='@test'){
+			let test = CompletionItem.create('@test');
+			test.textEdit = {range:convertSpanToRange(textDocument,span),newText:testCode};
+			test.documentation=new MarkUpBuilder('![](https://s1.ax1x.com/2020/06/13/txlqFU.png)').getMarkUpContent();
+			return [test];
+		}
+		let expressionResult = this.expLexer.parse(expression.substring(1));
 		if(!expressionResult){
 			return [];
 		}

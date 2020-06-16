@@ -1,92 +1,144 @@
 import { ExpressionTreeNode, ExpressionNodeType } from './type';
-import { $$, $PERIOD, $STAR, $LBRACKET, $RBRACKET, $LBRACE, $RBRACE, $HASH } from '../chars';
+import { $$, $PERIOD, $STAR, $LBRACKET, $LBRACE, $HASH, $LPAREN, $RBRACE, $RBRACKET, $RPAREN, $DQ, $GT } from '../chars';
 import { RootNode, Component, TagComponent, Directive, Attribute, HTMLInfoNode } from '../WareHouse/Storage';
 import { host } from '../../server';
 import { SupportComponentName } from '../type';
 import { getcomNameFromPrefix, getTagPrefixFromComName } from '../WareHouse/util';
+import { Cursor } from '../lexer';
 
 export class ExpresssionLexer{
-	private operaters = [$STAR,$PERIOD,$LBRACKET,$HASH];
+	private operators = [$STAR,$PERIOD,$LBRACKET,$HASH,$LBRACE,$LPAREN];
+	private operatorsWithoutBracket = [$STAR,$PERIOD,$HASH,$LBRACE];
+	private brackets = <{[left:number]:number}>{$LBRACKET:$RBRACKET,$LPAREN:$RPAREN,$LBRACE:$RBRACE};
 	private rootNode:ExpressionTreeNode|undefined;
+	private fragment = '';
 	private ErrorFlag = false;
 	private comName:SupportComponentName|undefined;
+	private startCursor:Cursor = new Cursor("",-1,-1);
+	private endCursor:Cursor = new Cursor("",-1,-1);
+	private operator:number = -1;
 	constructor(){
 		this.rootNode=undefined;
 	}
-	parse(expression:string,prefixSet?:string[]):string|undefined{
-		if(!expression.match(/\.|\[|\#|\*|\>|\{/)){
+	parse(expression:string):string|undefined{
+		this.init();
+		let root = this.slicer(expression);
+		console.log(JSON.stringify(root));
+		return this.interperate(root);
+
+	}
+	//进行标签层级的划分进而交付给divider
+	slicer(expression:string):ExpressionTreeNode[] {
+		if(!expression.match(/\.|\[|\#|\*|\>|\{\!/)){
 			return undefined;
 		}
-		// if(expression.indexOf('.')===-1){
-		// 	return undefined;
-		// }
 		let startIndex = expression.indexOf('.')+1;
 		const prefixName = expression.substring(0,startIndex-1);
 		if(this.checkMails(prefixName)){
 			return undefined;
 		}
+		
 		this.comName = getcomNameFromPrefix(prefixName);
 		const RealExpression = this.comName?expression.substring(startIndex):expression;
-		let subExp:string[] = RealExpression.split('>');
-		const NodesQueue:ExpressionTreeNode[] = [];
+		//笛卡尔积模式
+		if(RealExpression.indexOf('**')!==-1){
+
+		}
+		//普通表达式模式TODO:分割器
+		let subExp:string[] = this._slicer(RealExpression) ;
+
+		let tempRoots:ExpressionTreeNode[] = [];
+		let nodesQueue:ExpressionTreeNode[][] = [];
 		subExp.forEach((e,index)=>{
-			if(index>0){
-				NodesQueue.push(this.divider(e,NodesQueue[index-1]));
+			if(e.match(/^\[(\s|\S)*\]$/)){
+				e= e.replace(/^\[|\]$/,"");
+				let slices = e.split(',');
+				tempRoots = slices.map(e=>{
+					return this.divider(e);
+				});
 			}else{
-				return NodesQueue.push(this.divider(e));
+				 tempRoots =  index>0?[this.divider(e,nodesQueue[index-1][0])]:[this.divider(e)];
 			}
+			if(tempRoots&&index>0){
+				nodesQueue[index-1].forEach(root=>{
+					root.addSubTag(tempRoots);
+				});
+			}
+			nodesQueue[index] = tempRoots;
 		});
-		if(NodesQueue.length<1){
-			return;
-		}else{
-			return this.interperate(NodesQueue);
-		}
+		return nodesQueue[0];
 	}
-	//这是一个可以被递归调用的分割器，返回一个基于表达式的节点
-	divider(expression:string,fatherTag?:ExpressionTreeNode):ExpressionTreeNode|undefined{
-		this.rootNode = undefined;this.ErrorFlag = false;
-		if(this.ErrorFlag){
-			return;
-		}
-		let start=0;
-		let comFlag = false;
-		let operater:number = -1,peek =-1;
-		for(let i =0;i<expression.length;i++){
-			peek =expression.charCodeAt(i);
-			if(this.operaters.includes(peek)){
-				const fragment =  expression.substring(start,i);
-				if(!comFlag){
-					//TODO:getTagNode function
-					this.rootNode = this.getTagNode(fragment,fatherTag);
-					operater = expression.charCodeAt(i);
-					if(operater ===$LBRACKET){
-						start = i;
-						i = expression.indexOf(']')+1;
-					}else{
-						start = i+1;
-					}
-					comFlag = true;
+	_slicer(exp:string):string[]{
+		this.initCursor(exp);
+		let result:string[] = [];
+		try {
+			while(true){
+				let end = this.endCursor.tryStopAt([$GT,$LBRACKET]);
+				if(end===$GT){
+					result.push(this.getContent());
 					continue;
-				}
-				if(fragment.length>0){
-					this.operate(operater,fragment);
-					operater = expression.charCodeAt(i);
-				}
-				if(expression.charCodeAt(i) ===$LBRACKET){
-					start = i;
-					i = expression.indexOf(']',start)===-1?expression.length:expression.indexOf(']',start);
 				}else{
-					start = i+1;
+					this.endCursor.tryStopByPairs($LBRACKET,$RBRACKET);
 				}
-				
 			}
+		} catch (error) {
+			result.push(this.getContent());
 		}
-		this.operate(operater,expression.substring(start,expression.length));
-		this.rootNode = this.rootNode?this.rootNode:this.getTagNode(expression);
+		return result;
+	}
+
+	//进行tag级别的划分。
+	divider(expression:string,fatherTag?:ExpressionTreeNode):ExpressionTreeNode|undefined{
+		try{
+			this.initCursor(expression);
+			this.setRoot();
+			while(this.endCursor.offset<expression.length){
+				if( this.operators.includes(this.endCursor.peek()) ){
+					this.operator = this.endCursor.peek();
+					this.getFragment();
+					this.operate();
+				}
+				this.endCursor.advance();
+			}
+		}catch{
+			this.fragment = this.getContent();
+			this.operate();
+		}
 		return this.rootNode;
 	}
+	setRoot(fatherTag?:ExpressionTreeNode){ 
+		if(this.detectBracket()){
+			return this.getBracket();
+		}
+		this.operator = this.endCursor.tryStopAt(this.operators);
+		this.createTagNode(this.startCursor.getContentEndOf(this.endCursor),fatherTag);
+		this.resetCursor(this.endCursor.offset);
+	}
+
+	getFragment(){
+		this.endCursor.advance();
+		this.startCursor = this.endCursor.copy();
+		switch(this.operator){
+			case $PERIOD:{
+					if(this.startCursor.peek()!==$LBRACKET){
+						this.endCursor.tryStopAt(this.operatorsWithoutBracket);
+						break;			
+					}else{
+						this.endCursor.tryStopAt([$RBRACKET]);this.endCursor.advance();break;
+					}
+				}
+			case $LBRACE:
+				this.endCursor.tryStopAt([$RBRACKET]);break;
+			default:
+				this.endCursor.tryStopAt(this.operators);break;
+		}
+		this.fragment = this.startCursor.getContentEndOf(this.endCursor);
+	}
+	
+
+
 	//匹配规则：nameSelf ->sorDescription -> fatherCom+Prefix -> fatherDir+Prefix -> namePrefix -> htmlTag
-	getTagNode(tagName:string,fatherTag?:ExpressionTreeNode):ExpressionTreeNode{
+	createTagNode(tagName:string,fatherTag?:ExpressionTreeNode):void{
 		let tagsource =  host.HTMLComoponentSource;
 		let tagNode:Component|undefined;
 		if(this.comName){
@@ -113,7 +165,7 @@ export class ExpresssionLexer{
 		if(!tagNode){
 			tagNode = new TagComponent(tagName);
 		}
-		return new ExpressionTreeNode(tagNode,ExpressionNodeType.TAG).setInsertText(insertText);
+		this.rootNode = new ExpressionTreeNode(tagNode,ExpressionNodeType.TAG).setInsertText(insertText);
 	}
 	//分为两种：
 	//.[directive.value] 指令及其属性 指令/属性全名->属性简写->属性prefix/
@@ -125,17 +177,18 @@ export class ExpresssionLexer{
 		}
 		//检测是否满足[...]样式：
 		if(attrName.match(/\[(\S*)\]/)){
-			this.getBracket(attrName,true);
+			this.getBracket(true);
 			return;
 		}
 		let result = this.getDirective(attrName);
 		return result = result?result:this.getATTR(this.rootNode,attrName);
 	}
-	getBracket(attrName:string,directiveFlag:boolean){
-		attrName = attrName.replace(/\[|\]/g,"");
-		let names:string[] = attrName.split(',');
+	//单括号应该是仅匹配属性(CSS语法)
+	getBracket(directiveFlag?:boolean):void{
+		let fragment = this.fragment.replace(/^\[|\]$/g,"");
+		let singleExps = fragment.split(',');
 		let nodes:ExpressionTreeNode[] = [];
-		names.forEach(e=>{
+		singleExps.forEach(e=>{
 			let fragments = e.split('.');
 			let directiveOrATTRNode:ExpressionTreeNode|undefined;
 			if(directiveFlag){
@@ -160,13 +213,14 @@ export class ExpresssionLexer{
 			}
 		});
 		this.rootNode.addAttrs(nodes);
+
 	}
-	getStar(time:string){
-		let timenum:number = parseInt(time);
+	getStar(){
+		let timenum:number = parseInt(this.fragment);
 		this.rootNode.times = timenum;
 	}
-	getHash(id:string){
-		this.rootNode.id = id;
+	getHash(){
+		this.rootNode.id = this.fragment;
 	}
 	//功能函数
 
@@ -203,9 +257,13 @@ export class ExpresssionLexer{
 			this.ErrorFlag =true;
 			throw Error(`get attribute from ${node.infoNode.getName()}`);
 		}else if(nameOrPrefix.length>1){
-			attrNode = this.getAttrFromValue(infoNode,nameOrPrefix);
-			if(!attrNode){
-				attrNode = this.getAttrFromName(infoNode,nameOrPrefix);
+			if(nameOrPrefix.startsWith('\!')){
+				attrNode = this.getAttrFromName(infoNode,nameOrPrefix.substring(1),false);
+			}else{
+				attrNode = this.getAttrFromValue(infoNode,nameOrPrefix);
+				if(!attrNode){
+					attrNode = this.getAttrFromName(infoNode,nameOrPrefix);
+				}
 			}
 		}
 		if(!attrNode){
@@ -233,53 +291,66 @@ export class ExpresssionLexer{
 		let insertText = attrNode?attrNode.getCompletionItem().insertText.replace(/\$\{(\s|\S)*\}/g,`'${valueName}'`):"";
 		return attrNode?new ExpressionTreeNode(attrNode,ExpressionNodeType.Attribute).setInsertText(insertText):undefined;
 	}
-	getAttrFromName(infoNode:Component , nameOrPrefix:string):ExpressionTreeNode|undefined{
+	//name ->prefix ->suffix
+	getAttrFromName(infoNode:Component , nameOrPrefix:string,booleanValue:boolean=true):ExpressionTreeNode|undefined{
 		let attrs = <{[rank:number]:Attribute[]}>{};
+		let insertText = undefined;
 		attrs[1]=[];attrs[2]=[];attrs[3]=[];
 		infoNode.getSubNodes().forEach(e=>{
 			let attrName = e.getName().toLowerCase();
 			if(attrName==nameOrPrefix){
 				attrs[1].push(e);
-			}
-			else if(attrName.startsWith(nameOrPrefix)){
+			}else if(attrName.startsWith(nameOrPrefix)){
 				attrs[2].push(e);
 			}else if(attrName.endsWith(nameOrPrefix)){
 				attrs[3].push(e);
 			}
 		});
 		let attrNode = attrs[1].length===0?(attrs[2].length===0?(attrs[3].length===0?undefined:attrs[3][0]):attrs[2][0]):attrs[1][0];
-		return attrNode?new ExpressionTreeNode(attrNode,ExpressionNodeType.Attribute).setInsertText(attrNode.getCompletionItem().insertText):undefined;
+		if(attrNode&&attrNode.getValueType()=='boolean'){
+			insertText = attrNode.getCompletionItem().insertText.replace('${1|true,false|}',""+booleanValue);
+		}
+		return attrNode?new ExpressionTreeNode(attrNode,ExpressionNodeType.Attribute).setInsertText(insertText?insertText:attrNode.getCompletionItem().insertText):undefined;
 	}
-	operate(operater:number,fragment:string){
-		switch(operater){
+	operate(){
+		switch(this.operator){
 			case $PERIOD:{
-				this.rootNode.addAttr(this.getPeriod(fragment));break;
+				this.rootNode.addAttr(this.getPeriod(this.fragment));break;
 			}
 			case $STAR:{
-				this.getStar(fragment);break;
+				this.getStar();break;
 			}
 			case $HASH:{
-				this.getHash(fragment);break;
+				this.getHash();break;
 			}
 			case $LBRACKET:{
-				this.getBracket(fragment,false);break;
+				this.getBracket(false);break;
 			}
 		}
 	}
+	//渲染函数入口，通过对顶级节点数组渲染后拼接成为字符串，之后返回
 	interperate(nodes:ExpressionTreeNode[]):string{
 		let _insertText = "$0";
-		nodes.forEach((e,index)=>{
-			let endFlag = index === nodes.length-1;
-			let retract = '';
-			while(index>0){
-				retract+='\t';
-				index--;
-			}
-			_insertText = _insertText.replace(/\$0/g,this._interperate(e,retract,endFlag));
+		let result = nodes.map(e=>{
+			return this._interperate(e,"");
 		});
-		return _insertText;
+		return result.join('\n');
 	}
-	_interperate(node:ExpressionTreeNode,retract:string,endFlag:boolean):string{
+	//进行标签渲染
+	_interperate(node:ExpressionTreeNode,retact:string){
+		if(node.subTags.length===0){
+			return this._interperateAttr(node,retact,true);
+		}else{
+			let subInserText:string[] = node.subTags.map(tag=>{
+				return this._interperate(tag,retact+'\t');
+			});
+			let tagText = subInserText.join('\n');
+			return this._interperateAttr(node,retact,false).replace('$0',tagText);
+		}
+	}
+
+	//进行属性渲染
+	_interperateAttr(node:ExpressionTreeNode,retract:string,endFlag:boolean):string{
 		let _insertText:string = node.insertText;
 		let startStr = _insertText.slice(0,_insertText.indexOf('$0')-1).replace(/\n|\r|\n\r/g,' ');
 		let endStr = _insertText.slice(_insertText.indexOf('$0')-1).replace(/\n|\r|\n\r/g,' ');
@@ -349,4 +420,80 @@ export class ExpresssionLexer{
 		}
 		return false;
 	}
+	resetCursor(startoffset:number,endOffset?:number){
+		if(endOffset){
+			this.endCursor.offset = endOffset;
+		}
+		this.startCursor.offset = startoffset;
+	}
+	detectBracket():boolean{
+		let tempPair = this.brackets[this.endCursor.peek()];
+		if(tempPair){
+			this.endCursor.tryStopByPairs(this.endCursor.peek(),tempPair);
+			this.fragment = this.startCursor.getContentEndOf(this.endCursor);
+			return true;
+		}
+		return false;
+	}
+	init(){
+		this.ErrorFlag = false;
+		this.fragment = '';
+		this.comName=undefined;
+	}
+	initCursor(text:string){
+		this.startCursor = new Cursor(text,0,text.length);
+		this.endCursor = new Cursor(text,0,text.length);
+	}
+	//将返回当前的content,并且将start与endCursor置位当前endCursor的后一位
+	getContent(){
+		let content = this.startCursor.getContentEndOf(this.endCursor);
+		let end =this.endCursor.offset;
+		this.resetCursor(end,end);
+		return content;
+	}
 }
+/**
+ * 	divider(expression:string,fatherTag?:ExpressionTreeNode):ExpressionTreeNode|undefined{
+		this.cursor = new Cursor(expression,0,expression.length);
+		this.rootNode = undefined;this.ErrorFlag = false;
+		if(this.ErrorFlag){
+			return;
+		}
+		let start=0;
+		let comFlag = false;
+		let operater:number = -1,peek =-1;
+		for(let i =0;i<expression.length;i++){
+			peek =expression.charCodeAt(i);
+			if(this.operaters.includes(peek)){
+				const fragment =  expression.substring(start,i);
+				if(!comFlag){
+					//TODO:getTagNode function
+					this.rootNode = this.getTagNode(fragment,fatherTag);
+					operater = expression.charCodeAt(i);
+					if(operater ===$LBRACKET){
+						start = i;
+						i = expression.indexOf(']')+1;
+					}else{
+						start = i+1;
+					}
+					comFlag = true;
+					continue;
+				}
+				if(fragment.length>0){
+					this.operate(operater,fragment);
+					operater = expression.charCodeAt(i);
+				}
+				if(expression.charCodeAt(i) ===$LBRACKET){
+					start = i;
+					i = expression.indexOf(']',start)===-1?expression.length:expression.indexOf(']',start);
+				}else{
+					start = i+1;
+				}
+				
+			}
+		}
+		this.operate(operater,expression.substring(start,expression.length));
+		this.rootNode = this.rootNode?this.rootNode:this.getTagNode(expression);
+		return this.rootNode;
+	}
+ */

@@ -58,7 +58,7 @@ export enum TokenType{
 	ATTR_VALE_END,//
 	COMMENT,//
 	DOCUMENT,//
-	EOF
+	EOF//
 	
 }
 export enum NodeStatus{

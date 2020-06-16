@@ -15,7 +15,7 @@ export class ExpressionTreeNode{
 		public type:ExpressionNodeType,
 		public insertText?:string,
 		public attrs:ExpressionTreeNode[][]=[],
-		public subTag:ExpressionTreeNode[]=[],
+		public subTags:ExpressionTreeNode[]=[],
 		public times:number=1,
 		public id?:string|undefined
 	){}
@@ -27,8 +27,8 @@ export class ExpressionTreeNode{
 		this.times = this.times>attrs.length?this.times:attrs.length;
 		this.attrs.push(attrs);
 	}
-	addSubTag(subTag:ExpressionTreeNode){
-		this.subTag.push(subTag);
+	addSubTag(subTags:ExpressionTreeNode[]){
+		this.subTags.push(...subTags);
 	}
 	setInsertText(insertText:string):ExpressionTreeNode{
 		this.insertText = insertText;
@@ -56,3 +56,17 @@ export enum ExpressionNodeType{
 	TAG,
 	Attribute
 }
+export const testCode = `<div class="card-header">可拖拽项</div>
+<div class="card-block">
+  <ul class="list-group">
+	<li
+	  dDraggable
+	  *ngFor="let item of list1"
+	  [dragScope]="'default-css'"
+	  [dragData]="{ item: item, parent: list1 }"
+	  class="list-group-item over-flow-ellipsis"
+	>
+	  {{ item.name }}
+	</li>
+  </ul>
+</div>`;

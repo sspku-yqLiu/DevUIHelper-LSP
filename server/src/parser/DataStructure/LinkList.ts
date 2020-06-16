@@ -61,12 +61,11 @@ export interface LinkList<T>{
 	 * @param num 
 	 */
 	get(num:number):Node|undefined;
+
 	/**
 	 * 转化为数组
 	 */
 	toArray():T[];
-
-
 }
 export class HeadNode implements Node{
 	data:HeadNodeData;
