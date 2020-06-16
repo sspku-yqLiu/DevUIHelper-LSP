@@ -385,6 +385,9 @@ export class Cursor{
 	getEOF(){
 		return this.EOF;
 	}
+	getText(){
+		return this.text;
+	}
 
 
 	/**
@@ -437,8 +440,8 @@ export class Cursor{
 	//返回的是是否有截断代码，如果是0的话就是没有截断代码
 	//注意传入的点必须是left,否则会陷入死循环。
 	tryStopByPairs(left:number,right:number,breakOperators:number[] = []):number{
-		let stackLength = 1;
-		while(!breakOperators.includes(this.peekvalue)){
+		let stackLength = 0;
+		while(!breakOperators.includes(this.peekvalue)||this.offset<this.EOF){
 			if(this.peekvalue===left){
 				stackLength++;
 			}else if(this.peekvalue === right){
