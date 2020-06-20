@@ -1,15 +1,16 @@
 import { ExpressionTreeNode, ExpressionNodeType } from './type';
-import { $$, $PERIOD, $STAR, $LBRACKET, $LBRACE, $HASH, $LPAREN, $RBRACE, $RBRACKET, $RPAREN, $DQ, $GT } from '../chars';
+import { $$, $PERIOD, $STAR, $LBRACKET, $LBRACE, $HASH, $LPAREN, $RBRACE, $RBRACKET, $RPAREN, $DQ, $GT, $COMMA } from '../chars';
 import { RootNode, Component, TagComponent, Directive, Attribute, HTMLInfoNode } from '../WareHouse/Storage';
 import { host } from '../../server';
 import { SupportComponentName } from '../type';
 import { getcomNameFromPrefix, getTagPrefixFromComName } from '../WareHouse/util';
 import { Cursor } from '../lexer';
-
+ const OPERATORS = [$STAR,$PERIOD,$LBRACKET,$HASH,$LBRACE,$LPAREN];
+ const OperatorsWithoutBracket = [$STAR,$PERIOD,$HASH,$LBRACE];
+ const BracketsOperator = [$LBRACE,$LBRACKET,$LPAREN];
 export class ExpresssionLexer{
-	private operators = [$STAR,$PERIOD,$LBRACKET,$HASH,$LBRACE,$LPAREN];
-	private operatorsWithoutBracket = [$STAR,$PERIOD,$HASH,$LBRACE];
-	private brackets = <{[left:number]:number}>{$LBRACKET:$RBRACKET,$LPAREN:$RPAREN,$LBRACE:$RBRACE};
+
+	private brackets = new Map<number,number>() ;
 	private rootNode:ExpressionTreeNode|undefined;
 	private fragment = '';
 	private ErrorFlag = false;
@@ -19,6 +20,9 @@ export class ExpresssionLexer{
 	private operator:number = -1;
 	constructor(){
 		this.rootNode=undefined;
+		this.brackets.set($LBRACKET,$RBRACKET);
+		this.brackets.set($LPAREN,$RPAREN);
+		this.brackets.set($LBRACE,$RBRACE);
 	}
 	parse(expression:string):string|undefined{
 		this.init();
@@ -31,31 +35,25 @@ export class ExpresssionLexer{
 		if(!expression.match(/\.|\[|\#|\*|\>|\{\!/)){
 			return undefined;
 		}
-		let startIndex = expression.indexOf('.')+1;
-		const prefixName = expression.substring(0,startIndex-1);
-		if(this.checkMails(prefixName)){
-			return undefined;
-		}	
-		this.comName = getcomNameFromPrefix(prefixName);
-		const RealExpression = this.comName?expression.substring(startIndex):expression;
+		this.initCursor(expression);
+		expression = this.getComName(expression);
+		// const RealExpression = this.comName?expression.substring(startIndex):expression;
 		//笛卡尔积模式
-		if(RealExpression.indexOf('**')!==-1){
-
-		}
+		if(expression.indexOf('**')!==-1){}
 
 		//普通表达式模式TODO:分割器
-		let subExp:string[] = this._slicer(RealExpression) ;
+		let subExp:string[] = this._slicer(expression) ;
 		let tempRoots:ExpressionTreeNode[] = [];
 		let nodesQueue:ExpressionTreeNode[][] = [];
 		subExp.forEach((e,index)=>{
 			if(e.match(/^\[(\s|\S)*\]$/)){
-				e= e.replace(/^\[|\]$/,"");
-				let slices = e.split(',');
+				e= e.replace(/^\[|\]$/g,"");
+				let slices = this.getSlicesWithBracket(e,$COMMA,this.brackets);
 				tempRoots = slices.map(e=>{
-					return this.divider(e);
+					return e.indexOf('>')===-1?this.divider(e):this.slicer(e)[0];
 				});
 			}else{
-				 tempRoots =  index>0?[this.divider(e,nodesQueue[index-1][0])]:[this.divider(e)];
+				tempRoots =  index>0?[this.divider(e,nodesQueue[index-1][0])]:[this.divider(e)];
 			}
 			if(tempRoots&&index>0){
 				nodesQueue[index-1].forEach(root=>{
@@ -75,12 +73,11 @@ export class ExpresssionLexer{
 				let end = this.endCursor.tryStopAt([$GT,$LBRACKET]);
 				if(end===$GT){
 					result.push(this.getContent());
-					this.endCursor.advance();
+					this.MoveCursorOverTempFragment();
 					continue;
 				}else{
 					this.endCursor.tryStopByPairs($LBRACKET,$RBRACKET);
 				}
-
 			}
 		} catch (error) {
 			result.push(this.getContent());
@@ -91,9 +88,10 @@ export class ExpresssionLexer{
 	//进行tag级别的划分。
 	divider(expression:string,fatherTag?:ExpressionTreeNode):ExpressionTreeNode|undefined{
 		try{
+			expression = this.getComName(expression);
 			//初始化tag
 			this.initDivider(expression);
-			this.operator = this.endCursor.tryStopAt(this.operators);
+			this.endCursor.tryStopAt(OPERATORS);
 			let name = this.getContent();
 			let tempComName = getcomNameFromPrefix(name);
 			if(tempComName){
@@ -104,42 +102,55 @@ export class ExpresssionLexer{
 			}
 			//加入属性
 			while(this.endCursor.offset<expression.length){
-				if( this.operators.includes(this.endCursor.peek()) ){
+				if( OPERATORS.includes(this.endCursor.peek()) ){
 					this.operator = this.endCursor.peek();
 					this.getFragment();
 					this.operate();
+				}else{
+					this.endCursor.advance();
 				}
-				this.endCursor.advance();
 			}
 		}catch{
 			this.fragment = this.getContent();
-			if(this.rootNode){
+			if(this.rootNode&&!BracketsOperator.includes(this.operator) ){
 				this.operate();
-			}else{
+			}else if(!this.rootNode){
 				this.createTagNode(this.fragment);
 			}
 		}
 		return this.rootNode;
 	}
-
+	getComName(expression:string):string{
+		//检测组件库标记是否存在
+		let startIndex = expression.indexOf('.')+1;
+		const prefixName = expression.substring(0,startIndex-1);
+		if(this.checkMails(prefixName)){
+			return undefined;
+		}
+		let tempCom = getcomNameFromPrefix(prefixName);
+		this.comName = tempCom?tempCom:this.comName;
+		return tempCom? expression.substring(startIndex):expression;
+	}
 	getFragment(){
 		this.endCursor.advance();
 		this.startCursor = this.endCursor.copy();
 		switch(this.operator){
 			case $PERIOD:{
 					if(this.startCursor.peek()!==$LBRACKET){
-						this.endCursor.tryStopAt(this.operatorsWithoutBracket);
+						this.endCursor.tryStopAt(OperatorsWithoutBracket);
 						break;			
 					}else{
 						this.endCursor.tryStopAt([$RBRACKET]);this.endCursor.advance();break;
 					}
 				}
-			case $LBRACE:
+			case $LBRACKET:
 				this.endCursor.tryStopAt([$RBRACKET]);break;
+			case $LBRACE:
+				this.endCursor.tryStopAt([$RBRACE]);break;
 			default:
-				this.endCursor.tryStopAt(this.operators);break;
+				this.endCursor.tryStopAt(OPERATORS);break;
 		}
-		this.fragment = this.startCursor.getContentEndOf(this.endCursor);
+		this.fragment = this.getContent();
 	}
 	
 
@@ -188,11 +199,11 @@ export class ExpresssionLexer{
 			return;
 		}
 		let result = this.getDirective(attrName);
-		return result = result?result:this.getATTR(this.rootNode,attrName);
+		return result = result?result:this.getATTR(this.rootNode,attrName,false);
 	}
 	//单括号应该是仅匹配属性(CSS语法)
 	getBracket(directiveFlag?:boolean):void{
-		let fragment = this.fragment.replace(/^\[|\]$/g,"");
+		let fragment =this.fragment.replace(/^\[|\]$/g,"");
 		let singleExps = fragment.split(',');
 		let nodes:ExpressionTreeNode[] = [];
 		singleExps.forEach(e=>{
@@ -200,15 +211,17 @@ export class ExpresssionLexer{
 			let directiveOrATTRNode:ExpressionTreeNode|undefined;
 			if(directiveFlag){
 				directiveOrATTRNode = this.getDirective(fragments[0]);
+			}else{
+				directiveOrATTRNode = this.getATTR(this.rootNode,fragments[0],true);
 			}
-			if(!directiveOrATTRNode||!directiveFlag){
-				directiveOrATTRNode = this.getATTR(this.rootNode,fragments[0]);
+			if(!directiveOrATTRNode){
+				directiveOrATTRNode = this.getATTR(this.rootNode,fragments[0],false);
 			}
 			if(directiveOrATTRNode&&fragments.length>1){
 				fragments.forEach((e,index)=>{
 					if(index>0){
 						if(directiveOrATTRNode.type === ExpressionNodeType.DIRECTIVE)
-							directiveOrATTRNode.addAttr(this.getATTR(directiveOrATTRNode,fragments[index]));
+							directiveOrATTRNode.addAttr(this.getATTR(directiveOrATTRNode,fragments[index],false));
 						else if(directiveOrATTRNode.type === ExpressionNodeType.Attribute){
 							this.setATTRValue(directiveOrATTRNode,fragments[index]);
 						}
@@ -256,7 +269,7 @@ export class ExpresssionLexer{
 
 	//优先级 sortDescription -> prefix -> suffix -> name
 	//如果写的正好满足name,则name优先
-	getATTR(node:ExpressionTreeNode,nameOrPrefix:string):ExpressionTreeNode|undefined{
+	getATTR(node:ExpressionTreeNode,nameOrPrefix:string,createATTRFlag:boolean):ExpressionTreeNode|undefined{
 		let {infoNode} = node;
 		let attrNode:ExpressionTreeNode|undefined=undefined;
 
@@ -273,18 +286,22 @@ export class ExpresssionLexer{
 				}
 			}
 		}
-		if(!attrNode){
-			attrNode = new ExpressionTreeNode(new Attribute(nameOrPrefix),ExpressionNodeType.Attribute,`class="${nameOrPrefix}"`);
+		if(!attrNode){	
+			attrNode = createATTRFlag?new ExpressionTreeNode(new Attribute(nameOrPrefix),ExpressionNodeType.Attribute,`${nameOrPrefix}="\${1}"`):
+			 new ExpressionTreeNode(new Attribute(nameOrPrefix),ExpressionNodeType.Attribute,`class="${nameOrPrefix}"`);
 		}
 		return attrNode;
 	}
-	setATTRValue(node:ExpressionTreeNode,value:string):ExpressionTreeNode{
+	setATTRValue(node:ExpressionTreeNode,value:string){
 		if(node.infoNode instanceof Attribute){
-			let result = new ExpressionTreeNode(node.infoNode,ExpressionNodeType.Attribute);
-			let _insertText = node.infoNode.getCompletionItem().insertText.replace('$1',value);
-			return result.setInsertText(_insertText);
+			node.infoNode.getValueSet().forEach(e=>{
+				if(e.startsWith(value)){
+					value = `"${e}"`;
+				}
+			});
 		}
-
+		node.insertText= node.insertText.replace(/\${1(\S)*}/,value);
+		return ;
 	}
 	getAttrFromValue(infoNode:Component,nameOrPrefix:string):ExpressionTreeNode|undefined{
 		let prefixToValue = infoNode.getPrefixToValue();
@@ -319,6 +336,15 @@ export class ExpresssionLexer{
 		}
 		return attrNode?new ExpressionTreeNode(attrNode,ExpressionNodeType.Attribute).setInsertText(insertText?insertText:attrNode.getCompletionItem().insertText):undefined;
 	}
+	getBrace(){
+		let slices = this.fragment.split(',');
+		if(slices.length===1&&this.fragment.match(/\(.*\)/)){
+			this.rootNode.setIncrementalContent(this.fragment);
+		}else{
+			this.rootNode.addContent(slices);
+		}
+
+	}
 	operate(){
 		switch(this.operator){
 			case $PERIOD:{
@@ -332,6 +358,9 @@ export class ExpresssionLexer{
 			}
 			case $LBRACKET:{
 				this.getBracket(false);break;
+			}
+			case $LBRACE:{
+				this.getBrace();break;
 			}
 		}
 	}
@@ -371,7 +400,7 @@ export class ExpresssionLexer{
 		return false;
 	}
 	checkMails(s:string){
-		let Mails= ['qq','163','foxmail','outlook','126',''];
+		let Mails= ['qq','163','foxmail','outlook','126'];
 		if(Mails.includes(s)){
 			return true;
 		}
@@ -409,9 +438,29 @@ export class ExpresssionLexer{
 	//将返回当前的content,并且将start与endCursor置位当前endCursor的后一位
 	getContent(){
 		let content = this.startCursor.getContentEndOf(this.endCursor);
+		return content;
+	}
+	MoveCursorOverTempFragment(){
 		let end =this.endCursor.offset+1;
 		this.resetCursor(end,end);
-		return content;
+	}
+	getSlicesWithBracket(exp:string,operator:number,pairs:Map<number,number>):string[]{
+		let result:string[] = [];
+		this.startCursor  = new Cursor(exp);
+		this.endCursor = new Cursor(exp);
+		try{
+			while(true){
+				this.endCursor.tryStopAt([operator,...pairs.keys()]);
+				switch(this.endCursor.peek()){
+					case operator :result.push(this.getContent());this.MoveCursorOverTempFragment();break;
+					default: this.endCursor.tryStopByPairs(this.endCursor.peek(),pairs.get(this.endCursor.peek()));
+				}
+			}
+		}catch{
+			result.push(this.startCursor.getContentEndOf(this.endCursor));
+		}
+		return result;
+
 	}
 
 	/**
@@ -448,13 +497,14 @@ export class ExpresssionLexer{
 			endStr ='>\n$0\n'+retract+endStr.slice(3);
 		}
 		let attrString:string[] = [];
+		let idString =undefined;
 		if(node.id){
-			attrString.push(`id="${node.id}"`);
+			idString= `id="${node.id}"`;
 		}
 		let result:string[] = [];
 		for (let i = 0; i < node.times; i++) {
-			const attrs = node.getAttrOfIndex(i);
 			attrString = [];
+			const attrs = node.getAttrOfIndex(i);
 			attrs.forEach(e=>{
 				attrString.push(e.insertText);
 				if(e.type === ExpressionNodeType.DIRECTIVE){
@@ -463,8 +513,14 @@ export class ExpresssionLexer{
 						attrString.push(dirAttrs[0].insertText);
 					});
 				}
-	
+				
 			});
+			if(idString){
+				attrString.unshift(idString);
+			}
+			if(node.getContent(i))
+				result.push(retract+startStr+' '+attrString.join(' ')+endStr.replace('\n$0',node.getContent(i)+'\n$0'));
+			else 
 			result.push(retract+startStr+' '+attrString.join(' ')+endStr);
 		}
 		return result.join('\n');

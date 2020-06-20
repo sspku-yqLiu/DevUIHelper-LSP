@@ -347,8 +347,8 @@ export class Cursor{
 	private peekvalue = -1;
 	constructor(
 		private text:string,
-		public offset:number,
-		private EOF:number
+		public offset:number=0,
+		private EOF:number=text.length
 	){
 		this.peekvalue = text.charCodeAt(offset);
 	}

@@ -10,13 +10,16 @@ import { HTMLInfoNode } from '../WareHouse/Storage';
  * @FilePath: \DevUIHelper-LSP\server\src\parser\Expression\type.ts
  */ 
 export class ExpressionTreeNode{
+	private base = 0;
+	private incrementalFlag = false;
+	public content:string[] = [];
+	public times:number=1;
 	constructor(
 		public infoNode:HTMLInfoNode,
 		public type:ExpressionNodeType,
 		public insertText?:string,
 		public attrs:ExpressionTreeNode[][]=[],
 		public subTags:ExpressionTreeNode[]=[],
-		public times:number=1,
 		public id?:string|undefined
 	){}
 	addAttr(attr:ExpressionTreeNode|undefined){
@@ -44,6 +47,27 @@ export class ExpressionTreeNode{
 			}
 		});
 		return result;
+	}
+	addContent(content:string[]){
+		this.times = this.times>content.length?this.times:content.length;
+		this.content = content;
+	}
+	getContent(index:number){
+		if(!this.incrementalFlag){
+			if(index>=this.content.length){
+				return this.content[this.content.length-1];
+			}
+			return this.content[index];
+		}else{
+			return this.content[0].replace('**Inc%%',`${index+this.base}`);
+		}
+	}
+	setIncrementalContent(content:string){
+		this.incrementalFlag =true;
+		content.match(/\(.*?\)/);
+		var result = content.match(/\(([^)]*)\)/);
+		this.base = parseInt(result[1]);
+		this.content[0] = content.replace(/\(.*?\)/,'**Inc%%');
 	}
 
 }
