@@ -18,6 +18,7 @@ export class ExpresssionLexer{
 	private startCursor:Cursor = new Cursor("",-1,-1);
 	private endCursor:Cursor = new Cursor("",-1,-1);
 	private operator:number = -1;
+	private HTMLTags = ['xmp', 'a', 'abbr', 'acronym', 'address', 'applet', 'area', 'article', 'aside', 'audio', 'b', 'base', 'basefont', 'bdi', 'bdo', 'big', 'blockquote', 'body', 'br', 'button', 'canvas', 'caption', 'center', 'cite', 'code', 'col', 'colgroup', 'command', 'datalist', 'dd', 'del', 'details', 'dir', 'div', 'dfn', 'dialog', 'dl', 'dt', 'em', 'embed', 'fieldset', 'figcaption', 'figure', 'font', 'footer', 'form', 'frame', 'frameset', 'h1', 'head', 'header', 'hr', 'html', 'i', 'iframe', 'img', 'input', 'ins', 'isindex', 'kbd', 'keygen', 'label', 'legend', 'li', 'link', 'map', 'mark', 'menu', 'meta', 'meter', 'nav', 'noframes', 'noscript', 'object', 'ol', 'optgroup', 'option', 'output', 'p', 'param', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'script', 'section', 'select', 'small', 'source', 'span', 'strike', 'strong', 'style', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot', 'th', 'thead', 'time', 'title', 'tr', 'track', 'tt', 'u', 'ul', 'var', 'video', 'wbr', 'xmp'];
 	constructor(){
 		this.rootNode=undefined;
 		this.brackets.set($LBRACKET,$RBRACKET);
@@ -157,9 +158,13 @@ export class ExpresssionLexer{
 
 	//匹配规则：nameSelf ->sorDescription -> fatherCom+Prefix -> fatherDir+Prefix -> namePrefix -> htmlTag
 	createTagNode(tagName:string,fatherTag?:ExpressionTreeNode):void{
+
 		let tagsource =  host.HTMLComoponentSource;
 		let tagNode:Component|undefined;
-		if(this.comName){
+		if(this.HTMLTags.includes(tagName) ){
+			tagNode = new TagComponent(tagName);
+		}
+		if(this.comName&&!tagNode){
 			 tagNode = tagsource.prefixCut[this.comName][tagName];
 			if(!tagNode && fatherTag){
 				let tagNameWithFater = fatherTag.infoNode.getName+'-'+tagName;
@@ -179,10 +184,11 @@ export class ExpresssionLexer{
 				tagNode =nodes.find(e=>{return e.prefixName.startsWith(tagName);});
 			}
 		}
-		let insertText = tagNode?'<'+tagNode.getCompletionItem().insertText:`<${tagName}>$0</${tagName}>`;
 		if(!tagNode){
 			tagNode = new TagComponent(tagName);
 		}
+		let insertText = '<'+tagNode.getCompletionItem().insertText;
+
 		this.rootNode = new ExpressionTreeNode(tagNode,ExpressionNodeType.TAG).setInsertText(insertText);
 	}
 	//分为两种：

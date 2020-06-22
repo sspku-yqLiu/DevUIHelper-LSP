@@ -284,6 +284,9 @@ export class TagComponent extends Component{
         super(name, comName, description, tmw, cnName,prefixName);
         this.completionItemKind = CompletionItemKind.Class;
         this.attritubes = [];
+        let temp = CompletionItem.create(this.name);
+        temp.insertText = `${name}>$0</${name}>`;
+        this.completionItem = temp;
     }
       
     buildFullCompletionItem(): CompletionItem {
