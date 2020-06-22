@@ -26,7 +26,7 @@ export class ExpressionAdm{
 	}
 	getExpression(offset:number,text:string):ExpressionResult{
 		let start = offset,end = offset;
-		while(!(WhiteCharsAndLTAndSLASH.includes(text.charCodeAt(start)))&&start>0){
+		while(!(WhiteCharsAndLTAndSLASH.includes(text.charCodeAt(start)))&&start>=0){
 			start--;
 		}
 		// if(text.charCodeAt(start)===$AT){
