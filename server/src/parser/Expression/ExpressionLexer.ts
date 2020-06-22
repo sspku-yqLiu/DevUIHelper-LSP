@@ -469,11 +469,24 @@ export class ExpresssionLexer{
 
 	//渲染函数入口，通过对顶级节点数组渲染后拼接成为字符串，之后返回
 	interperate(nodes:ExpressionTreeNode[]):string{
-		let _insertText = "$0";
 		let result = nodes.map(e=>{
 			return this._interperate(e,"");
 		});
-		return result.join('\n');
+		let _insertText = result.join('\n');
+		let i =2;
+		//处理snippet级
+		while(_insertText.match(/\{1\|/)){
+			_insertText = _insertText.replace(/\{1\|/,`{${i++}|`);
+		}
+		//处理普通属性级
+		while(_insertText.match(/\{1\}/)){
+			_insertText = _insertText.replace(/\{1\}/,`{${i++}}`);
+		}
+		//处理$0
+		while(_insertText.match(/\$0/)){
+			_insertText = _insertText.replace(/\$0/,`$${i++}`);
+		}
+		return _insertText;
 	}
 	//进行标签渲染
 	_interperate(node:ExpressionTreeNode,retact:string){
@@ -515,13 +528,24 @@ export class ExpresssionLexer{
 				}
 				
 			});
-			if(idString){
+			if(attrString){
 				attrString.unshift(idString);
 			}
-			if(node.getContent(i))
-				result.push(retract+startStr+' '+attrString.join(' ')+endStr.replace('\n$0',node.getContent(i)+'\n$0'));
+			if(attrString.length>0){
+				startStr+='';
+			}
+			let content = node.getContent(i);
+			let _endStr = endStr;
+			if(content){
+				if(endStr.indexOf('\n$0')!==-1){
+					_endStr = endStr.replace('\n$0',content+'\n$0');
+				}else{
+					_endStr = endStr.replace('$0',content+'$0');
+				}
+				result.push(retract+startStr+attrString.join(' ')+_endStr);
+			}
 			else 
-			result.push(retract+startStr+' '+attrString.join(' ')+endStr);
+			 result.push(retract+startStr+attrString.join(' ')+endStr);
 		}
 		return result.join('\n');
 	}
