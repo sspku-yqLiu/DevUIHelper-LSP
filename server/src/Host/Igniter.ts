@@ -17,6 +17,7 @@ export class Igniter {
 	private FrameName: SupportFrameName = SupportFrameName.Null;
 	private componentList:SupportComponentName[] = [];
 	private componentToUrl = new Map<SupportComponentName, string>();
+	private rootPaths:string[] = [];
 	constructor() {
 	}
 	init() {
@@ -45,17 +46,33 @@ export class Igniter {
 		const _index = path.indexOf('\\src');
 		let _flag = true;
 		let _srcpath = path + '\\src';
-		let _nodeModulePath = path + '\\node_modules';
+		let _nodeModulePath = path ;
 		try {
 			this.checkProjectFrameworkAndComponentName(_nodeModulePath);
+			logger.info(`Scanner Done!,
+RootPaths:${this.rootPaths}
+Parsing Document...`);
 			if (this.FrameName !== SupportFrameName.Null && this.componentList !== [])
-				this.parseAllDocument(_srcpath);
+				this.rootPaths.forEach(root=>{
+					this.parseAllDocument(root+'src');
+				});
+			logger.info(`Parsing Done! Loading Source...`);
 			this.loadSourceTree();
+			logger.info('Igniter Done, Extension Start...');
+			logger.info(`Welcome To DevUIHelper`);
+			logger.info(`Thanks To Zoujie Linruihong Wangyihui and Zhangke`);
+			logger.info(`Thanks To PKU_Huawei class`);
+			logger.info(`This extension was built by yqLiu, enjoy it!`);
 		} catch{ }
 		return { frame: this.FrameName, components: this.componentList };
 	}
 	parseAllDocument(path: string): void {
-		let pa = fs.readdirSync(path);
+		let pa = [];
+		try{
+			 pa = fs.readdirSync(path);
+		}catch{
+			return;
+		}
 		pa.forEach(element => {
 			const info = fs.statSync(path + '\\' + element);
 			if (info.isDirectory()) {
@@ -69,11 +86,15 @@ export class Igniter {
 	checkProjectFrameworkAndComponentName(nodeModulesPath: string): void {
 		// let result:IgniterResult ={Frame:SupportFrameName.Null,Components:[]};
 		let pa = fs.readdirSync(nodeModulesPath);
+		if(!pa){
+			return;
+		}
 		pa.forEach(ele => {
 			let _path = nodeModulesPath + '/' + ele;
 			const info = fs.statSync(_path);
 			if (info.isDirectory()) {
 				if (_path.endsWith('ng-devui')) {
+					if(!this.componentList.includes(SupportComponentName.DevUI))
 					this.componentList.push(SupportComponentName.DevUI);
 					logger.info(`Find Devui At ${_path}`);
 					this.componentToUrl.set(SupportComponentName.DevUI, _path);
@@ -81,6 +102,10 @@ export class Igniter {
 				// this.checkProjectFrameworkAndComponentName(_path);
 				else if (_path.endsWith("/@angular")) {
 					this.FrameName = SupportFrameName.Angular;
+					let _tempPath  = _path.replace(/node_modules(\S)*/g,"");
+					if(!this.rootPaths.includes(_tempPath)){
+						this.rootPaths.push(_tempPath);
+					}
 					logger.info(`Find Angular At ${_path}`);
 				}else{
 					this.checkProjectFrameworkAndComponentName(_path);

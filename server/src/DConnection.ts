@@ -51,7 +51,7 @@ export class DConnection{
 	onInitialze(params:InitializeParams):InitializeResult{
 		let capabilities = params.capabilities;
 		if(params.rootPath){
-		logger.debug(params.rootPath);
+		logger.debug(`Find Project At ${params.rootPath}`);
 		this.igniteResult = this.host.igniter.ignite(params.rootPath);
 		this.host.setParseOption(this.igniteResult);
 		}

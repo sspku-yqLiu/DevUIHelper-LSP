@@ -9,7 +9,7 @@
 import { SearchParser } from '../parser/parser';
 import { SearchResult, SearchResultType } from '../parser/type';
 import { HTMLAST, HTMLTagAST, HTMLATTRAST } from '../parser/ast';
-import { HTMLInfoNode, Directive, TagComponent } from '../parser/WareHouse/Storage';
+import { HTMLInfoNode, Directive, TagComponent, Component } from '../parser/WareHouse/Storage';
 import { host } from '../server';
 import { convertStringToName } from '../util';
 
@@ -73,6 +73,22 @@ export class Hunter {
 			}
 			if (_parentInfoNode) {
 				let _currentInfoNode = _parentInfoNode?.getSubNode(_name);
+				if(!_currentInfoNode&&ast.parentPointer instanceof HTMLTagAST){
+					//如果tag里面不存在 就去指令里面找
+					let _directives:Component[] = [];
+					[...ast.parentPointer.attrList.directive.toArray(),...ast.parentPointer.attrList.attr.toArray()].forEach(e=>{
+						let _directive = host.HTMLDirectiveSource.getSchema()[e.getName().replace(/\[|\(|\)|\]/g,"")];
+						if(_directive){
+							_directives.push(_directive);
+						}
+					});
+					_directives.forEach(e=>{
+						if(!_currentInfoNode){
+							_currentInfoNode = e.getSubNode(_name);
+						}
+					});
+					//如果指令里面不存在，就去伪装成属性的指令里面找。
+				}
 				if (_currentInfoNode) {
 					map.set(ast, _currentInfoNode);
 				}
