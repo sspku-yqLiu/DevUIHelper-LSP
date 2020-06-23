@@ -82,6 +82,8 @@ export class Igniter {
 				else if (_path.endsWith("/@angular")) {
 					this.FrameName = SupportFrameName.Angular;
 					logger.info(`Find Angular At ${_path}`);
+				}else{
+					this.checkProjectFrameworkAndComponentName(_path);
 				}
 			}
 		});
