@@ -8,28 +8,18 @@
  */ 
 import {
 	createConnection,
-	TextDocuments,
-	Diagnostic,
-	DiagnosticSeverity,
 	ProposedFeatures,
 	InitializeParams,
-	DidChangeConfigurationNotification,
-	CompletionItem,
-	CompletionItemKind,
 	TextDocumentPositionParams,
-	TextDocumentChangeEvent,
-	Proposed,
 	TextDocumentSyncKind,
-	PublishDiagnosticsNotification,
 	InitializeResult,
 	DidChangeConfigurationParams,
 	HoverParams,
 	Logger,
 } from 'vscode-languageserver';
-import { textChangeRangeIsUnchanged } from 'typescript/lib/tsserverlibrary';
 import { logger } from './server';
 import { Host } from './Host/Host';
-import { FileType, IgniterResult } from './type';
+import { FileType } from './type';
 import { SupportFrameName, ParseOption } from './parser/type';
 export class DConnection{
 	private connection = createConnection(ProposedFeatures.all);

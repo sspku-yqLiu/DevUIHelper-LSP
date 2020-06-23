@@ -12,7 +12,7 @@ import { TextDocument } from 'vscode-languageserver-textdocument';
 import { HTMLInfoNode, RootNode } from '../parser/WareHouse/Storage';
 import { YQ_Parser } from '../parser/parser';
 import { HoverProvider } from '../HoverProvider';
-import { TextDocuments, Logger } from 'vscode-languageserver';
+import { TextDocuments } from 'vscode-languageserver';
 import { CompletionProvider } from '../CompletionProvider';
 import { Architect } from '../parser/WareHouse/Architect';
 import { Hunter } from './Hunter';

@@ -1,13 +1,8 @@
 {
 	"compilerOptions": {
-		"target": "es6",
-		"module": "commonjs",
-		"moduleResolution": "node",
-		"sourceMap": true,
-		// "strict": true,
 		"outDir": "out",
 		"rootDir": "src",
-		"noImplicitAny": false
+		"downlevelIteration":true
 	},
 	"lib":[	
 		"dom.iterable",//这里是新增项

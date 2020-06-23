@@ -9,7 +9,7 @@
 
 import{adjustSpanToAbosulutOffset, convertSpanToRange}from './util';
 import{host} from'./server'; 
-import { SupportFrameName, SearchResultType, } from './parser/type';
+import { SearchResultType, } from './parser/type';
 import {HoverSearchResult,} from './type';
 import{ HoverParams, Hover} from 'vscode-languageserver';
 
