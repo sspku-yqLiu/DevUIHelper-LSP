@@ -1,12 +1,19 @@
+/*
+ * @Author: your name
+ * @Date: 2020-03-14 14:45:36
+ * @LastEditTime: 2020-05-18 16:26:35
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \DevUI-Language-Support\rollup.config.js
+ */
 import * as fs from 'fs';
 import commonjs from 'rollup-plugin-commonjs';
-import resolve from '@rollup/plugin-node-resolve'
 
 module.exports = [
   {
     input: 'client/out/extension.js',
     output: {
-      file: 'dist/client/index.js',
+      file: 'Release/client/index.js',
       format: 'cjs',
       exports: 'named',
     },
@@ -22,8 +29,7 @@ module.exports = [
   {
     input: 'server/out/server.js',
     output: {
-      file: 'dist/server/index.js',
-      format: 'amd',
+      file: 'Release/server/server.js',
     },
     external: [
       'fs',
@@ -31,15 +37,16 @@ module.exports = [
       'typescript/lib/tsserverlibrary',
       'vscode-languageserver',
       'vscode-uri',
+      'log4js',
+      'vscode-languageserver-textdocument',
+      'rollup-plugin-commonjs',
     ],
-    watch:{
-      include:'lib/**'
-    },
-    plugins:[
-      resolve(),
+    plugins: [
       commonjs({
-        sourceMap:false,
-      })
-    ]
+        namedExports: {
+          './lib/main.js': ['__moduleExports']
+        }
+      }),
+    ],
   },
 ];

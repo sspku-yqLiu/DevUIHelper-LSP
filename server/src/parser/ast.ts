@@ -6,15 +6,11 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
  */
-import * as lsp from 'vscode-languageserver';
 import {Span} from './DataStructure/type';
-import {  TokenType, NodeStatus,HTMLASTNodeType, tagSubNodes, TreeError, ParseErrorLevel, SearchResult, ParseResult, SearchResultType } from './type';
-import { Token, Cursor } from './lexer';
-import { threadId } from 'worker_threads';
+import { TokenType, NodeStatus,HTMLASTNodeType, tagSubNodes, TreeError, ParseErrorLevel, SearchResult, ParseResult, SearchResultType } from './type';
+import { Token } from './lexer';
 import { LinkNode, LinkedList } from './DataStructure/LinkList';
-import { isTagProps } from './utils';
 import { logger } from '../server';
-import { getJSDocThisTag } from 'typescript/lib/tsserverlibrary';
 export const tagTokenTypesSet = new Set([
 										TokenType.ATTR_NAME,
 										TokenType.ATTR_VALE_END,

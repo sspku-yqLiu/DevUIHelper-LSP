@@ -9,10 +9,8 @@
 /**
  * Token 相关
  */
-import {HTMLAST, HTMLATTRAST, HTMLTagAST} from './ast';
+import {HTMLAST,} from './ast';
 import {Span} from './DataStructure/type';
-import * as lsp from 'vscode-languageserver';
-import { HTMLInfoNode, Component } from './WareHouse/Storage';
 import { LinkedList } from './DataStructure/LinkList';
 
 

@@ -9,7 +9,7 @@
 import { SearchParser } from '../parser/parser';
 import { SearchResult, SearchResultType } from '../parser/type';
 import { HTMLAST, HTMLTagAST, HTMLATTRAST } from '../parser/ast';
-import { HTMLInfoNode, Directive, TagComponent } from '../parser/WareHouse/Storage';
+import { HTMLInfoNode, TagComponent } from '../parser/WareHouse/Storage';
 import { host } from '../server';
 import { convertStringToName } from '../util';
 

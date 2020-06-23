@@ -1,4 +1,4 @@
-import { LinkedList,Node,LinkNode } from './LinkList';
+import { LinkedList,Node } from './LinkList';
 import { Span } from './type';
 
 /*

@@ -4,7 +4,8 @@ import { host, logger } from '../server';
 import { SnapShot } from './Host';
 import * as fs from 'fs';
 import { RootNode } from '../parser/WareHouse/Storage';
-const info = require('../source/info.js');
+import { devuiInfo } from '../source/info';
+// const info = require('../source/info.js');
 /*
  * @Author: your name
  * @Date: 2020-06-05 20:55:45
@@ -105,7 +106,7 @@ export class Igniter {
 			// 		resolve(host.architect.build(comInfo));
 			// 	}
 			// });
-			resolve(host.architect.build(info.devuiInfo,SupportComponentName.DevUI));
+			resolve(host.architect.build(devuiInfo,SupportComponentName.DevUI));
 		});
 	}
 }

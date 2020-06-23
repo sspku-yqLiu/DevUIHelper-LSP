@@ -9,8 +9,6 @@ import {Span} from './DataStructure/type';
 import {TokenType} from './type';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import * as chars from './chars';
-import {logger} from '../server';
-import { rangeStartToString } from './utils';
 export class Token{
 	private end:number=-1;
 	private span:Span;
@@ -45,10 +43,10 @@ export class TokenizeOption{
 	constructor(
 		private _startLabel : string
 	){}
-	public get startLabel() : string {
+	public getstartLabel() : string {
 		return this._startLabel;
 	}
-	public set startLabel(v : string) {
+	public setstartLabel(v : string) {
 		this._startLabel = v;
 	}
 }

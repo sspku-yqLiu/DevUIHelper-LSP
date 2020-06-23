@@ -12,7 +12,6 @@ import { logger } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { HTMLAST, HTMLTagAST } from './parser/ast';
 import {CompletionRangeKind} from './type';
-import { HTMLInfoNode } from './parser/WareHouse/Storage';
 export function getName(text: string,componentRegex: RegExp){
     text.match(componentRegex);
     const n = RegExp.$1.substring(2);

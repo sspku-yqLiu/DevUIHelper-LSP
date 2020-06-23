@@ -6,18 +6,15 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\completion.ts
  */
-import { adjustSpanToAbosulutOffset, getRangeFromDocument, getsubstringForSpan, autoSelectCompletionRangeKind, getRangefromSpan, convertSpanToRange } from './util';
-import {   Component, TagComponent, Directive,} from './parser/WareHouse/Storage';
-import { host, logger } from './server';
-import { CompletionItem, Range, HoverParams, TextDocumentPositionParams } from 'vscode-languageserver';
-import { HTMLAST, HTMLTagAST, HTMLCommentAST } from './parser/ast';
+import { adjustSpanToAbosulutOffset, convertSpanToRange } from './util';
+import {   Component, TagComponent, } from './parser/WareHouse/Storage';
+import { host, } from './server';
+import { CompletionItem, Range, TextDocumentPositionParams } from 'vscode-languageserver';
+import {  HTMLTagAST, HTMLCommentAST } from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { FileType, CompletionSearchResult, CompletionType, CompletionRangeKind } from './type';
-import { SearchResultType, SupportFrameName } from './parser/type';
-import { Span } from './parser/DataStructure/type';
-import { SnapShot } from './Host/Host';
-import { WhiteChars, Space, WhiteCharsAndGTAndSPLASH, WhiteCharsAndLTAndGTANDSPLASH, newLine } from './parser/chars';
-import { forEachTrailingCommentRange } from 'typescript/lib/tsserverlibrary';
+import { SearchResultType} from './parser/type';
+import { WhiteChars, Space, WhiteCharsAndLTAndGTANDSPLASH, newLine } from './parser/chars';
 
 export class CompletionProvider {
 	private tabCompletionFlag = true;
