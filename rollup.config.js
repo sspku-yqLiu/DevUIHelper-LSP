@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import commonjs from 'rollup-plugin-commonjs';
+import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve'
 
 module.exports = [
@@ -36,7 +36,6 @@ module.exports = [
       include:'lib/**'
     },
     plugins:[
-      resolve(),
       commonjs({
         sourceMap:false,
       })

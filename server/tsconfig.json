@@ -2,7 +2,8 @@
 	"compilerOptions": {
 		"outDir": "out",
 		"rootDir": "src",
-		"downlevelIteration":true
+		"downlevelIteration":true,
+		"sourceMap": true
 	},
 	"lib":[	
 		"dom.iterable",//这里是新增项

@@ -8,7 +8,7 @@
  */
 import { adjustSpanToAbosulutOffset, convertSpanToRange } from './util';
 import {   Component, TagComponent, } from './parser/WareHouse/Storage';
-import { host, } from './server';
+import { host, logger, } from './server';
 import { CompletionItem, Range, TextDocumentPositionParams } from 'vscode-languageserver';
 import {  HTMLTagAST, HTMLCommentAST } from './parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
@@ -21,12 +21,7 @@ export class CompletionProvider {
 
 	constructor() { }
 	provideCompletionItes(_params: TextDocumentPositionParams, type: FileType): CompletionItem[] {
-		//Alert:测试用
-		let temp = host;
-		// host.architect.buildCompletionItems();
-		// host.igniter.loadSourceTree();
-		// host.igniter.loadSourceTree();
-		// logger.debug(`completionWorks!`);
+		logger.debug(_params.textDocument.uri);
 		let { textDocument, position } = _params;
 		let _textDocument = host.getDocumentFromURI(textDocument.uri);
 		let _offset = _textDocument.offsetAt(position);

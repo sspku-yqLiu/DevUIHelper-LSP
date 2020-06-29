@@ -3,7 +3,7 @@
   "description": "DevUI_Helper",
   "author": "yqLiu",
   "license": "MIT",
-  "version": "4.3.6",
+  "version": "4.3.9",
   "icon": "DevUI.png",
   "repository": {
     "type": "git",
@@ -36,15 +36,13 @@
     "jasmine": "3.5.0",
     "prettier": "1.19.1",
     "rollup": "^2.0.6",
-    "rollup-plugin-commonjs": "^10.0.2",
+    "@rollup/plugin-commonjs": "^13.0.0",
     "tslint": "6.1.0",
     "tslint-eslint-rules": "5.4.0",
-    "vsce": "1.74.0",
-    "vscode": "1.1.36",
-    "vscode-jsonrpc": "5.0.1",
-    "vscode-tmgrammar-test": "0.0.8"
+    "vsce": "1.74.0"
   },
   "dependencies": {
     "@rollup/plugin-node-resolve": "^8.1.0"
-  }
+  },
+  "__npminstall_done": false
 }

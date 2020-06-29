@@ -1,11 +1,3 @@
-/*
- * @Author: your name
- * @Date: 2020-04-07 15:11:35
- * @LastEditTime: 2020-05-15 11:44:27
- * @LastEditors: Please set LastEditors
- * @Description: In User Settings Edit
- * @FilePath: \DevUIHelper-LSP\server\src\parser\chars.ts
- */
 /**
  * @license
  * Copyright Google Inc. All Rights Reserved.

@@ -16,6 +16,10 @@ import{ HoverParams, Hover} from 'vscode-languageserver';
 export class HoverProvider{
  	constructor(){}
  	provideHoverInfoForHTML(params:HoverParams): Hover|undefined {
+		//Alert:测试用
+		let temp = host;
+		host.igniter.parseAllDocument();
+
 		let _document = host.documents.get(params.textDocument.uri);
 		if(!_document){ 
 			return  {contents:"Error!!!"}; 
