@@ -19,5 +19,6 @@
 		"log4js": "^6.2.0",
 		"typescript": "~3.7.4"
 	},
+	
 	"scripts": {}
 }

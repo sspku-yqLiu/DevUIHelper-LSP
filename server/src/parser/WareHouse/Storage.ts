@@ -3,6 +3,7 @@ import { logger, host } from '../../server';
 import { MarkUpBuilder, copyCompletionItem, converValueSetToValueString, changeDueToCompletionRangeKind, changeInsertDueToCompletionRangeKind } from '../../util';
 import { CompletionRangeKind } from '../../type';
 import { SupportComponentName } from '../type';
+import { getComponentMarkDownString, getComponentHoverInfo, getAttributeMarkDownString, getAttributeHoverInfo } from './util';
 
 const EVENT = "event";
 const BOOLEAN = "boolean";
@@ -45,7 +46,7 @@ export interface HTMLInfoNode {
     /**
      * 生成当前节点的CompletionItem
      */
-    buildCompletionItems(): void;
+    buildCompletionItemsAndHoverInfo(): void;
 
     /**
      * 获取补全代码(仅名字)
@@ -84,7 +85,7 @@ export class RootNode implements HTMLInfoNode {
 	}
     buildFullCompletionItem() { }
     buildNameCompletionItem() { }
-    buildCompletionItems() {
+    buildCompletionItemsAndHoverInfo() {
         this.completionItems = Object.values(this.schema).map(element => {
             return element.buildFullCompletionItem();
         });
@@ -156,13 +157,14 @@ export class RootNode implements HTMLInfoNode {
 
 export class Component implements HTMLInfoNode {
     protected attributeMap = <{[attrName: string]: Attribute }>{};
-    protected attritubes: Attribute[] = [];
+    protected subNodes: Attribute[] = [];
     protected nameCompletionItems: CompletionItem[] = [];
     protected completionItem:CompletionItem;
     protected completionItems: CompletionItem[] = [];
     protected completionItemKind: CompletionItemKind = CompletionItemKind.Class;
-    protected tmwString:MarkupContent|string;
+    protected completionContent:MarkupContent|string;
     protected prefixToValue=<{[prefix:string]:Attribute}>{};
+    protected hoverInfo: Hover = {contents:''};
     constructor(protected name: string,
         public comName?:SupportComponentName|undefined,
         protected description: string ="",
@@ -170,14 +172,11 @@ export class Component implements HTMLInfoNode {
         protected cnName?: string | undefined,
         public prefixName:string=""
     ) { 
-        this.tmwString =this.tmw?new MarkUpBuilder().addSpecialContent('typescript',[
-            `何时使用：${this.tmw}`,
-        ]).getMarkUpContent():"";
         this.completionItemKind = CompletionItemKind.Class;
     }
 
     addAttritube(attribute: Attribute) {
-        this.attritubes.push(attribute);
+        this.subNodes.push(attribute);
         this.attributeMap[attribute.getName()] = attribute;
         if(attribute.getValueSet()!==[]){
             attribute.getValueSet().forEach(element => {
@@ -192,18 +191,20 @@ export class Component implements HTMLInfoNode {
     getDescription() { return this.description; }
     getcompletionKind() { return this.completionItemKind; }
 
-    buildCompletionItems() {
-        this.attritubes.forEach(attr => {
+    buildCompletionItemsAndHoverInfo() {
+        this.subNodes.forEach(attr => {
             let temp = attr.buildFullCompletionItem();
             this.completionItems.push(...attr.buildFullCompletionItem());
         });
-        this.nameCompletionItems = this.attritubes.map(attr => {
+        this.nameCompletionItems = this.subNodes.map(attr => {
             return attr.buildNameCompletionItem();
         });
+        this.completionContent = getComponentMarkDownString.call(this).getMarkUpContent();
+        this.hoverInfo.contents=getComponentHoverInfo.call(this).getMarkUpContent(); 
     }
     
     buildFullCompletionItem(): CompletionItem {
-        this.buildCompletionItems();
+        this.buildCompletionItemsAndHoverInfo();
         let _completionItem = CompletionItem.create(this.name);
         _completionItem.kind = this.completionItemKind;
         let _insertText: string = this.name;
@@ -218,8 +219,9 @@ export class Component implements HTMLInfoNode {
             }
         }
         _completionItem.insertText = _insertText;
-        _completionItem.documentation=this.tmwString,
-        _completionItem.detail = this.description;
+        // _completionItem.documentation=this.tmwString;
+        _completionItem.documentation = this.completionContent;
+        _completionItem.detail = this.description.split(',')[0];
         _completionItem.insertTextFormat = InsertTextFormat.Snippet;
         _completionItem.preselect = false;
         this.completionItem = _completionItem;
@@ -228,7 +230,7 @@ export class Component implements HTMLInfoNode {
     buildNameCompletionItem(): CompletionItem {
         let _completionItem = CompletionItem.create(this.name);
         _completionItem.detail = this.description;
-        _completionItem.documentation=this.tmwString;
+        _completionItem.documentation=this.completionContent;
         _completionItem.kind= this.completionItemKind;
         _completionItem.preselect = false;
         return _completionItem;
@@ -248,7 +250,6 @@ export class Component implements HTMLInfoNode {
             };
             return _completionItem;
         });
-
     }
     getSubNode(attrname: string): HTMLInfoNode | undefined {
         return this.attributeMap[attrname];
@@ -260,14 +261,7 @@ export class Component implements HTMLInfoNode {
         return new RootNode();
     }
     getHoverInfo(): Hover {
-        let _markUpBuilder = new MarkUpBuilder(this.description + "\n");
-        const properties = this.attritubes;
-        _markUpBuilder.addSpecialContent('typescript', [
-            this.tmw?`何时使用：${this.tmw}`:"",
-            ...this.attritubes.map(attr => {
-            return attr.getName() + ' :' + attr.getSortDescription();
-        })]);
-        return { contents: _markUpBuilder.getMarkUpContent() };
+        return this.hoverInfo;
     }
     getCompletionItem(){
         return this.completionItem;
@@ -283,12 +277,12 @@ export class TagComponent extends Component{
     ) {
         super(name, comName, description, tmw, cnName,prefixName);
         this.completionItemKind = CompletionItemKind.Class;
-        this.attritubes = [];
+        this.subNodes = [];
         let temp = CompletionItem.create(this.name);
         temp.insertText = `${name}>$0</${name}>`;
         this.completionItem = temp;
     }
-      
+
     buildFullCompletionItem(): CompletionItem {
         let _completionItem = super.buildFullCompletionItem();
         if (_completionItem.insertText.indexOf('${1')===-1) {
@@ -320,7 +314,7 @@ export class Directive extends Component {
         let _completionItem = CompletionItem.create(this.name);
         _completionItem.kind = this.completionItemKind;
         _completionItem.detail = this.description;
-        _completionItem.documentation = this.tmwString;
+        _completionItem.documentation = this.completionContent;
         _completionItem.preselect = false;
         if(this.hasValueFlag){
             _completionItem.insertText = `[${this.name}]="$1"`;
@@ -345,6 +339,8 @@ export class Attribute implements HTMLInfoNode {
     private completionItems: CompletionItem[] = [];
     private completionItem: CompletionItem | undefined;
     private readonly completionKind: CompletionItemKind;
+    private hoverInfo:Hover = {contents:''};
+    private completionDocument = '';
     constructor(
         private readonly name: string,
         private readonly type: string='string',
@@ -357,22 +353,24 @@ export class Attribute implements HTMLInfoNode {
         this.completionKind = isEvent ? CompletionItemKind.Event : CompletionItemKind.Variable;
     }
 
-    buildCompletionItems() {
+    buildCompletionItemsAndHoverInfo() {
         this.completionItems = this.valueSet.map(value => {
             let _completionItem = CompletionItem.create(value);
             _completionItem.kind = CompletionItemKind.EnumMember;
             _completionItem.insertText = value;
             _completionItem.detail = `这是${value}类型`;
-            _completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();
+            // _completionItem.documentation = new MarkUpBuilder().addContent("![demo](https://s2.ax1x.com/2020/03/08/3z184H.gif)").getMarkUpContent();
             _completionItem.preselect = false;
             return _completionItem;
         });
         this.nameCompletionItems = this.completionItems;
+        this.completionDocument = getAttributeHoverInfo.call(this).getMarkUpContent();
+        this.hoverInfo.contents = this.completionDocument;
     }
 
     buildFullCompletionItem(): CompletionItem[] {
-        this.buildCompletionItems();
-        let _result = [];
+        this.buildCompletionItemsAndHoverInfo();
+        let _result:CompletionItem[] = [];
         // let _completionItem:CompletionItem; 
         if (this.isEvent) {
             _result.push(CompletionItem.create(`(${this.name})`));
@@ -382,14 +380,11 @@ export class Attribute implements HTMLInfoNode {
             _result.push(CompletionItem.create(`[${this.name}]`));
         }
         _result.forEach((_completionItem) => {
-            _completionItem.detail = this.sortDescription;
-            _completionItem.documentation = new MarkUpBuilder().addSpecialContent('typescript', [
-                `type:${this.type}`,
-                "DefaultValue:" + this.getDefaultValue(),
-                "Description:" + this.getDescription()]).getMarkUpContent();
-            //Question: 是否要统一样式?
-            // _completionItem.kind = this.getcompletionKind();
+
+            _completionItem.detail = `${this.type}`;
+            _completionItem.documentation = this.completionDocument;
             _completionItem.kind = this.completionKind;
+
             let _valueString = converValueSetToValueString(this.valueSet);
             if (_result.length === 1) {
                 if (this.getcompletionKind() === CompletionItemKind.Event) {
@@ -409,17 +404,13 @@ export class Attribute implements HTMLInfoNode {
             _completionItem.preselect = true;
         });
         this.completionItem = _result[0];
-        // logger.debug(_result[0]);
+        
         return _result;
     }
     buildNameCompletionItem(): CompletionItem {
         let _completionItem = CompletionItem.create(this.name);
-        _completionItem.detail = this.sortDescription;
         _completionItem.kind= this.completionKind;
-        _completionItem.documentation = new MarkUpBuilder().addSpecialContent('typescript', [
-            `type:${this.type}`,
-            "DefaultValue:" + this.getDefaultValue(),
-            "Description:" + this.getDescription()]).getMarkUpContent();
+        _completionItem.documentation = this.completionDocument;
         return _completionItem;
     }
 
@@ -445,13 +436,7 @@ export class Attribute implements HTMLInfoNode {
     }
 
     getHoverInfo(): Hover {
-        let _markUpBuilder = new MarkUpBuilder(this.getName() + "\n");
-        _markUpBuilder.addSpecialContent('typescript', ["Description:" + this.description,
-        "Type:" + this.getValueType(),
-        "DefaultValue:" + this.getDefaultValue(),
-        "ValueSet:" + this.valueSet]);
-        return { contents: _markUpBuilder.getMarkUpContent() };
-
+        return this.hoverInfo ;
     }
 
     getName() { return this.name; }

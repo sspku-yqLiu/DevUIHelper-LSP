@@ -21,11 +21,9 @@ export class CompletionProvider {
 
 	constructor() { }
 	provideCompletionItes(_params: TextDocumentPositionParams, type: FileType): CompletionItem[] {
-		logger.debug(_params.textDocument.uri);
 		let { textDocument, position } = _params;
 		let _textDocument = host.getDocumentFromURI(textDocument.uri);
 		let _offset = _textDocument.offsetAt(position);
-		// host.igniter.parseTextDocument(_textDocument,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]})
 		if (type === FileType.HTML) {
 			return this.provideCompletionItemsForHTML(_offset, _textDocument);
 		} else {

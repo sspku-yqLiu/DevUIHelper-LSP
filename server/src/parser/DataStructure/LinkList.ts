@@ -216,8 +216,16 @@ export class LinkedList<T>implements LinkList<T>{
 		return;
 	}
 	//TODO: 完成function函数
-	filter(fun:Function){
-
+	filter(cb:(e:T)=>boolean):T[]{
+		let res:T[] = [];
+		let _node = this.head.next;
+		while(_node){
+			if(cb(_node.data)){
+				res.push(_node.data);
+			}
+			_node = _node.next;
+		}
+		return res;
 	}
 	get(param:number):Node|undefined{
 		let _node = this.head.next;

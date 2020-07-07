@@ -6,7 +6,7 @@ module.exports = [
   {
     input: 'client/out/extension.js',
     output: {
-      file: 'dist/client/index.js',
+      file: 'Release/client/out/extension.js',
       format: 'cjs',
       exports: 'named',
     },
@@ -22,7 +22,7 @@ module.exports = [
   {
     input: 'server/out/server.js',
     output: {
-      file: 'dist/server/index.js',
+      file: 'Release/server/out/server.js',
       format: 'amd',
     },
     external: [

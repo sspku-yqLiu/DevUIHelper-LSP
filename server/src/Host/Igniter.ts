@@ -5,6 +5,7 @@ import { SnapShot } from './Host';
 import * as fs from 'fs';
 import { RootNode } from '../parser/WareHouse/Storage';
 import { devuiInfo } from '../source/info';
+
 // const info = require('../source/info.js');
 /*
  * @Author: your name
@@ -15,7 +16,7 @@ import { devuiInfo } from '../source/info';
  * @FilePath: \DevUIHelper-LSP\server\src\Host\Igniter.ts
  */ 
 export class Igniter {
-	private parseOption:ParseOption = {frame:SupportFrameName.Null,components:[]};
+	public parseOption:ParseOption = {frame:SupportFrameName.Null,components:[]};
 	private componentToUrl = new Map<SupportComponentName, string>();
 
 	private rootPaths:string[] = [];
@@ -39,12 +40,13 @@ export class Igniter {
 		let _flag = true;
 		let _srcpath = path + '\\src';
 		let _nodeModulePath = path ;
+
 		try {
 			this.checkProjectFrameworkAndComponentName(_nodeModulePath);
 			logger.info(`Scanner Done!,
 RootPaths:${this.rootPaths}
 Parsing Document...`);
-			logger.info(`Parsing Done! Loading Source...`);
+
 			this.loadSourceTree();
 			logger.info('Igniter Done, Extension Start...');
 			logger.info(`Welcome To DevUIHelper`);
@@ -52,7 +54,7 @@ Parsing Document...`);
 			logger.info(`Thanks To PKU_Huawei class`);
 			logger.info(`This extension was built by yqLiu, enjoy it!`);
 		} catch{ 
-			logger.error(`Ingiter Failed, Please connect us throught github.`)
+			logger.error(`Ingiter Failed, Please connect us throught github.`);
 		}
 		return this.parseOption;
 	}
@@ -120,7 +122,9 @@ Parsing Document...`);
 		});
 	}
 	loadSourceTree() {
-		for (let com of this.componentToUrl.values()) {
+		logger.info(`Parsing Done! Loading Source...`);
+		//TODO: 将它编程所有路径 使check定死。
+		for (let com of ['tempPath']) {
 			this._loadSouceTree(com).then(value=>{
 				host.HTMLComoponentSource =value[0];
 				host.HTMLDirectiveSource =value[1];
@@ -129,15 +133,6 @@ Parsing Document...`);
 	}
 	async _loadSouceTree(comPath: string):Promise<RootNode[]> {
 		return new Promise((resolve, rejects) => {
-			// fs.readFile(comPath+"/wch/info.json", { encoding: 'UTF-8' }, (err, data) => {
-			// 	if (err) {
-			// 		rejects(err.message);
-			// 	} else {
-			// 		const comInfo = JSON.parse(data);
-			// 		// logger.debug(comInfo[0]);
-			// 		resolve(host.architect.build(comInfo));
-			// 	}
-			// });
 			resolve(host.architect.build(devuiInfo,SupportComponentName.DevUI));
 		});
 	}

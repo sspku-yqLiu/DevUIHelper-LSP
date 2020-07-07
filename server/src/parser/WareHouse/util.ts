@@ -1,5 +1,6 @@
 
 import { SupportComponentName } from '../type';
+import { MarkUpBuilder } from '../../util';
 
 export function getPrefix(name:string,comName:SupportComponentName):string{
 	switch (comName) {
@@ -35,5 +36,39 @@ export function getPrefixForDevUI(name:string):string{
 		}
 	}
 	return result.toLowerCase();
+}
 
+//致敬ng-zorro的snippet插件
+//这里使用了相同的函数名，但是内部实现不同
+export function getComponentMarkDownString(useDescription:boolean=false):MarkUpBuilder{
+	let res = new MarkUpBuilder();
+	if(this.description&&useDescription){
+		res.addContent(`- 简介`);
+		res.addContent(this.description);
+	}
+	if(this.tmw){
+		res.addContent(`- 何时使用`);
+		res.addContent(this.tmw);
+	}
+	return res;
+}
+export function getComponentHoverInfo():MarkUpBuilder{
+	let res = getComponentMarkDownString.call(this,true);
+	if(this.subNodes.length>0){
+		res.addContent(`- 属性和事件`);
+		this.subNodes.forEach(attr => {
+			res.addContent(`>\`${attr.getName()}\`:${attr.getSortDescription()}`) ;
+		});
+	}
+	return res;
+}
+export function getAttributeMarkDownString(useType:boolean=false){
+	return new MarkUpBuilder().addContent(`${this.description}`).
+	addSpecialContent('typescript', [
+                useType?`type: ${this.type}`:"",
+                `DefaultValue: ${this.getDefaultValue()}`,
+                `value: ${this.valueSet.length>0?'['+this.valueSet+']':'any'}`]); 
+}
+export function getAttributeHoverInfo(){
+	return getAttributeMarkDownString.call(this,true);
 }

@@ -24,7 +24,8 @@ import {
 	TransportKind,
 	RevealOutputChannelOn
 } from 'vscode-languageclient';
-
+const config = vscode.workspace.getConfiguration();
+const ngLog: string = config.get('provideHover');
 let client: LanguageClient;
 // let provider1 = vscode.languages.registerCompletionItemProvider('html',{
 
@@ -67,19 +68,18 @@ export function activate(context: vscode.ExtensionContext) {
 	let clientOptions: lsp.LanguageClientOptions = {
 		// Register the server for plain text documents
 		documentSelector: [
-		{ scheme: 'file', language: 'html' }, 
-		{ scheme: 'file', language: 'typescript' },
+		{ scheme: 'file', language: 'html' }
 		
 	],
 		
-		synchronize: {
-			// Notify the server about file changes to '.clientrc files contained in the workspace
-			// fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
-			/* 为什么这个地方要用tsconfig? */ 
-			fileEvents: vscode.workspace.createFileSystemWatcher('**/tsconfig.json')
-		},
+	synchronize: {
+		// Notify the server about file changes to '.clientrc files contained in the workspace
+		// fileEvents: vscode.workspace.createFileSystemWatcher('**/.clientrc')
+		/* 为什么这个地方要用tsconfig? */ 
+		fileEvents: vscode.workspace.createFileSystemWatcher('**/tsconfig.json')
+	},
 
-		revealOutputChannelOn: lsp.RevealOutputChannelOn.Never,
+	revealOutputChannelOn: lsp.RevealOutputChannelOn.Never,
 		
 	};
 	

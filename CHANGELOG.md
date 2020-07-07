@@ -6,6 +6,12 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUI-Language-Support\CHANGELOG.md
  -->
+# 2020/7/3 V4.4.0
+V4.4.X 致力于提高插件的标准化，例如打包、文档样式、安装引导提示等，也会逐步完善@表达式的内容。
+- 增加了devui安装提示，现在如果您在一个没有安装devui的项目中使用了devui的所属标签，将提示您安装devui。
+- 更新了悬浮提示与补全的内容样式。
+- 现在支持您自定义插件的功能了，您可以选择关闭或者开启悬浮提示。
+
 # 2020/6/24 V4.3.7-V4.3.9
 - 支持devui开发者模式
 - 修复冗余提示的bug

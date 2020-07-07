@@ -7,7 +7,7 @@
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
  */
 import { ParseOption, TreeError } from '../parser/type';
-import { HTMLAST } from '../parser/ast';
+import { HTMLAST, HTMLTagAST } from '../parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { HTMLInfoNode, RootNode } from '../parser/WareHouse/Storage';
 import { YQ_Parser } from '../parser/parser';
@@ -18,6 +18,7 @@ import { Architect } from '../parser/WareHouse/Architect';
 import { Hunter } from './Hunter';
 import { Igniter } from './Igniter';
 import { ExpressionAdm } from '../parser/Expression/ExpressionAdm';
+import { Diagnosiser } from '../Diagnosis';
 
 export class Host {
 	public parser = new YQ_Parser();
@@ -31,6 +32,8 @@ export class Host {
 	public architect = new Architect();
 	public HTMLComoponentSource = new RootNode();
 	public HTMLDirectiveSource = new RootNode();
+	public diagnoser = new Diagnosiser();
+	public configuration={provideHover:true};
 	private parseOption: ParseOption | undefined;
 	constructor() {
 		this.documents.onDidChangeContent(change => {
@@ -67,7 +70,7 @@ export class SnapShot {
 	public HTMLAstToHTMLInfoNode = new Map<HTMLAST, HTMLInfoNode>();
 	public context: string = "";
 	constructor(
-		public root: HTMLAST,
+		public root: HTMLTagAST,
 		public errors: TreeError[],
 		public textDocument: TextDocument,
 	) {

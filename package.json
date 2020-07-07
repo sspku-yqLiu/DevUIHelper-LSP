@@ -3,7 +3,7 @@
   "description": "DevUI_Helper",
   "author": "yqLiu",
   "license": "MIT",
-  "version": "4.3.9",
+  "version": "4.4.0",
   "icon": "DevUI.png",
   "repository": {
     "type": "git",
@@ -20,10 +20,25 @@
   "activationEvents": [
     "onLanguage:html"
   ],
+  "contributes": {
+		"configuration":{
+			"title": "DevUIHelper",
+			"properties": {
+				"DevUIHelper.provideHover":{
+					"type": "boolean",
+					"default":true,
+					"description": "是否需要悬浮提示 默认为是"
+				},
+				"DevUIHelper.language":{
+					"type":"string",
+					"default":"zh-CN",
+					"description":"使用何种语言进行提示,可选'zh-CN'"
+				}
+			}
+		}
+	},
   "main": "./client/out/extension",
-  "contributes": {},
   "scripts": {
-    "vscode:prepublish": "cd client  && cd .. && npm run compile",
     "compile": "tsc -b",
     "watch": "tsc -b -w",
     "postinstall": "cd client && npm install && cd ../server && npm install && cd ..",
@@ -39,10 +54,11 @@
     "@rollup/plugin-commonjs": "^13.0.0",
     "tslint": "6.1.0",
     "tslint-eslint-rules": "5.4.0",
-    "vsce": "1.74.0"
+    "vsce": "1.74.0",
+    "@rollup/plugin-node-resolve": "^8.1.0"
   },
   "dependencies": {
-    "@rollup/plugin-node-resolve": "^8.1.0"
+
   },
   "__npminstall_done": false
 }

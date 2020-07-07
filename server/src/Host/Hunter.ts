@@ -19,7 +19,7 @@ export class Hunter {
 	constructor() {
 	}
 
-	searchTerminalAST(offset: number, uri: string): SearchResult {
+	searchTerminalAST(offset: number, uri: string): SearchResult {		
 		let _snapShot = host.snapshotMap.get(uri);
 		if (!_snapShot) { throw Error(`this uri does not have a snapShot: ${uri}`); }
 		const { root, textDocument, HTMLAstToHTMLInfoNode } = _snapShot;

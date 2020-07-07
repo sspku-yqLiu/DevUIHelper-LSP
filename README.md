@@ -30,7 +30,13 @@
 - 在悬浮到组件时，提示组件能够提供的所有属性。
 
 ##### 代码纠错
-Comming Soon..
+- 提示在使用devui内容且未安装devui时报警。
+
+#### 定制化
+
+- 您可以在 Setting - Extension - DevUIHelper中修改配置包括：
+> 语言： 目前只支持简体中文。
+> 是否开始悬停提示：默认为true。
 
 #####  跳转帮助
 Comming Soon..
@@ -39,7 +45,7 @@ Comming Soon..
 
 - 您可以在<a herf="https://marketplace.visualstudio.com/items?itemName=yqLiu.devui-language-support&ssr=false">vscode的插件库</a>进行下载。
 
-- 若要下载不同的版本，请访问<a herf="https://github.com/sspku-yqLiu/DevUIHelper-LSP/releases/">Release</a>寻求进一步的帮助。
+- 若要下载不同的版本，可在vscode的历史版本中寻找，或访问<a herf="https://github.com/sspku-yqLiu/DevUIHelper-LSP/releases/">Release</a>寻求进一步的帮助。
 
 #### 帮助我们进行改进
 

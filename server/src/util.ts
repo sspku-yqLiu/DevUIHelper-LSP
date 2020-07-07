@@ -188,9 +188,11 @@ export class MarkUpBuilder{
     }
     addContent(content:string){
         this.markUpContent.value+=content;
+        this.markUpContent.value+='\n\n';
         return this;
     }
     addSpecialContent(type:string,content:string[]){
+        content = content.filter(e=>e!="");
         this.markUpContent.value+= 
              [
                 '```'+type,

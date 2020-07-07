@@ -51,8 +51,8 @@ export class Architect {
 		return [this.componentRootNode,this.directiveRootNode];
 	}
 	buildCompletionItems() {
-		this.componentRootNode.buildCompletionItems();
-		this.directiveRootNode.buildCompletionItems();
+		this.componentRootNode.buildCompletionItemsAndHoverInfo();
+		this.directiveRootNode.buildCompletionItemsAndHoverInfo();
 	}
 	// _buildCompletionItems(node: HTMLInfoNode) {
 	// 	node.buildNameCompletionItem();

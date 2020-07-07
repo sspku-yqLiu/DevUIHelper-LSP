@@ -9,7 +9,7 @@
 /**
  * Token 相关
  */
-import {HTMLAST,} from './ast';
+import {HTMLAST, HTMLTagAST,} from './ast';
 import {Span} from './DataStructure/type';
 import { LinkedList } from './DataStructure/LinkList';
 
@@ -171,7 +171,7 @@ export class TreeError{
 	){}
 }
 export interface ParseResult{
-	root:HTMLAST;
+	root:HTMLTagAST;
 	errors:TreeError[];
 } 
 
