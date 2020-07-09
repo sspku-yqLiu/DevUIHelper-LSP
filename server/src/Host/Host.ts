@@ -19,6 +19,7 @@ import { Hunter } from './Hunter';
 import { Igniter } from './Igniter';
 import { ExpressionAdm } from '../parser/Expression/ExpressionAdm';
 import { Diagnosiser } from '../Diagnosis';
+import { Span } from '../parser/DataStructure/type';
 
 export class Host {
 	public parser = new YQ_Parser();
@@ -34,6 +35,7 @@ export class Host {
 	public HTMLDirectiveSource = new RootNode();
 	public diagnoser = new Diagnosiser();
 	public configuration={provideHover:true};
+	public errorZone:Span[] = [];
 	private parseOption: ParseOption | undefined;
 	constructor() {
 		this.documents.onDidChangeContent(change => {

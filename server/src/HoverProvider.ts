@@ -19,6 +19,7 @@ export class HoverProvider{
 		//Alert:测试用
 		// let temp = host;
 		// host.igniter.parseAllDocument();
+		
 		if(!host.configuration.provideHover){
 			return;
 		}
@@ -27,6 +28,10 @@ export class HoverProvider{
 			return  {contents:"Error!!!"}; 
 		}	
 		let _offset = _document!.offsetAt(params.position);
+		let _zone = host.errorZone;
+		if(host.errorZone.find(e=>e.inSpan(_offset))){
+			return;
+		}
 		// host.igniter.parseTextDocument(_document,{frameName:SupportFrameName.Angular,tagMarkedPrefixs:[]});
 		let _result = this.searchTerminalASTForHover(_offset,params.textDocument.uri);
 		let {node,span} =  _result;

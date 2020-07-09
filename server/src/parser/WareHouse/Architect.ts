@@ -15,7 +15,7 @@ export class Architect {
 	private readonly directiveRootNode = new RootNode();
 	// private componentSchema = this.componentRootNode.schema;
 	// private directiveSchema = this.directiveRootNode.schema;
-	private nodeInbuild:Component|Directive|undefined;
+	private nodeInbuild:Component|undefined;
 	constructor() { }
 	 build(info: Array<any>,comName:SupportComponentName): RootNode[] {
 		for (let component of info) {
@@ -42,7 +42,8 @@ export class Architect {
 						ele['description'], 
 						ele['isNecessary'], 
 						ele['isEvent'], 
-						ele['valueSet']
+						ele['valueSet'],
+						this.nodeInbuild
 					));
 				}
 			});	

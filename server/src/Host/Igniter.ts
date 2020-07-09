@@ -40,13 +40,11 @@ export class Igniter {
 		let _flag = true;
 		let _srcpath = path + '\\src';
 		let _nodeModulePath = path ;
-
 		try {
 			this.checkProjectFrameworkAndComponentName(_nodeModulePath);
 			logger.info(`Scanner Done!,
 RootPaths:${this.rootPaths}
 Parsing Document...`);
-
 			this.loadSourceTree();
 			logger.info('Igniter Done, Extension Start...');
 			logger.info(`Welcome To DevUIHelper`);
@@ -92,7 +90,12 @@ Parsing Document...`);
 
 	}
 	checkProjectFrameworkAndComponentName(nodeModulesPath: string): void {
-		// let result:IgniterResult ={Frame:SupportFrameName.Null,Components:[]};
+		//for developers
+		if(nodeModulesPath.endsWith('devui')){
+			this.parseOption={components:[SupportComponentName.DevUI],frame:SupportFrameName.Angular};
+			return;
+		}
+
 		let pa = fs.readdirSync(nodeModulesPath);
 		if(!pa){
 			return;

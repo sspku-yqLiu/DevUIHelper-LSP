@@ -36,7 +36,7 @@ export interface HTMLInfoNode {
     /**
      * 生成本元素的CompletionItem.这样可以响应父节点的调用。
      */
-    buildFullCompletionItem(): void;
+    buildFullCompletionItem(ComponentName:string): void;
 
     /**
      * 生成只含有名字的CompletionItem。
@@ -165,6 +165,7 @@ export class Component implements HTMLInfoNode {
     protected completionContent:MarkupContent|string;
     protected prefixToValue=<{[prefix:string]:Attribute}>{};
     protected hoverInfo: Hover = {contents:''};
+    protected necessarySet:string[] = [];
     constructor(protected name: string,
         public comName?:SupportComponentName|undefined,
         protected description: string ="",
@@ -177,6 +178,9 @@ export class Component implements HTMLInfoNode {
 
     addAttritube(attribute: Attribute) {
         this.subNodes.push(attribute);
+        if(attribute.isNecessary){
+            this.necessarySet.push(attribute.getName());
+        }
         this.attributeMap[attribute.getName()] = attribute;
         if(attribute.getValueSet()!==[]){
             attribute.getValueSet().forEach(element => {
@@ -193,7 +197,6 @@ export class Component implements HTMLInfoNode {
 
     buildCompletionItemsAndHoverInfo() {
         this.subNodes.forEach(attr => {
-            let temp = attr.buildFullCompletionItem();
             this.completionItems.push(...attr.buildFullCompletionItem());
         });
         this.nameCompletionItems = this.subNodes.map(attr => {
@@ -265,6 +268,9 @@ export class Component implements HTMLInfoNode {
     }
     getCompletionItem(){
         return this.completionItem;
+    }
+    getNecessarySet(){
+        return this.necessarySet;
     }
 }
 export class TagComponent extends Component{
@@ -349,6 +355,7 @@ export class Attribute implements HTMLInfoNode {
         public readonly isNecessary: boolean=false,
         private readonly isEvent: boolean=false,
         private readonly valueSet: string[] = [],
+        private readonly fatherPointer ?: Component,
         private readonly sortDescription?: string) {
         this.completionKind = isEvent ? CompletionItemKind.Event : CompletionItemKind.Variable;
     }
@@ -364,8 +371,8 @@ export class Attribute implements HTMLInfoNode {
             return _completionItem;
         });
         this.nameCompletionItems = this.completionItems;
-        this.completionDocument = getAttributeHoverInfo.call(this).getMarkUpContent();
-        this.hoverInfo.contents = this.completionDocument;
+        this.completionDocument = getAttributeMarkDownString.call(this).getMarkUpContent();
+        this.hoverInfo.contents = getAttributeHoverInfo.call(this).getMarkUpContent();
     }
 
     buildFullCompletionItem(): CompletionItem[] {
@@ -380,7 +387,6 @@ export class Attribute implements HTMLInfoNode {
             _result.push(CompletionItem.create(`[${this.name}]`));
         }
         _result.forEach((_completionItem) => {
-
             _completionItem.detail = `${this.type}`;
             _completionItem.documentation = this.completionDocument;
             _completionItem.kind = this.completionKind;

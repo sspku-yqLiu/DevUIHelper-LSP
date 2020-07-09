@@ -215,7 +215,7 @@ export class LinkedList<T>implements LinkList<T>{
 		}
 		return;
 	}
-	//TODO: 完成function函数
+	
 	filter(cb:(e:T)=>boolean):T[]{
 		let res:T[] = [];
 		let _node = this.head.next;
@@ -226,6 +226,14 @@ export class LinkedList<T>implements LinkList<T>{
 			_node = _node.next;
 		}
 		return res;
+	}
+	forEach(cb:(e:T)=>void):undefined{
+		let _node = this.head.next;
+		while(_node){
+			cb(_node.data);
+			_node = _node.next;
+		}
+		return;
 	}
 	get(param:number):Node|undefined{
 		let _node = this.head.next;
