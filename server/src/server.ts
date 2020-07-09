@@ -1,7 +1,6 @@
 import{configure,getLogger, Logger} from 'log4js';
-import { Host } from './Host/Host';
+import { Host } from './parser/Host/Host';
 import { DConnection } from './DConnection';
-
 export const logger = createLogger();
 export const host = new Host();
 export const dconnection =new DConnection(host,logger);

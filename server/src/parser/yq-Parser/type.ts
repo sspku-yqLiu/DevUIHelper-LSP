@@ -10,8 +10,8 @@
  * Token 相关
  */
 import {HTMLAST, HTMLTagAST,} from './ast';
-import {Span} from './DataStructure/type';
-import { LinkedList } from './DataStructure/LinkList';
+import {Span} from '../DataStructure/type';
+import { LinkedList } from '../DataStructure/LinkList';
 
 
 export enum SupportFrameName{

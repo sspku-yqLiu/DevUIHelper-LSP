@@ -11,7 +11,7 @@ import { HTMLAST, HTMLTagAST,  } from './ast';
 import { Tokenizer } from './lexer';
 import { TreeBuilder} from './ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { logger } from '../server';
+import { logger } from '../../server';
 export class YQ_Parser{
 	constructor(){
 	}

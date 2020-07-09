@@ -1,9 +1,9 @@
-import { SupportFrameName, SupportComponentName, ParseOption } from '../parser/type';
+import { SupportFrameName, SupportComponentName, ParseOption } from '../yq-Parser/type';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { host, logger } from '../server';
+import { host, logger } from '../../server';
 import { SnapShot } from './Host';
 import * as fs from 'fs';
-import { RootNode } from '../parser/WareHouse/Storage';
+import { RootNode } from '../WareHouse/Storage';
 import { devuiInfo } from '../source/info';
 
 // const info = require('../source/info.js');

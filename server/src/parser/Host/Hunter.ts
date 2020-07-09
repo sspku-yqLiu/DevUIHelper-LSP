@@ -6,13 +6,13 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\Host\Hunter.ts
  */ 
-import { SearchParser } from '../parser/parser';
-import { SearchResult, SearchResultType } from '../parser/type';
-import { HTMLAST, HTMLTagAST, HTMLATTRAST } from '../parser/ast';
+import { SearchParser } from '../yq-Parser/parser';
+import { SearchResult, SearchResultType } from '../yq-Parser/type';
+import { HTMLAST, HTMLTagAST, HTMLATTRAST } from '../yq-Parser/ast';
 
-import { HTMLInfoNode, TagComponent,Component } from '../parser/WareHouse/Storage';
-import { host } from '../server';
-import { convertStringToName } from '../util';
+import { HTMLInfoNode, TagComponent,Component } from '../WareHouse/Storage';
+import { host } from '../../server';
+import { convertStringToName } from '../../util';
 
 export class Hunter {
 	private searchParser = new SearchParser();

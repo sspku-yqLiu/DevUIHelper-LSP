@@ -1,7 +1,7 @@
 import { HTMLInfoNode } from './parser/WareHouse/Storage';
 import { Span } from './parser/DataStructure/type';
-import { HTMLAST } from './parser/ast';
-import { SupportFrameName,SupportComponentName } from './parser/type';
+import { HTMLAST } from './parser/yq-Parser/ast';
+import { SupportFrameName,SupportComponentName } from './parser/yq-Parser/type';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 
 /*

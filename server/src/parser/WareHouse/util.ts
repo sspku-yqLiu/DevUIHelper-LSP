@@ -1,5 +1,5 @@
 
-import { SupportComponentName } from '../type';
+import { SupportComponentName } from '../yq-Parser/type';
 import { MarkUpBuilder } from '../../util';
 
 export function getPrefix(name:string,comName:SupportComponentName):string{
@@ -66,7 +66,8 @@ export function getAttributeMarkDownString(useType:boolean=false){
 	const source = this.fatherPointer?this.fatherPointer.getName():"";
 	return new MarkUpBuilder().addContent(source?`- From ${source}`:""+`${this.description}`).
 	addSpecialContent('typescript', [
-                useType?`type: ${this.type}`:"",
+				useType?`type: ${this.type}`:"",
+				`Description:${this.description}`,
                 `DefaultValue: ${this.getDefaultValue()}`,
                 `value: ${this.valueSet.length>0?'['+this.valueSet+']':'any'}`]); 
 }

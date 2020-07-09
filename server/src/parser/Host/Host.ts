@@ -6,20 +6,20 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP V4.0\server\src\GlobalData\GlobalData.ts
  */
-import { ParseOption, TreeError } from '../parser/type';
-import { HTMLAST, HTMLTagAST } from '../parser/ast';
+import { ParseOption, TreeError } from '../yq-Parser/type';
+import { HTMLAST, HTMLTagAST } from '../yq-Parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { HTMLInfoNode, RootNode } from '../parser/WareHouse/Storage';
-import { YQ_Parser } from '../parser/parser';
-import { HoverProvider } from '../HoverProvider';
+import { HTMLInfoNode, RootNode } from '../WareHouse/Storage';
+import { YQ_Parser } from '../yq-Parser/parser';
+import { HoverProvider } from '../../HoverProvider';
 import { TextDocuments } from 'vscode-languageserver';
-import { CompletionProvider } from '../CompletionProvider';
-import { Architect } from '../parser/WareHouse/Architect';
+import { CompletionProvider } from '../../CompletionProvider';
+import { Architect } from '../WareHouse/Architect';
 import { Hunter } from './Hunter';
 import { Igniter } from './Igniter';
-import { ExpressionAdm } from '../parser/Expression/ExpressionAdm';
-import { Diagnosiser } from '../Diagnosis';
-import { Span } from '../parser/DataStructure/type';
+import { ExpressionAdm } from '../Expression/ExpressionAdm';
+import { Diagnosiser } from '../../Diagnosis';
+import { Span } from '../DataStructure/type';
 
 export class Host {
 	public parser = new YQ_Parser();

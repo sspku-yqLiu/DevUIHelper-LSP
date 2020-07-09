@@ -10,11 +10,11 @@ import { adjustSpanToAbosulutOffset, convertSpanToRange } from './util';
 import {   Component, TagComponent, } from './parser/WareHouse/Storage';
 import { host, logger, } from './server';
 import { CompletionItem, Range, TextDocumentPositionParams } from 'vscode-languageserver';
-import {  HTMLTagAST, HTMLCommentAST } from './parser/ast';
+import {  HTMLTagAST, HTMLCommentAST } from './parser/yq-Parser/ast';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 import { FileType, CompletionSearchResult, CompletionType, CompletionRangeKind } from './type';
-import { SearchResultType} from './parser/type';
-import { WhiteChars, Space, WhiteCharsAndLTAndGTANDSPLASH, newLine } from './parser/chars';
+import { SearchResultType} from './parser/yq-Parser/type';
+import { WhiteChars, Space, WhiteCharsAndLTAndGTANDSPLASH, newLine } from './parser/yq-Parser/chars';
 
 export class CompletionProvider {
 	private tabCompletionFlag = true;

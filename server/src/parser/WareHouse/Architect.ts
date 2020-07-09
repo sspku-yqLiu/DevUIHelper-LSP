@@ -7,7 +7,7 @@
  * @FilePath: \DevUIHelper-LSP\server\src\source\Architect.ts
  */
 import { RootNode, Component, Directive, Attribute,HTMLInfoNode, TagComponent } from './Storage';
-import { SupportComponentName } from '../type';
+import { SupportComponentName } from '../yq-Parser/type';
 import { getPrefix } from './util';
 // const info = require('D:\\MyProgram\\Extension_Universe\\WCH-Creater\\info.js');
 export class Architect {

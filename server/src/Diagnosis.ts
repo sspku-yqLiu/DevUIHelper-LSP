@@ -1,11 +1,11 @@
-import { SupportComponentName } from './parser/type';
+import { SupportComponentName } from './parser/yq-Parser/type';
 import { Directive, TagComponent, Component } from './parser/WareHouse/Storage';
 import { host } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { HTMLAST, HTMLTagAST } from './parser/ast';
+import { HTMLAST, HTMLTagAST } from './parser/yq-Parser/ast';
 import { Diagnostic, DiagnosticSeverity } from 'vscode-languageserver';
 import { convertSpanToRange, adjustSpanToAbosulutOffset } from './util';
-import { Host } from './Host/Host';
+import { Host } from './parser/Host/Host';
 
 export class Diagnosiser{
 	private tagsToComponent= <{[tag:string]:SupportComponentName}>{};

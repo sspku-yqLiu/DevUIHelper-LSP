@@ -6,7 +6,7 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\Expression\ExpressionAdm.ts
  */ 
-import { WhiteCharsAndLTAndGTANDSPLASH, WhiteCharsAndLT, $AT,WhiteCharsAndLTAndSLASH } from '../chars';
+import { WhiteCharsAndLTAndGTANDSPLASH, WhiteCharsAndLT, $AT,WhiteCharsAndLTAndSLASH } from '../yq-Parser/chars';
 import { CompletionItem, CompletionItemKind, InsertTextFormat } from 'vscode-languageserver';
 import { ExpressionParams, ExpressionResult } from '../../type';
 import { Span } from '../DataStructure/type';

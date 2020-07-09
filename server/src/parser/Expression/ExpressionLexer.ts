@@ -1,10 +1,10 @@
 import { ExpressionTreeNode, ExpressionNodeType } from './type';
-import { $$, $PERIOD, $STAR, $LBRACKET, $LBRACE, $HASH, $LPAREN, $RBRACE, $RBRACKET, $RPAREN, $DQ, $GT, $COMMA } from '../chars';
+import { $$, $PERIOD, $STAR, $LBRACKET, $LBRACE, $HASH, $LPAREN, $RBRACE, $RBRACKET, $RPAREN, $DQ, $GT, $COMMA } from '../yq-Parser/chars';
 import { RootNode, Component, TagComponent, Directive, Attribute, HTMLInfoNode } from '../WareHouse/Storage';
 import { host } from '../../server';
-import { SupportComponentName } from '../type';
+import { SupportComponentName } from '../yq-Parser/type';
 import { getcomNameFromPrefix, getTagPrefixFromComName } from '../WareHouse/util';
-import { Cursor } from '../lexer';
+import { Cursor } from '../yq-Parser/lexer';
  const OPERATORS = [$STAR,$PERIOD,$LBRACKET,$HASH,$LBRACE,$LPAREN];
  const OperatorsWithoutBracket = [$STAR,$PERIOD,$HASH,$LBRACE];
  const BracketsOperator = [$LBRACE,$LBRACKET,$LPAREN];

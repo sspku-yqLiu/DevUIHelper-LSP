@@ -6,11 +6,11 @@
  * @Description: In User Settings Edit
  * @FilePath: \DevUIHelper-LSP\server\src\parser\ast.ts
  */
-import {Span} from './DataStructure/type';
+import {Span} from '../DataStructure/type';
 import { TokenType, NodeStatus,HTMLASTNodeType, tagSubNodes, TreeError, ParseErrorLevel, SearchResult, ParseResult, SearchResultType } from './type';
 import { Token } from './lexer';
-import { LinkNode, LinkedList } from './DataStructure/LinkList';
-import { logger } from '../server';
+import { LinkNode, LinkedList } from '../DataStructure/LinkList';
+import { logger } from '../../server';
 export const tagTokenTypesSet = new Set([
 										TokenType.ATTR_NAME,
 										TokenType.ATTR_VALE_END,
@@ -175,13 +175,7 @@ export class TreeBuilder {
 		}
 	}
 
-	/**
-	 * 将tag正常关闭 之后插入栈中。
-	 * @param end 
-	 */
-	buildTag(end:number){
-		
-	}
+
 	buildRoot(){
 		let _endOfTokens:number = this.currentSpan.end;
 		if(this.attrInBuild){

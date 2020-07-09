@@ -2,7 +2,7 @@ import { CompletionItemKind, CompletionItem, InsertTextFormat, TextEdit, Range, 
 import { logger, host } from '../../server';
 import { MarkUpBuilder, copyCompletionItem, converValueSetToValueString, changeDueToCompletionRangeKind, changeInsertDueToCompletionRangeKind } from '../../util';
 import { CompletionRangeKind } from '../../type';
-import { SupportComponentName } from '../type';
+import { SupportComponentName } from '../yq-Parser/type';
 import { getComponentMarkDownString, getComponentHoverInfo, getAttributeMarkDownString, getAttributeHoverInfo } from './util';
 
 const EVENT = "event";

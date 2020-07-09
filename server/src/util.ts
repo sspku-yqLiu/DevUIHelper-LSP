@@ -10,7 +10,7 @@ import{MarkupKind,CompletionItemKind, MarkupContent, CompletionItem,Range} from 
 import { Span } from './parser/DataStructure/type';
 import { logger } from './server';
 import { TextDocument } from 'vscode-languageserver-textdocument';
-import { HTMLAST, HTMLTagAST } from './parser/ast';
+import { HTMLAST, HTMLTagAST } from './parser/yq-Parser/ast';
 import {CompletionRangeKind} from './type';
 export function getName(text: string,componentRegex: RegExp){
     text.match(componentRegex);

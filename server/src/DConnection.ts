@@ -21,9 +21,9 @@ import {
 	Diagnostic
 } from 'vscode-languageserver';
 import { logger } from './server';
-import { Host } from './Host/Host';
+import { Host } from './parser/Host/Host';
 import { FileType } from './type';
-import { SupportFrameName, ParseOption } from './parser/type';
+import { SupportFrameName, ParseOption } from './parser/yq-Parser/type';
 import { resolve } from 'dns';
 import { TextDocument } from 'vscode-languageserver-textdocument';
 export class DConnection{
