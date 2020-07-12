@@ -58,7 +58,7 @@ export class ExpresssionLexer{
 			}
 			if(tempRoots&&index>0){
 				nodesQueue[index-1].forEach(root=>{
-					root.addSubTag(tempRoots);
+					root.addCrossSubTag(tempRoots);
 				});
 			}
 			nodesQueue[index] = tempRoots;
@@ -88,6 +88,7 @@ export class ExpresssionLexer{
 
 	//进行tag级别的划分。
 	divider(expression:string,fatherTag?:ExpressionTreeNode):ExpressionTreeNode|undefined{
+
 		try{
 			expression = this.getComName(expression);
 			//初始化tag
@@ -158,7 +159,6 @@ export class ExpresssionLexer{
 
 	//匹配规则：nameSelf ->sorDescription -> fatherCom+Prefix -> fatherDir+Prefix -> namePrefix -> htmlTag
 	createTagNode(tagName:string,fatherTag?:ExpressionTreeNode):void{
-
 		let tagsource =  host.HTMLComoponentSource;
 		let tagNode:Component|undefined;
 		if(this.HTMLTags.includes(tagName) ){
@@ -194,21 +194,21 @@ export class ExpresssionLexer{
 	//分为两种：
 	//.[directive.value] 指令及其属性 指令/属性全名->属性简写->属性prefix/
 	//.属性值 -> 指令 -> 属性值 -> class 
-	getPeriod(attrName:string):ExpressionTreeNode{
+	operatePeriod(attrName:string):ExpressionTreeNode{
 		let {type,infoNode } = this.rootNode;
 		if(type!==ExpressionNodeType.TAG){
 			return;
 		}
 		//检测是否满足[...]样式：
 		if(attrName.match(/\[(\S*)\]/)){
-			this.getBracket(true);
+			this.operateBracket(true);
 			return;
 		}
 		let result = this.getDirective(attrName);
 		return result = result?result:this.getATTR(this.rootNode,attrName,false);
 	}
 	//单括号应该是仅匹配属性(CSS语法)
-	getBracket(directiveFlag?:boolean):void{
+	operateBracket(directiveFlag?:boolean):void{
 		let fragment =this.fragment.replace(/^\[|\]$/g,"");
 		let singleExps = fragment.split(',');
 		let nodes:ExpressionTreeNode[] = [];
@@ -241,11 +241,11 @@ export class ExpresssionLexer{
 		this.rootNode.addAttrs(nodes);
 
 	}
-	getStar(){
+	operateStar(){
 		let timenum:number = parseInt(this.fragment);
 		this.rootNode.times = timenum;
 	}
-	getHash(){
+	operateHash(){
 		this.rootNode.id = this.fragment;
 	}
 	//功能函数
@@ -342,11 +342,15 @@ export class ExpresssionLexer{
 		}
 		return attrNode?new ExpressionTreeNode(attrNode,ExpressionNodeType.Attribute).setInsertText(insertText?insertText:attrNode.getCompletionItem().insertText):undefined;
 	}
-	getBrace(){
+	OperateBrace(){
 		let slices = this.fragment.split(',');
 		if(slices.length===1&&this.fragment.match(/\(.*\)/)){
 			this.rootNode.setIncrementalContent(this.fragment);
 		}else{
+			
+			slices.forEach(e=>{
+
+			})
 			this.rootNode.addContent(slices);
 		}
 
@@ -354,19 +358,19 @@ export class ExpresssionLexer{
 	operate(){
 		switch(this.operator){
 			case $PERIOD:{
-				this.rootNode.addAttr(this.getPeriod(this.fragment));break;
+				this.rootNode.addAttr(this.operatePeriod(this.fragment));break;
 			}
 			case $STAR:{
-				this.getStar();break;
+				this.operateStar();break;
 			}
 			case $HASH:{
-				this.getHash();break;
+				this.operateHash();break;
 			}
 			case $LBRACKET:{
-				this.getBracket(false);break;
+				this.operateBracket(false);break;
 			}
 			case $LBRACE:{
-				this.getBrace();break;
+				this.OperateBrace();break;
 			}
 		}
 	}
@@ -388,7 +392,6 @@ export class ExpresssionLexer{
 				}else{
 					throw new Error();
 				}
-	
 			});
 		}catch{}
 		let _result:T|undefined = undefined;
@@ -476,7 +479,7 @@ export class ExpresssionLexer{
 	//渲染函数入口，通过对顶级节点数组渲染后拼接成为字符串，之后返回
 	interperate(nodes:ExpressionTreeNode[]):string{
 		let result = nodes.map(e=>{
-			return this._interperate(e,"");
+			return this._interperateTag(e,"");
 		});
 		let _insertText = result.join('\n');
 		let i =2;
@@ -495,14 +498,15 @@ export class ExpresssionLexer{
 		return _insertText;
 	}
 	//进行标签渲染
-	_interperate(node:ExpressionTreeNode,retact:string){
+	_interperateTag(node:ExpressionTreeNode,retact:string){
 		if(node.subTags.length===0){
 			return this._interperateAttr(node,retact,true);
 		}else{
-			let subInserText:string[] = node.subTags.map(tag=>{
-				return this._interperate(tag,retact+'\t');
-			});
-			let tagText = subInserText.join('\n');
+			let tagText:string = node.subTags.reduce((res,tags,i)=>{
+				return res+tags.reduce((tagsString,singleTag,index)=>{
+					return tagsString+this._interperateTag(singleTag,retact+'\t')+ (index<tags.length-1)?'\n':'';
+				},"")+(i<node.subTags.length-1)?'\n':'';;
+			},"");
 			return this._interperateAttr(node,retact,false).replace(/\$0/g,tagText);
 		}
 	}
@@ -531,8 +535,7 @@ export class ExpresssionLexer{
 						let dirAttrs = e.getAttrOfIndex(i);
 						attrString.push(dirAttrs[0].insertText);
 					});
-				}
-				
+				}	
 			});
 			if(attrString){
 				attrString.unshift(idString);

@@ -128,45 +128,18 @@ export class Tokenizer{
 	 */
 	 //注意这里有指针移动
 	tryGet(char:number){
-		if(this.cursor.peek() === char){
-			this.cursor.advance();
-			return true;
-		}
-		return false;
+		return this.cursor.tryGet(char);
 	}
 	tryAdvanceThrogh(chars:number[]){
-		while(chars.includes(this.cursor.peek())){
-			this.cursor.advance();
-		}
-		return;
+		this.cursor.tryAdvanceThrogh(chars);
 	}
 
 	tryStopAt(chars:number[]){
-
-		// if(this._tokenInBuild){
-		// 	if([TokenType.ATTR_NAME,TokenType.ATTR_VALUE])
-		// }
-		while(!chars.includes(this.cursor.peek())){
-			const num = this.cursor.peek();
-			this.cursor.advance();
-		}
-		return;
+		this.cursor.tryStopAt(chars);
 	}
 	
 	tryStopbyFilter(favor:number[],disgust:number[]):boolean{
-		while(!disgust.includes(this.cursor.peek())&&!favor.includes(this.cursor.peek())){
-			this.cursor.advance();
-		}
-		//如果是被喜欢的字符截断
-		if(favor.includes(this.cursor.peek())){
-			return true;
-		}
-		//如果是被不应该出现的字符截断
-		if(disgust.includes(this.cursor.peek())){
-			return false;
-		}
-		//如果是因为找不到想要的字符 return true
-		return true;
+		return favor.includes(this.cursor.tryStopbyFilter(favor,disgust));
 	}
 
 	/**

@@ -19,7 +19,7 @@ export class ExpressionTreeNode{
 		public type:ExpressionNodeType,
 		public insertText?:string,
 		public attrs:ExpressionTreeNode[][]=[],
-		public subTags:ExpressionTreeNode[]=[],
+		public subTags:ExpressionTreeNode[][]=[],
 		public id?:string|undefined
 	){}
 	addAttr(attr:ExpressionTreeNode|undefined){
@@ -30,8 +30,18 @@ export class ExpressionTreeNode{
 		this.times = this.times>attrs.length?this.times:attrs.length;
 		this.attrs.push(attrs);
 	}
-	addSubTag(subTags:ExpressionTreeNode[]){
-		this.subTags.push(...subTags);
+	// if(this.HTMLTags.includes(expression) ){
+	// 	let res = new TagComponent(expression)
+	// 	return new ExpressionTreeNode(res,ExpressionNodeType.TAG,'<'+res.getCompletionItem().insertText);
+	// }
+	addCrossSubTag(subTags:ExpressionTreeNode[]){
+		this.subTags[0].push(...subTags);
+	}
+	addSyncSubTag(subTags:ExpressionTreeNode[]){
+		this.times = this.times>subTags.length?this.times:subTags.length;
+		subTags.forEach((e,index)=>{
+			this.subTags[index].push(e);
+		})
 	}
 	setInsertText(insertText:string):ExpressionTreeNode{
 		this.insertText = insertText;
@@ -78,7 +88,8 @@ export enum ExpressionNodeType{
 	DIRECTIVE,
 	ELEMENT,
 	TAG,
-	Attribute
+	Attribute,
+	TEXT
 }
 export const testCode = `<div class="card-header">可拖拽项</div>
 <div class="card-block">
