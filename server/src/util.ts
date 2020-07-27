@@ -186,12 +186,14 @@ export class MarkUpBuilder{
     getMarkUpContent():MarkupContent{
         return this.markUpContent;
     }
+    
     addContent(content:string){
         this.markUpContent.value+=content;
         this.markUpContent.value+='\n\n';
         return this;
     }
-    addSpecialContent(type:string,content:string[]){
+
+    addCodeBlock(type:string,content:string[]){
         content = content.filter(e=>e!="");
         this.markUpContent.value+= 
              [
@@ -201,6 +203,7 @@ export class MarkUpBuilder{
             ].join('\n');
         return this;
     }
+
     setSpecialContent(type:string,content:string){
         this.markUpContent.value='```'+type+'\n'+content+'\n```';
         return this;

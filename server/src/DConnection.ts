@@ -42,7 +42,8 @@ export class DConnection{
 		this.connection.onDidChangeConfiguration(e=>this.onDidChangeConfiguration(e));
 		this.connection.onHover(e=>this.onHover(e));
 		this.connection.onCompletion(e=>this.onCompletion(e));
-		this.host.documents.onDidChangeContent(change=>this.validateTextDocument(change.document));
+		this.connection.onDidOpenTextDocument(e=>this.validateTextDocument(e.textDocument.uri))
+		this.host.documents.onDidChangeContent(change=>this.validateTextDocument(change.document.uri));
 	}
 	onInitialze(params:InitializeParams):InitializeResult{
 		let capabilities = params.capabilities;
@@ -51,7 +52,6 @@ export class DConnection{
 			this.igniteResult = this.host.igniter.ignite(params.rootPath);
 			this.host.setParseOption(this.igniteResult);
 		}
-
 		return {
 			capabilities: {
 				textDocumentSync: TextDocumentSyncKind.Full,
@@ -96,18 +96,12 @@ export class DConnection{
 		}
 		return this.host.hoverProvider.provideHoverInfoForHTML(_textDocumentPosition);
 	}
-	async validateTextDocument(textDocument: TextDocument) {
+	async validateTextDocument(uri: string) {
 		// In this simple example we get the settings for every validate run.
-	
-		// The validator creates diagnostics for all uppercase words length 2 and more
-		let text = textDocument.getText();
-		let pattern = /\b[A-Z]{2,}\b/g;
-		let m: RegExpExecArray | null;
-	
-		let problems = 0;
+		let textDocument =  this.host.documents.get(uri);
 		let diagnostics: Diagnostic[] = this.host.diagnoser.diagnose(textDocument);  
 		// Send the computed diagnostics to VSCode.
-		this.connection.sendDiagnostics({ uri: textDocument.uri, diagnostics });
+		this.connection.sendDiagnostics({ uri: uri, diagnostics });
 	}
 	
 	

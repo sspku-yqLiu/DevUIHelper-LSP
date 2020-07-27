@@ -41,8 +41,6 @@ export class Queue<T> extends LinkedList<T>{
 			this.head.next!.pre=this.head;
 			this.length--;
 		}
-
-
 	}
 }
 

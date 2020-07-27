@@ -346,11 +346,10 @@ export class ExpresssionLexer{
 		let slices = this.fragment.split(',');
 		if(slices.length===1&&this.fragment.match(/\(.*\)/)){
 			this.rootNode.setIncrementalContent(this.fragment);
-		}else{
-			
+		}else{		
 			slices.forEach(e=>{
 
-			})
+			});
 			this.rootNode.addContent(slices);
 		}
 
@@ -499,14 +498,13 @@ export class ExpresssionLexer{
 	}
 	//进行标签渲染
 	_interperateTag(node:ExpressionTreeNode,retact:string){
-		if(node.subTags.length===0){
+		if(node.subCrossTags.length===0&&node.subSeqenceTags.length === 0){
 			return this._interperateAttr(node,retact,true);
 		}else{
-			let tagText:string = node.subTags.reduce((res,tags,i)=>{
-				return res+tags.reduce((tagsString,singleTag,index)=>{
-					return tagsString+this._interperateTag(singleTag,retact+'\t')+ (index<tags.length-1)?'\n':'';
-				},"")+(i<node.subTags.length-1)?'\n':'';;
-			},"");
+			let subInserText:string[] = node.subCrossTags.map(tag=>{
+				return this._interperateTag(tag,retact+'\t');
+			});
+			let tagText = subInserText.join('\n');
 			return this._interperateAttr(node,retact,false).replace(/\$0/g,tagText);
 		}
 	}

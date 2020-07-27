@@ -21,22 +21,36 @@
     "onLanguage:html"
   ],
   "contributes": {
-		"configuration":{
-			"title": "DevUIHelper",
-			"properties": {
-				"DevUIHelper.provideHover":{
-					"type": "boolean",
-					"default":true,
-					"description": "是否需要悬浮提示 默认为是"
-				},
-				"DevUIHelper.language":{
-					"type":"string",
-					"default":"zh-CN",
-					"description":"使用何种语言进行提示,可选'zh-CN'"
-				}
-			}
-		}
-	},
+    "configuration": {
+      "title": "DevUIHelper",
+      "properties": {
+        "DevUIHelper.provideHover": {
+          "type": "boolean",
+          "default": true,
+          "description": "是否需要悬浮提示 默认为是"
+        },
+        "DevUIHelper.language": {
+          "type": "string",
+          "default": "zh-CN",
+          "description": "使用何种语言进行提示,可选'zh-CN'"
+        },
+        "DevUIHelper.completionSetting": {
+          "type": "string",
+          "default": "OnlyNecessary",
+          "enum": [
+            "OnlyNecessary",
+            "Recommend&Necessary",
+            "OnlyTag "
+          ],
+          "enumDescriptions": [
+            "仅提示必要的属性",
+            "提示组件库建议的以及必要的属性",
+            "仅提示Tag"
+          ]
+        }
+      }
+    }
+  },
   "main": "./client/out/extension",
   "scripts": {
     "compile": "tsc -b",
@@ -45,20 +59,21 @@
     "test": "sh ./scripts/e2e.sh"
   },
   "devDependencies": {
+    "@rollup/plugin-commonjs": "^13.0.0",
+    "@rollup/plugin-node-resolve": "^8.1.0",
     "@types/jasmine": "3.5.9",
     "@types/node": "^12.12.30",
     "clang-format": "1.4.0",
     "jasmine": "3.5.0",
     "prettier": "1.19.1",
     "rollup": "^2.0.6",
-    "@rollup/plugin-commonjs": "^13.0.0",
     "tslint": "6.1.0",
     "tslint-eslint-rules": "5.4.0",
-    "vsce": "1.74.0",
-    "@rollup/plugin-node-resolve": "^8.1.0"
+    "vsce": "^1.74.0"
   },
   "dependencies": {
-
+    "tsc": "^1.20150623.0",
+    "typescript": "^3.9.6"
   },
   "__npminstall_done": false
 }

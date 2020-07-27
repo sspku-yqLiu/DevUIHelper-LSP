@@ -65,7 +65,7 @@ export function getComponentHoverInfo():MarkUpBuilder{
 export function getAttributeMarkDownString(useType:boolean=false){
 	const source = this.fatherPointer?this.fatherPointer.getName():"";
 	return new MarkUpBuilder().addContent(source?`- From ${source}`:""+`${this.description}`).
-	addSpecialContent('typescript', [
+	addCodeBlock('typescript', [
 				useType?`type: ${this.type}`:"",
 				`Description:${this.description}`,
                 `DefaultValue: ${this.getDefaultValue()}`,

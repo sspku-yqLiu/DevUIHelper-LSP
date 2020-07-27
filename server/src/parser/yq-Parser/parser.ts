@@ -17,8 +17,12 @@ export class YQ_Parser{
 	}
 	parseTextDocument(textDocument:TextDocument,parseOption:ParseOption):ParseResult{
 		const uri = textDocument.uri;
+		
+		// 进行词法解析
 		const tokenizer = new Tokenizer(textDocument); 
 		const tokens = tokenizer.Tokenize();
+
+		// 建立语法树
 		const treebuilder =new TreeBuilder(tokens);
 		return treebuilder.build();
 	}

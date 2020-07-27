@@ -17,7 +17,9 @@ export class Architect {
 	// private directiveSchema = this.directiveRootNode.schema;
 	private nodeInbuild:Component|undefined;
 	constructor() { }
-	 build(info: Array<any>,comName:SupportComponentName): RootNode[] {
+	
+	// 加载语法树的资源文件
+	build(info: Array<any>,comName:SupportComponentName): RootNode[] {
 		for (let component of info) {
 			this.nodeInbuild = undefined;
 			let{name,description,tmw,cnName,attrList,directiveFlag} = component;
@@ -48,10 +50,12 @@ export class Architect {
 				}
 			});	
 		}
-		this.buildCompletionItems();
+		this.buildCompletionItemsAndHoverInfo();
 		return [this.componentRootNode,this.directiveRootNode];
 	}
-	buildCompletionItems() {
+
+	// 生成不全和悬停信息
+	buildCompletionItemsAndHoverInfo() {
 		this.componentRootNode.buildCompletionItemsAndHoverInfo();
 		this.directiveRootNode.buildCompletionItemsAndHoverInfo();
 	}

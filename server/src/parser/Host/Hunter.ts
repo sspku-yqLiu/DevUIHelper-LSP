@@ -19,14 +19,19 @@ export class Hunter {
 	constructor() {
 	}
 
-	searchTerminalAST(offset: number, uri: string): SearchResult {		
+	searchTerminalAST(offset: number, uri: string): SearchResult {
+		
+		// 找到分析生成的语法树	
 		let _snapShot = host.snapshotMap.get(uri);
 		if (!_snapShot) { throw Error(`this uri does not have a snapShot: ${uri}`); }
 		const { root, textDocument, HTMLAstToHTMLInfoNode } = _snapShot;
 		if (!root) {
 			throw Error(`Snap shot does not have this file : ${uri}, please parse it befor use it!`);
 		}
+
+		// 进行深度搜索
 		let _result = this.searchParser.DFS(offset, root);
+		
 		//调整Node位置
 		return _result ? _result : { ast: undefined, type: SearchResultType.Null };
 	}

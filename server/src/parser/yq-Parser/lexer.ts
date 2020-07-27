@@ -361,11 +361,7 @@ export class Cursor{
 	}
 
 
-	/**
-	 * TODO:Try家族 将会被移动到指针类中
-	 * 这样可以方便表达式与解析器复用，并且为react进行进一步的帮助
-	 */
-	 //注意这里有指针移动
+	// 尝试验证下一个字符，如果它是，那么指针后移，反之则不移动。
 	tryGet(char:number){
 		if(this.peek() === char){
 			this.advance();
@@ -373,6 +369,8 @@ export class Cursor{
 		}
 		return false;
 	}
+
+	// 指针将一直向后移动，直到字符不再输入传入的字符数组
 	tryAdvanceThrogh(chars:number[]):number{
 		while(chars.includes(this.peek())){
 			this.advance();
@@ -380,6 +378,7 @@ export class Cursor{
 		return this.peekvalue;
 	}
 
+	// 指针将会一直向后移动，直到遇到传入的字符数组。
 	tryStopAt(chars:number[]):number{
 
 		// if(this._tokenInBuild){
@@ -407,9 +406,7 @@ export class Cursor{
 		}
 	}
 
-	//这个地方可能有点绕
-	//返回的是是否有截断代码，如果是0的话就是没有截断代码
-	//注意传入的点必须是left,否则会陷入死循环。
+	// 获取括号内的内容，您可以指定传入的左右括号字符，
 	tryStopByPairs(left:number,right:number,breakOperators:number[] = []):number{
 		let stackLength = 0;
 		while(!breakOperators.includes(this.peekvalue)||this.offset<this.EOF){
@@ -425,11 +422,9 @@ export class Cursor{
 		}
 		return stackLength===0?0:this.peekvalue;
 	}
-	tryAdvanceThroughBrackets(){
-		let brackets = {};
-	}
+
 	/**
-	 * 双指针协同
+	 * 获取内容
 	 */
 	getContentEndOf(endCursor:Cursor){
 		return this.text.substring(this.offset,endCursor.offset);

@@ -19,7 +19,8 @@ export class ExpressionTreeNode{
 		public type:ExpressionNodeType,
 		public insertText?:string,
 		public attrs:ExpressionTreeNode[][]=[],
-		public subTags:ExpressionTreeNode[][]=[],
+		public subCrossTags:ExpressionTreeNode[]= [],
+		public subSeqenceTags:ExpressionTreeNode[][]=[],
 		public id?:string|undefined
 	){}
 	addAttr(attr:ExpressionTreeNode|undefined){
@@ -34,14 +35,15 @@ export class ExpressionTreeNode{
 	// 	let res = new TagComponent(expression)
 	// 	return new ExpressionTreeNode(res,ExpressionNodeType.TAG,'<'+res.getCompletionItem().insertText);
 	// }
+	//添加笛卡尔积式的SubTag
 	addCrossSubTag(subTags:ExpressionTreeNode[]){
-		this.subTags[0].push(...subTags);
+		this.subCrossTags = subTags;
 	}
 	addSyncSubTag(subTags:ExpressionTreeNode[]){
 		this.times = this.times>subTags.length?this.times:subTags.length;
 		subTags.forEach((e,index)=>{
-			this.subTags[index].push(e);
-		})
+			this.subSeqenceTags[index].push(e);
+		});
 	}
 	setInsertText(insertText:string):ExpressionTreeNode{
 		this.insertText = insertText;
